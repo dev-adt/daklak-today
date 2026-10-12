@@ -491,7 +491,7 @@ export const Navbar = () => {
             </div>
             <div className="dnvn-brand-text-box">
               <span className="dnvn-brand-title">
-                DakLak<span style={{ color: '#D5A33F' }}>.today</span>
+                Daklak<span style={{ color: '#D5A33F' }}>.today</span>
               </span>
               <span className="dnvn-brand-subtitle">
                 {currentLang === 'en' ? 'DAK LAK INFORMATION, DATA & INVESTMENT' : 'CỔNG THÔNG TIN, DỮ LIỆU & ĐẦU TƯ ĐẮK LẮK'}

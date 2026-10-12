@@ -178,7 +178,7 @@ app.use((err, req, res, next) => {
 // Helper sinh tệp sitemap.xml và robots.txt thực tế vào thư mục public/
 async function generateSitemapFiles() {
   try {
-    const baseUrl = process.env.SITE_URL || 'https://doanhnghiepvn.today';
+    const baseUrl = process.env.SITE_URL || 'https://daklak.today';
     const staticPages = ['', '/posts', '/members', '/events', '/guide', '/register'];
 
     const [approvedPosts] = await db.query(
@@ -239,7 +239,7 @@ app.get('/sitemap.xml', async (req, res) => {
 });
 
 app.get('/robots.txt', (req, res) => {
-  const baseUrl = process.env.SITE_URL || 'https://doanhnghiepvn.today';
+  const baseUrl = process.env.SITE_URL || 'https://daklak.today';
   const content = `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /dashboard\nDisallow: /api/\n\nSitemap: ${baseUrl}/sitemap.xml\n`;
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -468,6 +468,31 @@ db.query(`
         FOREIGN KEY (creator_id) REFERENCES content_creators(id) ON DELETE CASCADE
       ) ENGINE=InnoDB COMMENT='Phiên đăng nhập Biên tập viên'
     `);
+
+    // Tự động kiểm tra và thêm cột requires_approval nếu bảng đã tồn tại từ trước mà chưa có cột này
+    try {
+      const [creatorCols] = await db.query("SHOW COLUMNS FROM content_creators");
+      const creatorColNames = creatorCols.map(c => c.Field);
+      if (!creatorColNames.includes('requires_approval')) {
+        await db.query("ALTER TABLE content_creators ADD COLUMN requires_approval TINYINT(1) DEFAULT 1 AFTER password_hash");
+        console.log('✅ Đã thêm cột requires_approval vào bảng content_creators');
+      }
+    } catch (e) {
+      console.warn('Lỗi kiểm tra cột requires_approval:', e.message);
+    }
+
+    // Tự động kiểm tra và thêm cột creator_id vào bảng posts nếu chưa có
+    try {
+      const [postCols] = await db.query("SHOW COLUMNS FROM posts");
+      const postColNames = postCols.map(c => c.Field);
+      if (!postColNames.includes('creator_id')) {
+        await db.query("ALTER TABLE posts ADD COLUMN creator_id INT DEFAULT NULL AFTER member_id");
+        console.log('✅ Đã thêm cột creator_id vào bảng posts');
+      }
+    } catch (e) {
+      console.warn('Lỗi kiểm tra cột creator_id trong posts:', e.message);
+    }
+
     console.log('✅ Bảng content_creators và creator_sessions đã sẵn sàng');
 
     // Tự động tạo bảng event_organizers và organizer_sessions cho vai trò Ban tổ chức sự kiện & Nhân viên soát vé
@@ -659,7 +684,7 @@ db.query(`
         console.warn('Lỗi auto-link vé cũ:', e.message);
       }
 
-      // Khởi tạo sự kiện mẫu chuẩn theo mockup giao diện DoanhNghiepVN.today
+      // Khởi tạo sự kiện mẫu chuẩn theo mockup giao diện DakLak.today
       const [existingEvents] = await db.query("SELECT id FROM events WHERE slug = 'su-kien-demo' OR title LIKE '%Sự kiện demo%' LIMIT 1");
       if (!existingEvents.length) {
         // Xóa sự kiện mẫu cũ nếu có
@@ -731,7 +756,7 @@ db.query(`
             (?, 'DNVN-DEMO-002', 'Trần Thị Thu Trang', '0987654321', 'trang.tran@vinabiz.com', 'Tập đoàn VinaBiz', 1, 0, 'free', 'not_checked_in')
           `, [dId, dId]);
         }
-        console.log('✅ Đã khởi tạo 3 sự kiện chuẩn DoanhNghiepVN và vé mẫu!');
+        console.log('✅ Đã khởi tạo 3 sự kiện chuẩn DakLak và vé mẫu!');
       }
     } catch (e) {
       console.warn('Cảnh báo kiểm tra bảng events & event_registrations:', e.message);
@@ -790,7 +815,7 @@ db.query(`
     const [hasOldCategories] = await db.query("SELECT COUNT(*) as count FROM categories WHERE name LIKE '%Đồ Sơn%' OR name LIKE '%Văn hóa – Du lịch%'");
 
     if (catCount[0].count === 0 || hasOldCategories[0].count > 0) {
-      console.log('🌱 Đang khởi tạo/đồng bộ dữ liệu Chuyên mục & Lĩnh vực DoanhNghiepVN.today...');
+      console.log('🌱 Đang khởi tạo/đồng bộ dữ liệu Chuyên mục & Lĩnh vực DakLak.today...');
       if (hasOldCategories[0].count > 0) {
         await db.query('DELETE FROM categories WHERE name LIKE "%Đồ Sơn%" OR name LIKE "%Văn hóa – Du lịch%"');
       }
@@ -887,7 +912,7 @@ db.query(`
           }
         }
       }
-      console.log('✅ Khởi tạo/đồng bộ 7 Chuyên mục & Lĩnh vực DoanhNghiepVN.today hoàn tất!');
+      console.log('✅ Khởi tạo/đồng bộ 7 Chuyên mục & Lĩnh vực DakLak.today hoàn tất!');
     }
 
     // Tạo thư mục kiến thức
@@ -2375,7 +2400,7 @@ app.get('/api/posts', async (req, res) => {
       ? 'p.*'
       : 'p.id, p.member_id, p.creator_id, p.title, p.slug, p.category, p.sub_category, p.summary, p.image_url, p.author_name, p.author_pos, p.contact_info, p.source_url, p.tags, p.deadline, p.type, p.status, p.is_featured, p.published_at, p.views, p.likes, p.created_at, p.updated_at';
 
-    let sql = `SELECT ${selectCols}, COALESCE(c.name, m.name, p.author_name, 'Ban Biên tập DoanhNghiepVN.today') AS company_name, COALESCE(m.tier, 'Standard') AS company_tier
+    let sql = `SELECT ${selectCols}, COALESCE(c.name, m.name, p.author_name, 'Ban Biên tập DakLak.today') AS company_name, COALESCE(m.tier, 'Standard') AS company_tier
                FROM posts p 
                LEFT JOIN members m ON p.member_id = m.id 
                LEFT JOIN content_creators c ON p.creator_id = c.id
@@ -2497,7 +2522,7 @@ app.get('/api/posts/:id', async (req, res) => {
 
     const [rows] = await db.query(
       `SELECT p.*, 
-              COALESCE(c.name, m.name, 'Ban Biên tập DoanhNghiepVN.today') AS company_name, 
+              COALESCE(c.name, m.name, 'Ban Biên tập DakLak.today') AS company_name, 
               COALESCE(m.tier, 'Standard') AS company_tier 
        FROM posts p 
        LEFT JOIN members m ON p.member_id = m.id 
@@ -2944,7 +2969,7 @@ app.delete('/api/admin/organizers/:id', authMiddleware, async (req, res) => {
 // ════════════════════════════════════════════
 app.get('/sitemap.xml', async (req, res) => {
   try {
-    const baseUrl = process.env.SITE_URL || 'https://doanhnghiepvn.today';
+    const baseUrl = process.env.SITE_URL || 'https://daklak.today';
     const staticPages = ['', '/posts', '/members', '/events', '/guide', '/register'];
 
     const [approvedPosts] = await db.query(
@@ -2983,7 +3008,7 @@ app.get('/sitemap.xml', async (req, res) => {
 });
 
 app.get('/robots.txt', (req, res) => {
-  const baseUrl = process.env.SITE_URL || 'https://doanhnghiepvn.today';
+  const baseUrl = process.env.SITE_URL || 'https://daklak.today';
   const content = `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /dashboard\nDisallow: /api/\n\nSitemap: ${baseUrl}/sitemap.xml\n`;
   res.header('Content-Type', 'text/plain');
   res.send(content);
@@ -4218,7 +4243,7 @@ app.post('/api/events/:id/register', async (req, res) => {
         // Tạo tài khoản mới
         const hash = await bcrypt.hash(pass, 10);
         const isEmail = loginUser.includes('@');
-        const regEmail = isEmail ? loginUser : (cleanEmail || `${cleanPhone}@doanhnghiepvn.today`);
+        const regEmail = isEmail ? loginUser : (cleanEmail || `${cleanPhone}@daklak.today`);
         const regPhone = !isEmail ? loginUser : cleanPhone;
         const orgName = (company && company.trim()) ? company.trim() : (full_name.trim() || 'Hội viên mới');
 
@@ -4275,7 +4300,7 @@ app.post('/api/events/:id/register', async (req, res) => {
     );
 
     // URL mã QR check-in tiện lợi
-    const qrData = `https://doanhnghiepvn.today/checkin?code=${encodeURIComponent(ticketCode)}`;
+    const qrData = `https://daklak.today/checkin?code=${encodeURIComponent(ticketCode)}`;
     const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(ticketCode)}`;
 
     // Tạo mã VietQR chuẩn nếu có thu phí
@@ -4350,7 +4375,7 @@ app.get('/api/member/events', memberAuthMiddleware, async (req, res) => {
 
     const formatted = rows.map(item => {
       const isPaidOrFree = item.payment_status === 'paid' || item.payment_status === 'free';
-      const qrData = isPaidOrFree ? `https://doanhnghiepvn.today/checkin?code=${encodeURIComponent(item.ticket_code)}` : null;
+      const qrData = isPaidOrFree ? `https://daklak.today/checkin?code=${encodeURIComponent(item.ticket_code)}` : null;
       const qrImage = isPaidOrFree ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(item.ticket_code)}` : null;
       let vietqrUrl = null;
       if (item.payment_status === 'pending' && Number(item.total_amount) > 0) {
@@ -4734,7 +4759,7 @@ app.post('/api/leads', async (req, res) => {
     res.json({
       success: true,
       id: result.insertId,
-      message: 'Đăng ký thành công! Đội ngũ phát triển DoanhNghiepVN.today sẽ liên hệ với bạn trong thời gian sớm nhất.'
+      message: 'Đăng ký thành công! Đội ngũ phát triển DakLak.today sẽ liên hệ với bạn trong thời gian sớm nhất.'
     });
   } catch (err) {
     console.error('Lỗi lưu lead /api/leads:', err.message);

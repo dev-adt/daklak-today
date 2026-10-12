@@ -273,7 +273,7 @@ export const PostDetail = () => {
       parsedTagsStr = String(post.tags);
     }
   }
-  const metaKeywords = [parsedTagsStr, post.category, post.sub_category, 'DoanhNghiepVN.today', 'Tạp chí Doanh Nghiệp Việt Nam', post.title].filter(Boolean).join(', ');
+  const metaKeywords = [parsedTagsStr, post.category, post.sub_category, 'DakLak.today', 'Cổng thông tin & Dữ liệu DakLak.today', post.title].filter(Boolean).join(', ');
 
   // Generate NewsArticle JSON-LD schema
   const newsSchema = {
@@ -285,7 +285,7 @@ export const PostDetail = () => {
     "dateModified": post.updated_at || post.created_at,
     "author": [{
       "@type": "Organization",
-      "name": post.company_name || "Hội viên DoanhNghiepVN.today"
+      "name": post.company_name || "Hội viên DakLak.today"
     }],
     "publisher": {
       "@type": "Organization",

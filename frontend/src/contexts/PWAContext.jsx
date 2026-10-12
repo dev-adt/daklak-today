@@ -69,7 +69,7 @@ export const PWAProvider = ({ children }) => {
   // Hàm kích hoạt cài đặt PWA
   const installApp = async () => {
     if (isInstalled) {
-      alert('Ứng dụng DoanhNghiepVN.today đã được cài đặt trên thiết bị của bạn.');
+      alert('Ứng dụng DakLak.today đã được cài đặt trên thiết bị của bạn.');
       return;
     }
 

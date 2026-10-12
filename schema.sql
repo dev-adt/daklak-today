@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS content_creators (
   name          VARCHAR(255) NOT NULL,
   username      VARCHAR(100) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
+  requires_approval TINYINT(1) DEFAULT 1,
   phone         VARCHAR(50)  DEFAULT NULL,
   email         VARCHAR(191) DEFAULT NULL,
   role          VARCHAR(50)  DEFAULT 'creator',
