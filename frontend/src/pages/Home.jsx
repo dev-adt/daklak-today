@@ -7,24 +7,33 @@ import Footer from '../components/Footer';
 import FloatingAIBot from '../components/FloatingAIBot';
 import SEOHead from '../components/SEOHead';
 import SpotlightBanner from '../components/SpotlightBanner';
+import brandConfig from '../brand.config';
 import { getCategoryLabel } from '../constants/categories';
 import { fetchJsonWithTimeout, FALLBACK_POSTS, FALLBACK_EVENTS, FALLBACK_MEMBERS } from '../utils/api';
+import './HomeDakLak.css';
 
 export const Home = () => {
-  const { currentLang } = useTranslation();
+  const { role, user } = useAuth();
+  const { currentLang, t } = useTranslation();
   const navigate = useNavigate();
 
-  // Search & AI State
+  // Search State & Scope
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFaq, setActiveFaq] = useState(null);
+  const [searchScope, setSearchScope] = useState('all');
 
-  // Form State
+  // FAQ Accordion State
+  const [activeFaq, setActiveFaq] = useState(0);
+
+  // Investment Projects Filter State
+  const [selectedSector, setSelectedSector] = useState('all');
+
+  // Form Tư vấn & Hợp tác đầu tư (POST /api/leads)
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
     email: '',
-    city: '',
-    serviceNeed: 'Tư vấn vốn & tiếp cận tín dụng',
+    city: 'Đắk Lắk',
+    serviceNeed: 'Đầu tư nông nghiệp công nghệ cao & chế biến sâu',
     companyName: '',
     notes: '',
     agreeTerms: true
@@ -32,7 +41,19 @@ export const Home = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
 
-  // Dynamic Live Posts (khởi tạo từ cache để hiển thị ngay lập tức)
+  // Quick Event Registration Modal State
+  const [registerModalEvent, setRegisterModalEvent] = useState(null);
+  const [regFormData, setRegFormData] = useState({
+    fullName: '',
+    phone: '',
+    email: '',
+    company: '',
+    quantity: 1
+  });
+  const [regLoading, setRegLoading] = useState(false);
+  const [regSuccess, setRegSuccess] = useState(null);
+
+  // Dynamic Live Posts (khởi tạo từ cache)
   const [latestPosts, setLatestPosts] = useState(() => {
     try {
       const cached = localStorage.getItem('dnvn_cached_home_posts');
@@ -41,15 +62,9 @@ export const Home = () => {
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (e) {}
-    return [];
+    return FALLBACK_POSTS;
   });
-  const [loadingPosts, setLoadingPosts] = useState(() => {
-    try {
-      const cached = localStorage.getItem('dnvn_cached_home_posts');
-      if (cached && JSON.parse(cached).length > 0) return false;
-    } catch (e) {}
-    return true;
-  });
+  const [loadingPosts, setLoadingPosts] = useState(false);
 
   // Dynamic Live Events (khởi tạo từ cache)
   const [eventsList, setEventsList] = useState(() => {
@@ -60,14 +75,7 @@ export const Home = () => {
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (e) {}
-    return [];
-  });
-  const [loadingEvents, setLoadingEvents] = useState(() => {
-    try {
-      const cached = localStorage.getItem('dnvn_cached_home_events');
-      if (cached && JSON.parse(cached).length > 0) return false;
-    } catch (e) {}
-    return true;
+    return FALLBACK_EVENTS;
   });
 
   // Dynamic Live Members (khởi tạo từ cache)
@@ -79,24 +87,17 @@ export const Home = () => {
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (e) {}
-    return [];
-  });
-  const [loadingMembers, setLoadingMembers] = useState(() => {
-    try {
-      const cached = localStorage.getItem('dnvn_cached_home_members');
-      if (cached && JSON.parse(cached).length > 0) return false;
-    } catch (e) {}
-    return true;
+    return FALLBACK_MEMBERS;
   });
 
-  // Live countdown timer for featured event
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  // Live countdown timer cho sự kiện nổi bật nhất
+  const [timeLeft, setTimeLeft] = useState({ days: 18, hours: 8, minutes: 30, seconds: 0 });
 
+  // Tải dữ liệu song song từ API (Promise.allSettled) có Timeout 8s
   useEffect(() => {
     let isMounted = true;
     const fetchHomeData = async () => {
       try {
-        // Tải dữ liệu song song (Promise.allSettled) với timeout 8s
         const [postsRes, eventsRes, membersRes] = await Promise.allSettled([
           fetchJsonWithTimeout('/api/posts?limit=6', {}, 8000),
           fetchJsonWithTimeout('/api/events?limit=4', {}, 8000),
@@ -110,14 +111,12 @@ export const Home = () => {
               localStorage.setItem('dnvn_cached_home_posts', JSON.stringify(postsRes.value.data));
             } catch (e) {}
           }
-
           if (eventsRes.status === 'fulfilled' && eventsRes.value?.success && Array.isArray(eventsRes.value.data) && eventsRes.value.data.length > 0) {
             setEventsList(eventsRes.value.data);
             try {
               localStorage.setItem('dnvn_cached_home_events', JSON.stringify(eventsRes.value.data));
             } catch (e) {}
           }
-
           if (membersRes.status === 'fulfilled' && membersRes.value?.success && Array.isArray(membersRes.value.data) && membersRes.value.data.length > 0) {
             setFeaturedMembers(membersRes.value.data);
             try {
@@ -125,128 +124,79 @@ export const Home = () => {
             } catch (e) {}
           }
         }
-      } catch (e) {
-        console.warn('Lỗi tải dữ liệu trang chủ ngầm:', e);
-      } finally {
-        if (isMounted) {
-          setLoadingPosts(false);
-          setLoadingEvents(false);
-          setLoadingMembers(false);
-        }
+      } catch (err) {
+        console.warn('Lỗi tải dữ liệu động trang chủ:', err);
       }
     };
     fetchHomeData();
     return () => { isMounted = false; };
   }, []);
 
-  // Safe Date parsing helper for all browsers and MySQL datetime format
-  const parseEventDate = (dStr) => {
-    if (!dStr) return null;
-    if (dStr instanceof Date) return isNaN(dStr.getTime()) ? null : dStr;
-    let s = String(dStr).trim();
-    if (s.includes(' ') && !s.includes('T')) {
-      s = s.replace(' ', 'T');
-    }
-    const d = new Date(s);
-    return isNaN(d.getTime()) ? null : d;
-  };
-
-  const formatEventDateTime = (dStr) => {
-    const d = parseEventDate(dStr);
-    if (!d) return currentLang === 'en' ? 'TBD' : 'Đang cập nhật';
-    const dayNamesVi = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-    const dayNamesEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const dayNames = currentLang === 'en' ? dayNamesEn : dayNamesVi;
-    const pad = (n) => String(n).padStart(2, '0');
-    if (currentLang === 'en') {
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return `${pad(d.getHours())}:${pad(d.getMinutes())} ${dayNames[d.getDay()]}, ${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
-    }
-    return `${pad(d.getHours())}:${pad(d.getMinutes())} ${dayNames[d.getDay()]}, ${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
-  };
-
-  // Select top featured event: prioritize upcoming future event, or fallback to first event
-  const nowMs = Date.now();
-  const topUpcoming = eventsList.find(e => {
-    const d = parseEventDate(e.event_date || e.start_time || e.date);
-    return d && d.getTime() > nowMs;
-  });
-  const topEvent = topUpcoming || (eventsList.length > 0 ? eventsList[0] : null);
-  const otherEvents = topEvent ? eventsList.filter(e => e.id !== topEvent.id).slice(0, 3) : eventsList.slice(0, 3);
-
-  // Live countdown timer calculation for the top upcoming event
+  // Tính toán Countdown thời gian thực an toàn cho Safari iOS
   useEffect(() => {
-    if (!topEvent) return;
-    const rawDate = topEvent.event_date || topEvent.start_time || topEvent.date;
-    const targetDate = parseEventDate(rawDate);
-    if (!targetDate) {
-      setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isPassed: true, label: currentLang === 'en' ? 'TBD' : 'Đang cập nhật' });
-      return;
-    }
+    const targetEvent = eventsList && eventsList.length > 0 ? eventsList[0] : null;
+    if (!targetEvent || !targetEvent.event_date) return;
 
-    const calculateTime = () => {
-      const now = Date.now();
-      const diff = targetDate.getTime() - now;
+    const timer = setInterval(() => {
+      try {
+        let dateStr = String(targetEvent.event_date).trim();
+        if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2})?$/.test(dateStr)) {
+          dateStr = dateStr.replace(' ', 'T') + '+07:00';
+        }
+        const eventTime = new Date(dateStr).getTime();
+        const now = new Date().getTime();
+        const difference = eventTime - now;
 
-      if (diff > 0) {
-        setTimeLeft({
-          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
-          seconds: Math.floor((diff % (1000 * 60)) / 1000),
-          isPassed: false,
-          label: currentLang === 'en' ? 'Event starts in' : 'Sự kiện bắt đầu sau'
-        });
-      } else {
-        const endDate = parseEventDate(topEvent.end_date);
-        if (endDate && endDate.getTime() > now) {
-          const endDiff = endDate.getTime() - now;
+        if (difference > 0) {
           setTimeLeft({
-            days: Math.floor(endDiff / (1000 * 60 * 60 * 24)),
-            hours: Math.floor((endDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-            minutes: Math.floor((endDiff % (1000 * 60 * 60)) / (1000 * 60)),
-            seconds: Math.floor((endDiff % (1000 * 60)) / 1000),
-            isPassed: false,
-            isOngoing: true,
-            label: currentLang === 'en' ? 'Ongoing • Ends in' : 'Đang diễn ra • Kết thúc sau'
+            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((difference / 1000 / 60) % 60),
+            seconds: Math.floor((difference / 1000) % 60)
           });
         } else {
-          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isPassed: true, label: currentLang === 'en' ? 'Event concluded' : 'Sự kiện đã diễn ra' });
+          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
         }
+      } catch (e) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       }
-    };
+    }, 1000);
 
-    calculateTime();
-    const interval = setInterval(calculateTime, 1000);
-    return () => clearInterval(interval);
-  }, [topEvent, currentLang]);
+    return () => clearInterval(timer);
+  }, [eventsList]);
 
+  // Xử lý Tìm kiếm
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/posts?search=${encodeURIComponent(searchQuery.trim())}`);
+      if (searchScope === 'members') {
+        navigate(`/members?search=${encodeURIComponent(searchQuery.trim())}`);
+      } else if (searchScope === 'events') {
+        navigate(`/events?search=${encodeURIComponent(searchQuery.trim())}`);
+      } else {
+        navigate(`/posts?search=${encodeURIComponent(searchQuery.trim())}`);
+      }
     }
   };
 
-  const handleAskAI = () => {
-    if (searchQuery.trim()) {
-      navigate(`/ai-chat?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      navigate('/ai-chat');
+  // Cuộn mượt xuống Form Tư vấn & Tự động gán lĩnh vực quan tâm
+  const scrollToConsult = (serviceName = '') => {
+    if (serviceName) {
+      setFormData(prev => ({ ...prev, serviceNeed: serviceName }));
+    }
+    const el = document.getElementById('tu-van');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  const handleFormSubmit = async (e) => {
+  // Gửi Form Tư vấn chuẩn endpoint /api/leads
+  const handleConsultSubmit = async (e) => {
     e.preventDefault();
     if (!formData.fullName || !formData.phone || !formData.companyName) {
-      alert(currentLang === 'en' ? 'Please enter full name, phone number, and company name (*).' : 'Vui lòng điền họ tên, số điện thoại và tên doanh nghiệp (*).');
+      alert(currentLang === 'en' ? 'Please fill in Name, Phone, and Company (*)' : 'Vui lòng điền Họ tên, Số điện thoại và Tên tổ chức/doanh nghiệp (*)');
       return;
     }
-    if (!formData.agreeTerms) {
-      alert(currentLang === 'en' ? 'Please agree to data privacy terms.' : 'Vui lòng đồng ý với điều khoản bảo mật dữ liệu.');
-      return;
-    }
-
     setFormLoading(true);
     try {
       const res = await fetch('/api/leads', {
@@ -257,2005 +207,1557 @@ export const Home = () => {
           phone: formData.phone,
           email: formData.email,
           city: formData.city,
-          memberType: formData.serviceNeed,
           companyName: formData.companyName,
-          notes: `Lĩnh vực tư vấn: ${formData.serviceNeed}. Ghi chú: ${formData.notes || 'Không có'}`
+          memberType: formData.serviceNeed,
+          notes: `Lĩnh vực quan tâm: ${formData.serviceNeed}. Ghi chú: ${formData.notes || 'Không có'}`
         })
       });
       if (res.ok) {
         setFormSubmitted(true);
       } else {
-        const errJson = await res.json();
-        alert((currentLang === 'en' ? 'Error: ' : 'Lỗi: ') + (errJson.error || (currentLang === 'en' ? 'Could not submit form.' : 'Không thể gửi form.')));
+        const errData = await res.json();
+        alert(errData.error || 'Có lỗi xảy ra khi gửi thông tin');
       }
     } catch (err) {
-      console.error('Submit form error:', err);
-      alert(currentLang === 'en' ? 'An error occurred. Please try again later.' : 'Đã có lỗi xảy ra. Vui lòng thử lại sau.');
+      console.error('Submit error:', err);
+      alert('Không thể kết nối đến máy chủ, vui lòng thử lại.');
     } finally {
       setFormLoading(false);
     }
   };
 
-  // 6 Trụ cột Tư vấn Hỗ trợ Doanh nghiệp
-  const CONSULTING_SERVICES = [
-    {
-      id: 'von',
-      title: currentLang === 'en' ? 'Capital & Credit Consulting' : 'Tư vấn Vốn & Tín dụng',
-      desc: currentLang === 'en'
-        ? 'Assisting in preparing financial files, cash flow reports, and securing preferential credit lines from leading commercial banks.'
-        : 'Hỗ trợ chuẩn bị hồ sơ tài chính, báo cáo dòng tiền và kết nối tiếp cận các gói tín dụng ưu đãi từ các ngân hàng hàng đầu.',
-      icon: 'ti ti-building-bank',
-      color: '#1E63E9',
-      bgGradient: 'linear-gradient(135deg, rgba(30, 99, 233, 0.12) 0%, rgba(59, 130, 246, 0.22) 100%)',
-      borderColor: 'rgba(30, 99, 233, 0.35)',
-      shadowColor: 'rgba(30, 99, 233, 0.25)',
-      serviceKey: 'Tư vấn vốn & tiếp cận tín dụng'
-    },
-    {
-      id: 'thuong-hieu',
-      title: currentLang === 'en' ? 'Media & Brand Communications' : 'Truyền thông & Thương hiệu',
-      desc: currentLang === 'en'
-        ? 'Elevating corporate credibility, press media sponsorship, and publishing specialized coverage on Vietnam Enterprise Magazine.'
-        : 'Xây dựng uy tín doanh nghiệp, bảo trợ truyền thông báo chí, xuất bản phóng sự trên Tạp chí Doanh Nghiệp Việt Nam.',
-      icon: 'ti ti-speakerphone',
-      color: '#0284C7',
-      bgGradient: 'linear-gradient(135deg, rgba(2, 132, 199, 0.15) 0%, rgba(56, 189, 248, 0.28) 100%)',
-      borderColor: 'rgba(2, 132, 199, 0.35)',
-      shadowColor: 'rgba(2, 132, 199, 0.25)',
-      serviceKey: 'Truyền thông & Thương hiệu'
-    },
-    {
-      id: 'marketing',
-      title: currentLang === 'en' ? 'Marketing & B2B Sales' : 'Marketing & Bán hàng',
-      desc: currentLang === 'en'
-        ? 'Omnichannel marketing strategies, B2B sales funnel optimization, domestic distribution channels, and export promotion.'
-        : 'Chiến lược tiếp thị đa kênh, tối ưu phễu bán hàng B2B, phát triển kênh phân phối nội địa và xúc tiến xuất khẩu.',
-      icon: 'ti ti-chart-arrows-vertical',
-      color: '#E11D48',
-      bgGradient: 'linear-gradient(135deg, rgba(225, 29, 72, 0.15) 0%, rgba(251, 113, 133, 0.28) 100%)',
-      borderColor: 'rgba(225, 29, 72, 0.35)',
-      shadowColor: 'rgba(225, 29, 72, 0.25)',
-      serviceKey: 'Marketing & Bán hàng'
-    },
-    {
-      id: 'ai-tech',
-      title: currentLang === 'en' ? 'AI Solutions & Digital Transformation' : 'Ứng dụng AI & Chuyển đổi số',
-      desc: currentLang === 'en'
-        ? 'Deploying Enterprise AI Agents, automating business workflows, and digitizing governance with smart Orion ERP systems.'
-        : 'Triển khai Trợ lý AI Agent, tự động hóa quy trình nghiệp vụ, số hóa điều hành doanh nghiệp với hệ thống Orion ERP thông minh.',
-      icon: 'ti ti-cpu',
-      color: '#7C3AED',
-      bgGradient: 'linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(167, 139, 250, 0.28) 100%)',
-      borderColor: 'rgba(124, 58, 237, 0.35)',
-      shadowColor: 'rgba(124, 58, 237, 0.25)',
-      serviceKey: 'Ứng dụng AI & Chuyển đổi số'
-    },
-    {
-      id: 'esg',
-      title: currentLang === 'en' ? 'ESG Practices & Green Certification' : 'Thực hành ESG & Chứng nhận Xanh',
-      desc: currentLang === 'en'
-        ? 'Green transition roadmaps, greenhouse gas accounting, and sustainability reporting meeting global market access standards.'
-        : 'Lộ trình chuyển đổi xanh, kiểm kê khí nhà kính, xây dựng báo cáo phát triển bền vững đạt chuẩn thâm nhập thị trường quốc tế.',
-      icon: 'ti ti-leaf',
-      color: '#16A34A',
-      bgGradient: 'linear-gradient(135deg, rgba(22, 163, 74, 0.15) 0%, rgba(74, 222, 128, 0.28) 100%)',
-      borderColor: 'rgba(22, 163, 74, 0.35)',
-      shadowColor: 'rgba(22, 163, 74, 0.25)',
-      serviceKey: 'Thực hành ESG'
-    },
-    {
-      id: 'b2b-networking',
-      title: currentLang === 'en' ? 'Technology & B2B Matchmaking' : 'Kết nối Công nghệ & Đối tác B2B',
-      desc: currentLang === 'en'
-        ? '1-on-1 business matchmaking, supplier discovery, participation in strategic trade delegations and supply chain networks.'
-        : 'Giao thương 1-1, tìm kiếm nhà cung cấp, tham gia các đoàn xúc tiến thương mại và chuỗi cung ứng chiến lược trong và ngoài nước.',
-      icon: 'ti ti-users-group',
-      color: '#D97706',
-      bgGradient: 'linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(251, 191, 36, 0.28) 100%)',
-      borderColor: 'rgba(217, 119, 6, 0.35)',
-      shadowColor: 'rgba(217, 119, 6, 0.25)',
-      serviceKey: 'Kết nối Công nghệ & Đối tác B2B'
+  // Đăng ký vé sự kiện nhanh (gọi /api/events/:id/register)
+  const handleQuickRegisterSubmit = async (e) => {
+    e.preventDefault();
+    if (!registerModalEvent) return;
+    if (!regFormData.fullName || !regFormData.phone) {
+      alert(currentLang === 'en' ? 'Please fill in Full Name and Phone' : 'Vui lòng nhập Họ tên và Số điện thoại');
+      return;
     }
-  ];
-
-  // 5 FAQs DoanhNghiepVN
-  const FAQS = [
-    {
-      q: currentLang === 'en' 
-        ? 'What is DoanhNghiepVN.today and how does it support enterprises?'
-        : 'DoanhNghiepVN.today là gì và hỗ trợ những gì cho doanh nghiệp?',
-      a: currentLang === 'en'
-        ? 'DoanhNghiepVN.today is the economic news channel and digital ecosystem of Vietnam Enterprise Magazine. We connect the business community with regulatory authorities, financial institutions, and industry experts across 6 core pillars: Capital & Credit, Brand Media, Marketing & Sales, AI & Digital Transformation, ESG Practices, and B2B Matchmaking.'
-        : 'DoanhNghiepVN.today là kênh thông tin kinh tế và hệ sinh thái số của Tạp chí Doanh Nghiệp Việt Nam. Chúng tôi kết nối cộng đồng doanh nghiệp với các cơ quan quản lý, ngân hàng, chuyên gia đầu ngành trong 6 lĩnh vực trọng điểm: Vốn tín dụng, Truyền thông thương hiệu, Marketing bán hàng, Ứng dụng AI/Chuyển đổi số, Thực hành ESG và Kết nối B2B.'
-    },
-    {
-      q: currentLang === 'en'
-        ? 'How do I register for events and receive QR Code tickets?'
-        : 'Làm thế nào để đăng ký tham gia các sự kiện, hội thảo và nhận vé QR Code?',
-      a: currentLang === 'en'
-        ? 'Simply choose an event on the portal, provide attendee details, and click Register. The system instantly generates your unique ticket code and QR Code. For paid events, automatic VietQR codes and payment proof upload ensure fast approval.'
-        : 'Quý vị chỉ cần chọn sự kiện trên website, điền thông tin người tham dự và ấn Đăng ký. Hệ thống sẽ tự động cấp mã vé duy nhất và mã QR Code. Với các sự kiện có phí, hệ thống tích hợp sẵn mã VietQR kèm cú pháp chuyển khoản chính xác để Quý vị hoàn tất trong tích tắc.'
-    },
-    {
-      q: currentLang === 'en'
-        ? 'Can businesses set up a digital company profile / showroom?'
-        : 'Doanh nghiệp có thể đăng ký trang giới thiệu hồ sơ năng lực (Showroom số) không?',
-      a: currentLang === 'en'
-        ? 'Yes. Member enterprises are provided a dedicated Digital Business Profile on DoanhNghiepVN.today to showcase capabilities, products, services, projects, and connect with prospective partners.'
-        : 'Có. Hội viên Doanh nghiệp được cấp trang giới thiệu năng lực (Profile Doanh nghiệp số) trên DoanhNghiepVN.today để quảng bá sản phẩm, dịch vụ, dự án và tìm kiếm đối tác liên kết.'
-    },
-    {
-      q: currentLang === 'en'
-        ? 'Does DoanhNghiepVN.today support app installation on mobile (PWA)?'
-        : 'DoanhNghiepVN.today có hỗ trợ cài đặt dạng ứng dụng trên điện thoại (PWA) không?',
-      a: currentLang === 'en'
-        ? 'Yes. The portal is built as a Progressive Web App (PWA). You can install it directly onto your home screen (iOS / Android) without needing an app store, enabling fast access and real-time event alerts.'
-        : 'Có. Trang web được xây dựng theo chuẩn PWA (Progressive Web App). Quý vị có thể cài đặt trực tiếp lên màn hình chính điện thoại (iOS / Android) mà không cần qua App Store hay Google Play, cho phép truy cập nhanh và nhận thông báo sự kiện mượt mà.'
-    },
-    {
-      q: currentLang === 'en'
-        ? 'How does the Vietnam Enterprise AI Assistant work?'
-        : 'Trợ lý AI Doanh Nghiệp VN hoạt động như thế nào?',
-      a: currentLang === 'en'
-        ? 'The Vietnam Enterprise AI Assistant is trained on corporate regulations, tax policies, and the latest economic frameworks combined with the specialized editorial database of Vietnam Enterprise Magazine, providing 24/7 strategic guidance.'
-        : 'Trợ lý AI Doanh Nghiệp VN được huấn luyện dựa trên cơ sở dữ liệu pháp lý doanh nghiệp, chính sách thuế, các quy định kinh tế mới nhất kết hợp với mạng lưới thông tin chuyên sâu của Tạp chí Doanh Nghiệp Việt Nam, hỗ trợ giải đáp 24/7 cho các nhà quản trị.'
-    }
-  ];
-
-  const scrollToConsult = (serviceKey) => {
-    setFormData(prev => ({ ...prev, serviceNeed: serviceKey || prev.serviceNeed }));
-    const element = document.getElementById('tu-van');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    setRegLoading(true);
+    try {
+      const res = await fetch(`/api/events/${registerModalEvent.id}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: regFormData.fullName,
+          phone: regFormData.phone,
+          email: regFormData.email,
+          company: regFormData.company,
+          quantity: regFormData.quantity || 1
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setRegSuccess(data);
+      } else {
+        alert(data.error || 'Đăng ký vé chưa thành công');
+      }
+    } catch (err) {
+      console.error('Register ticket error:', err);
+      alert('Có lỗi kết nối khi đăng ký vé.');
+    } finally {
+      setRegLoading(false);
     }
   };
 
+  // Danh mục dự án đầu tư mẫu chọn lọc
+  const investmentProjects = [
+    {
+      id: 'inv-1',
+      title: 'Tổ hợp Nhà máy Chế biến sâu Cà phê & Nông sản xuất khẩu Buôn Ma Thuột',
+      sector: 'Chế biến Nông sản',
+      sectorKey: 'agro',
+      location: 'Khu công nghiệp Hòa Phú, TP. Buôn Ma Thuột',
+      scale: '250 tỷ VNĐ (Công suất 15.000 tấn/năm)',
+      status: 'Đang kêu gọi hợp tác & đầu tư',
+      desc: 'Dự án đầu tư dây chuyền sấy lạnh, chiết xuất cà phê hòa tan cao cấp và hệ thống kiểm định đạt chuẩn châu Âu.'
+    },
+    {
+      id: 'inv-2',
+      title: 'Khu Nông nghiệp Ứng dụng Công nghệ cao Cư M’gar',
+      sector: 'Nông nghiệp CNC',
+      sectorKey: 'hitech',
+      location: 'Huyện Cư M’gar, Tỉnh Đắk Lắk',
+      scale: '180 tỷ VNĐ (Quy mô 120 ha)',
+      status: 'Quỹ đất sạch sẵn sàng',
+      desc: 'Canh tác sầu riêng, mắc ca và hồ tiêu hữu cơ kết hợp hệ thống IoT giám sát thổ nhưỡng và truy xuất nguồn gốc số.'
+    },
+    {
+      id: 'inv-3',
+      title: 'Trung tâm Dịch vụ Logistics & Kho lạnh Vận tải hàng hóa Tây Nguyên',
+      sector: 'Logistics',
+      sectorKey: 'logistics',
+      location: 'Điểm nối cao tốc Buôn Ma Thuột — Khánh Hòa',
+      scale: '320 tỷ VNĐ (Diện tích 25 ha)',
+      status: 'Quy hoạch phân khu đã phê duyệt',
+      desc: 'Đầu tư cụm kho ngoại quan, kho lạnh bảo quản nông sản tươi và trung tâm logistics kết nối Tây Nguyên với cảng biển Nam Trung Bộ.'
+    },
+    {
+      id: 'inv-4',
+      title: 'Khu Nghỉ dưỡng Sinh thái & Bảo tồn Văn hóa Cồng chiêng Hồ Lắk',
+      sector: 'Du lịch Sinh thái',
+      sectorKey: 'tourism',
+      location: 'Huyện Lắk, Tỉnh Đắk Lắk',
+      scale: '150 tỷ VNĐ (Resort 4 sao, 80 phòng bungalow)',
+      status: 'Kêu gọi nhà đầu tư chiến lược',
+      desc: 'Tổ hợp nghỉ dưỡng sinh thái ven hồ kết hợp trải nghiệm làng nghề truyền thống và biểu diễn văn hóa phi vật thể của người M’Nông.'
+    }
+  ];
+
+  const filteredProjects = selectedSector === 'all' 
+    ? investmentProjects 
+    : investmentProjects.filter(p => p.sectorKey === selectedSector);
+
+  // 5 Câu hỏi thường gặp
+  const faqs = [
+    {
+      q: currentLang === 'en' ? 'What is DakLak.today and who does it serve?' : 'DakLak.today là gì và phục vụ những đối tượng nào?',
+      a: currentLang === 'en' 
+        ? 'DakLak.today is the digital gateway, open data hub, and investment promotion platform of Dak Lak Province. We connect travelers, local enterprises, global investors, and diaspora communities across 4 key pillars: Media, Data, Platform, and Artificial Intelligence.'
+        : 'DakLak.today là cổng thông tin số, dữ liệu mở và nền tảng xúc tiến đầu tư toàn diện của tỉnh Đắk Lắk. Nền tảng phục vụ du khách khám phá, doanh nghiệp địa phương quảng bá sản phẩm, nhà đầu tư trong và ngoài nước tiếp cận dự án, cùng cộng đồng người Đắk Lắk xa quê theo dõi chuyển động quê hương.'
+    },
+    {
+      q: currentLang === 'en' ? 'How does AI Assistant & AI Matching work on DakLak.today?' : 'Trợ lý AI và tính năng AI Matching hỗ trợ nhà đầu tư như thế nào?',
+      a: currentLang === 'en'
+        ? 'Our Gemini Flash-powered AI assistant analyzes investment profiles, agricultural raw material maps, and policy data to automatically match prospective investors with suitable projects, industrial zones, and verified local partners.'
+        : 'Trợ lý AI tích hợp công nghệ Gemini Flash kết nối trực tiếp với cơ sở dữ liệu doanh nghiệp, quy hoạch tỉnh và chuỗi giá trị nông sản. Nhà đầu tư chỉ cần nhập nhu cầu (ví dụ: cần tìm quỹ đất 50 ha làm nông nghiệp CNC), AI sẽ tự động sàng lọc dự án phù hợp và đề xuất đối tác xác thực.'
+    },
+    {
+      q: currentLang === 'en' ? 'What benefits do member businesses receive?' : 'Doanh nghiệp tham gia nền tảng DakLak.today được hưởng những quyền lợi gì?',
+      a: currentLang === 'en'
+        ? 'Member enterprises receive a verified Digital Showroom, publish articles & trade opportunities, receive investor inquiries, and enjoy automatic approval for the Silver package upon registration.'
+        : 'Doanh nghiệp được cấp trang Hồ sơ năng lực (Showroom số) có dấu xác thực, đăng tải sản phẩm OCOP, tìm kiếm đối tác và kêu gọi vốn. Khi đăng ký gói Silver, hệ thống tự động phê duyệt ngay lập tức để doanh nghiệp bắt đầu sử dụng.'
+    },
+    {
+      q: currentLang === 'en' ? 'How can I register for events and get QR tickets?' : 'Tôi có thể đăng ký tham gia sự kiện và nhận vé QR như thế nào?',
+      a: currentLang === 'en'
+        ? 'Simply click "Register Ticket" on any featured event. Fill in your name and phone number to receive a unique QR check-in code directly on screen or by email, with zero waiting time.'
+        : 'Người dùng chỉ cần nhấn "Đăng ký vé" tại khối sự kiện nổi bật, điền thông tin người tham dự. Hệ thống sẽ tự động cấp mã QR soát vé độc nhất để check-in thời gian thực tại hội trường.'
+    },
+    {
+      q: currentLang === 'en' ? 'Does DakLak.today support mobile app installation (PWA)?' : 'DakLak.today có hỗ trợ cài đặt dạng ứng dụng trên điện thoại (PWA) không?',
+      a: currentLang === 'en'
+        ? 'Yes! DakLak.today is fully equipped with Progressive Web App (PWA) technology. You can click "Install App" on the navigation bar to add it directly to your phone or computer home screen without App Store downloads.'
+        : 'Có. DakLak.today được tối ưu chuẩn PWA hiện đại. Bạn chỉ cần nhấn nút "Cài App" trên thanh điều hướng hoặc popup trên điện thoại để đưa biểu tượng DakLak.today ra màn hình chính, sử dụng mượt mà không cần qua App Store.'
+    }
+  ];
+
   return (
-    <div style={{ backgroundColor: '#F8FAFC', minHeight: '100vh', color: '#0F172A', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <SEOHead
-        title={currentLang === 'en'
-          ? "DoanhNghiepVN.today — Vietnam Enterprise Magazine | Connection & Growth"
-          : "DoanhNghiepVN.today — Tạp chí Doanh Nghiệp Việt Nam | Kết nối & Phát triển"}
-        description={currentLang === 'en'
-          ? "Official business connection ecosystem, regulatory updates, events, and consulting programs for credit, marketing, branding, AI, and ESG."
-          : "Không gian kết nối cộng đồng doanh nghiệp, cập nhật chính sách, tham gia sự kiện và tiếp cận các chương trình tư vấn về vốn, marketing, thương hiệu, chuyển đổi số và ESG."}
+    <div className="daklak-home">
+      <SEOHead 
+        title={`${brandConfig.brandName} — ${brandConfig.slogan}`}
+        description={brandConfig.description}
       />
-      
-      {/* Header with dynamic categories */}
+      <SpotlightBanner />
       <Navbar />
 
-      {/* 1. HERO SECTION (Luminous Bamboo Tech Blue - Trắng Xanh Linh Hoạt) */}
-      <section style={{
-        position: 'relative',
-        background: 'linear-gradient(172deg, #0C3386 0%, #144CB8 35%, #1E63E9 70%, #EFF6FF 100%)',
-        color: '#FFFFFF',
-        padding: '4.5rem 1.5rem 6.5rem',
-        overflow: 'hidden',
-        borderBottom: '1px solid rgba(147, 197, 253, 0.3)'
-      }}>
-        {/* Bamboo cyber grid & matrix dots backdrop */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          opacity: 0.18,
-          backgroundImage: 'radial-gradient(rgba(147, 197, 253, 0.6) 1.2px, transparent 1.2px)',
-          backgroundSize: '24px 24px',
-          pointerEvents: 'none'
-        }} />
-
-        {/* Ambient bamboo light streaks & cyan glow */}
-        <div style={{
-          position: 'absolute',
-          top: '-20%',
-          right: '8%',
-          width: '650px',
-          height: '650px',
-          background: 'radial-gradient(circle, rgba(0, 210, 255, 0.25) 0%, rgba(30, 99, 233, 0.08) 50%, transparent 70%)',
-          pointerEvents: 'none',
-          filter: 'blur(40px)'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '0%',
-          left: '10%',
-          width: '500px',
-          height: '300px',
-          background: 'radial-gradient(ellipse, rgba(255, 255, 255, 0.35) 0%, transparent 70%)',
-          pointerEvents: 'none',
-          filter: 'blur(50px)'
-        }} />
-
-        <div style={{ maxWidth: '1240px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3.5rem', alignItems: 'center' }}>
-            
-            {/* Left Column: Heading, Subtitle, Search, CTA */}
-            <div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 14px',
-                borderRadius: '9999px',
-                backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                border: '1px solid rgba(147, 197, 253, 0.45)',
-                color: '#BAE6FD',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                marginBottom: '1.25rem',
-                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
-              }}>
-                <i className="fa-solid fa-shield-halved" style={{ color: '#00D2FF' }} />
-                <span>{currentLang === 'en' ? 'Official Business Network • Vietnam Enterprise Magazine' : 'Cộng đồng kết nối chính thống • Tạp chí Doanh Nghiệp Việt Nam'}</span>
-              </div>
-
-              <h1 style={{
-                fontSize: 'clamp(2rem, 4vw, 3.25rem)',
-                fontWeight: 800,
-                lineHeight: 1.18,
-                letterSpacing: '-0.025em',
-                marginBottom: '1.25rem',
-                color: '#FFFFFF'
-              }}>
-                {currentLang === 'en' ? (
-                  <>Empowering Enterprises <br />
-                    <span style={{
-                      background: 'linear-gradient(90deg, #BAE6FD 0%, #60A5FA 50%, #FBBF24 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
-                    }}>
-                      Growing Together Sustainably
-                    </span>
-                  </>
-                ) : (
-                  <>Đồng Hành Doanh Nghiệp <br />
-                    <span style={{
-                      background: 'linear-gradient(90deg, #BAE6FD 0%, #60A5FA 50%, #FBBF24 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
-                    }}>
-                      Bứt Phá Tăng Trưởng Bền Vững
-                    </span>
-                  </>
-                )}
-              </h1>
-
-              <p style={{
-                fontSize: '1.05rem',
-                lineHeight: 1.6,
-                color: '#E0EDFD',
-                marginBottom: '2rem',
-                maxWidth: '560px'
-              }}>
-                {currentLang === 'en'
-                  ? 'Official ecosystem connecting enterprises, updating corporate policies, attending summits, and unlocking solutions in capital credit, brand media, sales marketing, AI digital transformation, and ESG.'
-                  : 'Không gian kết nối cộng đồng doanh nghiệp, cập nhật chính sách pháp lý, tham gia hội thảo chuyên đề và tiếp cận các giải pháp hỗ trợ về vốn tín dụng, marketing, thương hiệu, chuyển đổi số AI và ESG.'}
-              </p>
-
-              {/* Search & AI Input */}
-              <form onSubmit={handleSearchSubmit} style={{
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(147, 197, 253, 0.35)',
-                borderRadius: '14px',
-                padding: '6px',
-                maxWidth: '560px',
-                marginBottom: '1.75rem',
-                boxShadow: '0 8px 24px rgba(11, 45, 121, 0.2)'
-              }}>
-                <i className="fa-solid fa-magnifying-glass" style={{ marginLeft: '14px', color: '#BAE6FD', fontSize: '1rem' }} />
-                <input
-                  type="text"
-                  placeholder={currentLang === 'en' ? 'Search news, events, enterprises, topics...' : 'Tìm tin tức, sự kiện, doanh nghiệp, chuyên mục...'}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    flex: 1,
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    outline: 'none',
-                    color: '#FFFFFF',
-                    padding: '10px 14px',
-                    fontSize: '0.95rem'
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={handleAskAI}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)',
-                    color: '#FFFFFF',
-                    border: '1px solid rgba(147, 197, 253, 0.4)',
-                    borderRadius: '10px',
-                    padding: '9px 18px',
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    whiteSpace: 'nowrap',
-                    boxShadow: '0 3px 12px rgba(30, 99, 233, 0.45)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #3B82F6 0%, #1E63E9 100%)';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)';
-                    e.currentTarget.style.transform = 'none';
-                  }}
-                  title={currentLang === 'en' ? "Smart AI Search" : "Tra cứu thông minh bằng AI Doanh Nghiệp VN"}
-                >
-                  <i className="fa-solid fa-wand-magic-sparkles" style={{ color: '#FBBF24' }} />
-                  <span>{currentLang === 'en' ? 'Ask AI' : 'Hỏi AI'}</span>
-                </button>
-              </form>
-
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-                <a
-                  href="#su-kien"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)',
-                    color: '#FFFFFF',
-                    padding: '12px 24px',
-                    borderRadius: '12px',
-                    fontWeight: 700,
-                    fontSize: '0.95rem',
-                    textDecoration: 'none',
-                    border: '1px solid rgba(147, 197, 253, 0.35)',
-                    boxShadow: '0 4px 16px rgba(30, 99, 233, 0.45)',
-                    transition: 'transform 0.2s, box-shadow 0.2s'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #3B82F6 0%, #1E63E9 100%)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(30, 99, 233, 0.6)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)';
-                    e.currentTarget.style.transform = 'none';
-                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(30, 99, 233, 0.45)';
-                  }}
-                >
-                  <span>{currentLang === 'en' ? 'Explore Upcoming Events' : 'Xem sự kiện sắp diễn ra'}</span>
-                  <i className="fa-solid fa-arrow-down" style={{ fontSize: '0.8rem' }} />
-                </a>
-
-                <button
-                  onClick={() => scrollToConsult('Tư vấn vốn & tiếp cận tín dụng')}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                    color: '#FFFFFF',
-                    border: '1px solid rgba(147, 197, 253, 0.4)',
-                    padding: '12px 24px',
-                    borderRadius: '12px',
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                    cursor: 'pointer',
-                    backdropFilter: 'blur(8px)',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.22)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
-                    e.currentTarget.style.transform = 'none';
-                  }}
-                >
-                  <i className="fa-solid fa-handshake-angle" style={{ color: '#BAE6FD' }} />
-                  <span>{currentLang === 'en' ? 'Enterprise Consulting' : 'Đăng ký tư vấn doanh nghiệp'}</span>
-                </button>
-              </div>
+      <main>
+        {/* ========================================================
+            SECTION 1: HERO BANNER ("Hôm nay ở Đắk Lắk có gì?")
+            ======================================================== */}
+        <section className="daklak-hero" id="home">
+          <div className="daklak-hero-content">
+            <div className="daklak-hero-badge">
+              <i className="ti ti-sparkles" />
+              <span>{currentLang === 'en' ? 'Central Highlands Digital Gateway' : 'Cổng Khám Phá & Xúc Tiến Đầu Tư'}</span>
             </div>
 
-            {/* Right Column: Hero Visual with Event Preview & Stat Card */}
-            <div>
-              <div style={{
-                position: 'relative',
-                borderRadius: '24px',
-                overflow: 'hidden',
-                boxShadow: '0 25px 50px -12px rgba(11, 45, 121, 0.45)',
-                border: '1px solid rgba(147, 197, 253, 0.3)',
-                backgroundColor: '#0F2C68'
-              }}>
-                <img
-                  src="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=900"
-                  alt="Hội thảo kết nối doanh nghiệp"
-                  style={{ width: '100%', height: '360px', objectFit: 'cover', display: 'block' }}
-                />
-                
-                {/* Gradient overlay */}
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'linear-gradient(to top, rgba(12, 45, 120, 0.95) 0%, rgba(12, 45, 120, 0.3) 50%, transparent 100%)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'flex-end',
-                  padding: '24px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{
-                      background: 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)',
-                      color: '#FFFFFF',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      padding: '4px 10px',
-                      borderRadius: '6px',
-                      border: '1px solid rgba(147, 197, 253, 0.4)',
-                      boxShadow: '0 2px 8px rgba(30, 99, 233, 0.4)'
-                    }}>
-                      {currentLang === 'en' ? 'Featured Activity' : 'Hoạt động tiêu biểu'}
-                    </span>
-                    <span style={{ color: '#BAE6FD', fontSize: '0.8rem' }}>
-                      <i className="fa-regular fa-calendar-days" style={{ marginRight: '4px' }} />
-                      {currentLang === 'en' ? 'Periodic' : 'Diễn ra định kỳ'}
-                    </span>
-                  </div>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>
-                    {currentLang === 'en' ? 'Trade Promotion & Capital Forum 2026' : 'Diễn đàn Xúc tiến Thương mại & Tiếp cận Vốn Doanh nghiệp 2026'}
-                  </h3>
-                  <p style={{ color: '#E0EDFD', fontSize: '0.85rem', margin: 0 }}>
-                    {currentLang === 'en' ? 'Convening 300+ CEOs, economists, and banking leaders.' : 'Quy tụ hơn 300 CEO, chuyên gia kinh tế và đại diện tổ chức tín dụng.'}
-                  </p>
-                </div>
-              </div>
+            <h1 className="daklak-hero-title">
+              DAKLAK.TODAY <br />
+              <span>{currentLang === 'en' ? 'From Bazan Earth to Global Horizons' : 'Từ Đất Bazan Đến Cơ Hội Toàn Cầu'}</span>
+            </h1>
 
-              {/* Floating Quick Stats */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '12px',
-                marginTop: '1.25rem'
-              }}>
-                {[
-                  { num: '15.000+', label: currentLang === 'en' ? 'Enterprises' : 'Doanh nghiệp' },
-                  { num: '63', label: currentLang === 'en' ? 'Provinces' : 'Tỉnh thành' },
-                  { num: '120+', label: currentLang === 'en' ? 'Events/Year' : 'Sự kiện/năm' },
-                  { num: '98%', label: currentLang === 'en' ? 'Satisfaction' : 'Hài lòng' }
-                ].map((s, idx) => (
-                  <div key={idx} style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(147, 197, 253, 0.25)',
-                    borderRadius: '12px',
-                    padding: '12px 8px',
-                    textAlign: 'center',
-                    backdropFilter: 'blur(8px)',
-                    boxShadow: '0 4px 14px rgba(11, 45, 121, 0.15)'
-                  }}>
-                    <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF' }}>{s.num}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#BAE6FD', marginTop: '2px' }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 2. SỰ KIỆN SẮP DIỄN RA (FEATURED EVENTS WITH REALTIME COUNTDOWN & REGISTRATION) */}
-      <section id="su-kien" style={{ padding: '5rem 1.5rem', backgroundColor: '#FFFFFF' }}>
-        <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
-          
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', gap: '1rem' }}>
-            <div>
-              <span style={{ color: '#1E63E9', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {currentLang === 'en' ? 'Key Programs' : 'Hoạt động trọng điểm'}
-              </span>
-              <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#0F172A', marginTop: '6px', letterSpacing: '-0.02em' }}>
-                {currentLang === 'en' ? 'UPCOMING EVENTS' : 'SỰ KIỆN SẮP DIỄN RA'}
-              </h2>
-              <p style={{ color: '#64748B', fontSize: '1rem', marginTop: '6px', maxWidth: '640px' }}>
-                {currentLang === 'en'
-                  ? 'Stay updated with conferences, seminars, and networking programs connecting businesses with insights, experts, and market opportunities.'
-                  : 'Cập nhật các hội thảo, tọa đàm và chương trình kết nối giúp doanh nghiệp tiếp cận thông tin, chuyên gia và cơ hội hợp tác kinh doanh.'}
-              </p>
-            </div>
-            <Link
-              to="/su-kien"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: '#1E63E9',
-                fontWeight: 700,
-                fontSize: '0.95rem',
-                textDecoration: 'none'
-              }}
-            >
-              <span>{currentLang === 'en' ? 'View all events' : 'Xem tất cả sự kiện'}</span>
-              <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.8rem' }} />
-            </Link>
-          </div>
-
-          {loadingEvents ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#94A3B8' }}>
-              <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '2rem', marginBottom: '1rem' }} />
-              <div>{currentLang === 'en' ? 'Loading latest events...' : 'Đang tải danh sách sự kiện mới nhất...'}</div>
-            </div>
-          ) : eventsList.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: '#F8FAFC', borderRadius: '16px' }}>
-              <p style={{ color: '#64748B', margin: 0 }}>{currentLang === 'en' ? 'No upcoming events at the moment.' : 'Hiện chưa có sự kiện nào sắp diễn ra.'}</p>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
-              
-              {/* Highlight Top Upcoming Event Card */}
-              {topEvent && (
-                <div style={{
-                  gridColumn: '1 / -1',
-                  backgroundColor: '#0A2562',
-                  backgroundImage: 'linear-gradient(135deg, #09215A 0%, #103B99 60%, #0A2562 100%)',
-                  color: '#FFFFFF',
-                  borderRadius: '24px',
-                  overflow: 'hidden',
-                  border: '1px solid rgba(147, 197, 253, 0.25)',
-                  boxShadow: '0 20px 40px -10px rgba(9, 33, 90, 0.4)',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  flexWrap: 'wrap'
-                }}>
-                  {/* Left Side: Information & Live Countdown Timer */}
-                  <div style={{
-                    flex: '1 1 450px',
-                    padding: '2.5rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    minWidth: '320px',
-                    boxSizing: 'border-box'
-                  }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-                        <span style={{
-                          background: 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)',
-                          color: '#FFFFFF',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          padding: '4px 12px',
-                          borderRadius: '9999px',
-                          letterSpacing: '0.04em',
-                          boxShadow: '0 2px 8px rgba(30, 99, 233, 0.4)'
-                        }}>
-                          {currentLang === 'en' ? 'Featured Event' : 'Sự kiện nổi bật'}
-                        </span>
-                        <span style={{
-                          backgroundColor: topEvent.is_paid ? 'rgba(239, 68, 68, 0.2)' : 'rgba(30, 99, 233, 0.2)',
-                          color: topEvent.is_paid ? '#FCA5A5' : '#93C5FD',
-                          border: `1px solid ${topEvent.is_paid ? 'rgba(239, 68, 68, 0.4)' : 'rgba(147, 197, 253, 0.4)'}`,
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          padding: '4px 10px',
-                          borderRadius: '6px'
-                        }}>
-                          {topEvent.is_paid 
-                            ? (currentLang === 'en' ? `Paid • ${Number(topEvent.price || 0).toLocaleString('en-US')} VND/ticket` : `Có phí • ${Number(topEvent.price || 0).toLocaleString('vi-VN')} đ/vé`)
-                            : (currentLang === 'en' ? 'Free Admission' : 'Miễn phí')}
-                        </span>
-                        <span style={{ color: '#94A3B8', fontSize: '0.85rem' }}>
-                          <i className="fa-regular fa-clock" style={{ marginRight: '6px', color: '#60A5FA' }} />
-                          {formatEventDateTime(topEvent.event_date || topEvent.start_time || topEvent.date)}
-                        </span>
-                      </div>
-
-                      <h3 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#FFFFFF', lineHeight: 1.3, marginBottom: '0.85rem' }}>
-                        {topEvent.title}
-                      </h3>
-
-                      <p style={{ color: '#E0EDFD', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '1.75rem' }}>
-                        {topEvent.short_desc || topEvent.description || (currentLang === 'en' ? 'Join to gain practical values and connect with the business network.' : 'Tham gia để nhận nhiều giá trị thực tiễn và kết nối mạng lưới doanh nghiệp.')}
-                      </p>
-
-                      {/* Live Realtime Countdown Boxes */}
-                      <div style={{ marginBottom: '1.75rem' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#93C5FD', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <i className="fa-solid fa-hourglass-half" />
-                          <span>{timeLeft.label || (currentLang === 'en' ? 'Event starts in' : 'Sự kiện bắt đầu sau')}</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                          {[
-                            { val: timeLeft.days, label: currentLang === 'en' ? 'DAYS' : 'NGÀY' },
-                            { val: timeLeft.hours, label: currentLang === 'en' ? 'HOURS' : 'GIỜ' },
-                            { val: timeLeft.minutes, label: currentLang === 'en' ? 'MINS' : 'PHÚT' },
-                            { val: timeLeft.seconds, label: currentLang === 'en' ? 'SECS' : 'GIÂY' }
-                          ].map((t, idx) => (
-                            <div key={idx} style={{
-                              backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                              border: '1px solid rgba(147, 197, 253, 0.25)',
-                              borderRadius: '10px',
-                              minWidth: '65px',
-                              padding: '10px 12px',
-                              textAlign: 'center'
-                            }}>
-                              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FFFFFF', lineHeight: 1, fontFamily: 'monospace' }}>
-                                {String(t.val || 0).padStart(2, '0')}
-                              </div>
-                              <div style={{ fontSize: '0.65rem', color: '#BAE6FD', marginTop: '4px', fontWeight: 600 }}>
-                                {t.label}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom: Venue, Ticket count & Action Button */}
-                    <div style={{
-                      paddingTop: '1.5rem',
-                      borderTop: '1px solid rgba(147, 197, 253, 0.2)',
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: '1rem'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: '#E0EDFD', fontSize: '0.9rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <i className="fa-solid fa-location-dot" style={{ color: '#60A5FA' }} />
-                          <span>{topEvent.location || (currentLang === 'en' ? 'Online / Association HQ' : 'Trực tuyến / Văn phòng Hội')}</span>
-                        </div>
-                        {topEvent.capacity > 0 && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FCD34D' }}>
-                            <i className="fa-solid fa-ticket" />
-                            <span>{currentLang === 'en' ? `Tickets left: ${topEvent.remaining_tickets ?? (topEvent.capacity - (topEvent.registered_count || 0))} / ${topEvent.capacity}` : `Còn ${topEvent.remaining_tickets ?? (topEvent.capacity - (topEvent.registered_count || 0))} / ${topEvent.capacity} vé`}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <Link
-                        to={`/su-kien/${topEvent.slug || topEvent.id}`}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          background: 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)',
-                          color: '#FFFFFF',
-                          fontWeight: 700,
-                          padding: '11px 24px',
-                          borderRadius: '10px',
-                          textDecoration: 'none',
-                          border: '1px solid rgba(147, 197, 253, 0.35)',
-                          boxShadow: '0 4px 14px rgba(30, 99, 233, 0.45)',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'linear-gradient(135deg, #3B82F6 0%, #1E63E9 100%)';
-                          e.currentTarget.style.transform = 'translateY(-1px)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)';
-                          e.currentTarget.style.transform = 'none';
-                        }}
-                      >
-                        <span>{currentLang === 'en' ? 'View Details & Register' : 'Xem chi tiết & Đăng ký'}</span>
-                        <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.8rem' }} />
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Right Side: Crisp, High-Def Event Cover Image */}
-                  <div style={{
-                    flex: '1 1 360px',
-                    minHeight: '340px',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    backgroundColor: '#1E293B'
-                  }}>
-                    <img
-                      src={topEvent.image_url || topEvent.banner_url || topEvent.image || 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80'}
-                      alt={topEvent.title}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        display: 'block'
-                      }}
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80';
-                      }}
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: 'linear-gradient(to right, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0) 25%)',
-                      pointerEvents: 'none'
-                    }} />
-                  </div>
-                </div>
-              )}
-
-              {/* Other upcoming events */}
-              {otherEvents.map((evt, idx) => {
-                const fallbackImages = [
-                  'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=700',
-                  'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=700',
-                  'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&q=80&w=700'
-                ];
-                const fallbackImg = fallbackImages[idx % fallbackImages.length];
-
-                return (
-                  <div key={evt.id} style={{
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: '16px',
-                    border: '1px solid #E2E8F0',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-                    transition: 'transform 0.2s, box-shadow 0.2s'
-                  }}>
-                    <div style={{ height: '190px', position: 'relative', backgroundColor: '#F1F5F9', overflow: 'hidden' }}>
-                      <img
-                        src={evt.image_url || evt.banner_url || evt.image || fallbackImg}
-                        alt={evt.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        onError={(e) => {
-                          e.currentTarget.src = fallbackImg;
-                        }}
-                      />
-                      <span style={{
-                        position: 'absolute',
-                        top: '12px',
-                        left: '12px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(4px)',
-                        color: evt.is_paid ? '#B91C1C' : '#1E63E9',
-                        fontWeight: 700,
-                        fontSize: '0.75rem',
-                        padding: '4px 10px',
-                        borderRadius: '6px',
-                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.08)'
-                      }}>
-                        {evt.is_paid 
-                          ? (currentLang === 'en' ? `${Number(evt.price || 0).toLocaleString('en-US')} VND` : `${Number(evt.price || 0).toLocaleString('vi-VN')} đ`)
-                          : (currentLang === 'en' ? 'Free' : 'Miễn phí')}
-                      </span>
-                    </div>
-
-                    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between' }}>
-                      <div>
-                        <p style={{ color: '#1E63E9', fontSize: '0.8rem', fontWeight: 600, marginBottom: '6px' }}>
-                          <i className="fa-regular fa-calendar" style={{ marginRight: '6px' }} />
-                          {formatEventDateTime(evt.event_date || evt.start_time || evt.date)}
-                        </p>
-                        <h4 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', lineHeight: 1.4 }}>
-                          {evt.title}
-                        </h4>
-                        <p style={{ color: '#64748B', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '1rem' }}>
-                          {evt.short_desc || evt.description || (currentLang === 'en' ? 'Professional workshop sharing strategic business insights and solutions.' : 'Hội thảo chuyên môn chia sẻ kinh nghiệm và giải pháp doanh nghiệp.')}
-                        </p>
-                      </div>
-
-                      <div style={{ paddingTop: '1rem', borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                          <i className="fa-solid fa-location-dot" style={{ marginRight: '4px', color: '#1E63E9' }} />
-                          {evt.location || (currentLang === 'en' ? 'Association HQ' : 'Văn phòng Hội')}
-                        </span>
-                        <Link
-                          to={`/su-kien/${evt.slug || evt.id}`}
-                          style={{
-                            fontSize: '0.85rem',
-                            fontWeight: 700,
-                            color: '#1E63E9',
-                            textDecoration: 'none',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          <span>{currentLang === 'en' ? 'Details' : 'Chi tiết'}</span>
-                          <i className="fa-solid fa-chevron-right" style={{ fontSize: '0.7rem' }} />
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-            </div>
-          )}
-
-        </div>
-      </section>
-
-      {/* STRATEGIC MISSION BLOCK: TẠP CHÍ DOANH NGHIỆP VIỆT NAM (BLOCK PHONG CÁCH VIB CARD XUẤT HIỆN DƯỚI BLOCK SỰ KIỆN) */}
-      <section style={{
-        padding: '3rem 1.5rem 5rem',
-        backgroundColor: '#FFFFFF',
-        borderTop: '1px solid rgba(226, 232, 240, 0.8)'
-      }}>
-        <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
-          <div style={{
-            background: 'linear-gradient(135deg, #0A2666 0%, #1142B2 45%, #1E63E9 85%, #2563EB 100%)',
-            borderRadius: '24px',
-            padding: '3.25rem 2.75rem',
-            border: '1px solid rgba(147, 197, 253, 0.35)',
-            boxShadow: '0 20px 45px -10px rgba(10, 38, 102, 0.38), 0 0 30px rgba(0, 210, 255, 0.12)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '2.5rem',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            {/* Subtle bamboo cyber matrix pattern */}
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundImage: 'radial-gradient(rgba(147, 197, 253, 0.25) 1.2px, transparent 1.2px)',
-              backgroundSize: '22px 22px',
-              opacity: 0.5,
-              pointerEvents: 'none'
-            }} />
-            <div style={{
-              position: 'absolute',
-              top: '-30%',
-              right: '25%',
-              width: '400px',
-              height: '240px',
-              background: 'radial-gradient(circle, rgba(0, 210, 255, 0.25) 0%, transparent 70%)',
-              pointerEvents: 'none',
-              filter: 'blur(35px)'
-            }} />
-
-            {/* Left Column: Sứ mệnh & Chi tiết */}
-            <div style={{ flex: '1 1 540px', minWidth: '280px', position: 'relative', zIndex: 2 }}>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                border: '1px solid rgba(147, 197, 253, 0.45)',
-                borderRadius: '9999px',
-                padding: '4px 14px',
-                marginBottom: '1rem',
-                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.15)'
-              }}>
-                <span style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: '#00D2FF',
-                  boxShadow: '0 0 8px #00D2FF',
-                  display: 'inline-block'
-                }} />
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  color: '#BAE6FD',
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase'
-                }}>
-                  {currentLang === 'en' ? 'STRATEGIC MISSION • VIETNAM ENTERPRISE MAGAZINE' : 'SỨ MỆNH CHIẾN LƯỢC • TẠP CHÍ DOANH NGHIỆP VIỆT NAM'}
-                </span>
-              </div>
-
-              <h3 style={{
-                color: '#FFFFFF',
-                fontSize: 'clamp(1.5rem, 2.8vw, 2.1rem)',
-                fontWeight: 800,
-                lineHeight: 1.25,
-                letterSpacing: '-0.02em',
-                margin: '0 0 1rem 0'
-              }}>
-                {currentLang === 'en'
-                  ? 'Vietnam Enterprise Magazine — Mission: Accompanying Enterprises'
-                  : 'Tạp chí Doanh nghiệp Việt Nam — Sứ mệnh: Đồng hành cùng doanh nghiệp'}
-              </h3>
-
-              <p style={{
-                color: '#E0EDFD',
-                fontSize: '0.98rem',
-                lineHeight: 1.65,
-                margin: '0 0 1.75rem 0',
-                maxWidth: '620px'
-              }}>
-                {currentLang === 'en'
-                  ? 'Promoting connections, building credit access capacity for SMEs and business households in the digital era. Fostering cooperation between state agencies, commercial banks, and businesses to optimize sustainable capital mobilization.'
-                  : 'Thúc đẩy kết nối, xây dựng năng lực tiếp cận vốn tín dụng cho SME và hộ kinh doanh trong kỷ nguyên số. Kiến tạo cầu nối vững chắc giữa cộng đồng doanh nghiệp với các định chế tài chính, giải pháp chuyển đổi số và phát triển bền vững.'}
-              </p>
-
-              <a
-                href="https://doanhnghiepvn.vn/doanh-nghiep/thuc-day-ket-noi-xay-dung-nang-luc-tiep-can-von-tin-dung-cho-sme-va-ho-kinh-doanh/20260721095902983"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  background: 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 50%, #F59E0B 100%)',
-                  color: '#092569',
-                  fontWeight: 800,
-                  fontSize: '0.95rem',
-                  padding: '12px 26px',
-                  borderRadius: '12px',
-                  textDecoration: 'none',
-                  boxShadow: '0 6px 20px rgba(245, 158, 11, 0.45)',
-                  transition: 'all 0.22s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.6)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(245, 158, 11, 0.45)';
-                }}
-              >
-                <span>{currentLang === 'en' ? 'Read Special Report' : 'Xem chuyên đề & Khám phá ngay'}</span>
-                <i className="fa-solid fa-arrow-up-right-from-square" style={{ fontSize: '13px' }} />
-              </a>
-            </div>
-
-            {/* Right Column: Visual Feature Showcase (Tương tự Card bên phải VIB) */}
-            <div style={{
-              flex: '0 1 360px',
-              width: '100%',
-              maxWidth: '360px',
-              margin: '0 auto',
-              position: 'relative',
-              zIndex: 2
-            }}>
-              <a
-                href="https://doanhnghiepvn.vn/doanh-nghiep/thuc-day-ket-noi-xay-dung-nang-luc-tiep-can-von-tin-dung-cho-sme-va-ho-kinh-doanh/20260721095902983"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'block',
-                  textDecoration: 'none',
-                  borderRadius: '20px',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.25)',
-                  padding: '24px',
-                  boxShadow: '0 16px 36px rgba(0, 0, 0, 0.35)',
-                  transition: 'all 0.25s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-6px) scale(1.02)';
-                  e.currentTarget.style.borderColor = 'rgba(147, 197, 253, 0.6)';
-                  e.currentTarget.style.boxShadow = '0 20px 42px rgba(0, 0, 0, 0.45), 0 0 25px rgba(0, 210, 255, 0.3)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
-                  e.currentTarget.style.boxShadow = '0 16px 36px rgba(0, 0, 0, 0.35)';
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                  <div style={{
-                    width: '46px',
-                    height: '46px',
-                    borderRadius: '12px',
-                    background: 'rgba(255, 255, 255, 0.18)',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#FBBF24',
-                    fontSize: '22px'
-                  }}>
-                    <i className="fa-solid fa-newspaper" />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '11px', color: '#BAE6FD', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      {currentLang === 'en' ? 'OFFICIAL MAGAZINE' : 'CƠ QUAN NGÔN LUẬN'}
-                    </div>
-                    <div style={{ fontSize: '14px', fontWeight: 800, color: '#FFFFFF' }}>
-                      DoanhNghiepVN.vn
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{
-                  background: 'rgba(10, 38, 102, 0.6)',
-                  borderRadius: '12px',
-                  padding: '14px',
-                  border: '1px solid rgba(147, 197, 253, 0.2)',
-                  marginBottom: '16px'
-                }}>
-                  <div style={{ fontSize: '12.5px', color: '#FFFFFF', fontWeight: 700, lineHeight: 1.4, marginBottom: '6px' }}>
-                    Thúc đẩy kết nối, xây dựng năng lực tiếp cận vốn tín dụng cho SME
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#93C5FD' }}>
-                    Chuyên đề chiến lược Tạp chí Doanh nghiệp Việt Nam
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.12)' }}>
-                  <span style={{ fontSize: '12px', color: '#BAE6FD', fontWeight: 600 }}>
-                    {currentLang === 'en' ? 'Tap to read full article' : 'Xem toàn văn bài viết'}
-                  </span>
-                  <span style={{ color: '#FBBF24', fontSize: '14px', fontWeight: 800 }}>→</span>
-                </div>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. 6 TRỤ CỘT TƯ VẤN HỖ TRỢ DOANH NGHIỆP (CONTRACT & PBR SPEC) */}
-      <section id="tu-van-linh-vuc" style={{ padding: '5rem 1.5rem', backgroundColor: '#F8FAFC', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
-        <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
-          
-          <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 3.5rem' }}>
-            <span style={{ color: '#1E63E9', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {currentLang === 'en' ? 'Expert Services' : 'Dịch vụ chuyên gia'}
-            </span>
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#0F172A', marginTop: '6px' }}>
-              {currentLang === 'en' ? '6 PILLARS OF ENTERPRISE SUPPORT' : '6 TRỤ CỘT TƯ VẤN DOANH NGHIỆP'}
-            </h2>
-            <p style={{ color: '#64748B', fontSize: '1rem', marginTop: '8px' }}>
+            <p className="daklak-hero-subtitle">
               {currentLang === 'en'
-                ? 'Endorsed by Vietnam Enterprise Magazine and a strategic network of senior advisors, leading banks, and technology partners.'
-                : 'Được bảo trợ bởi Tạp chí Doanh Nghiệp Việt Nam và mạng lưới chuyên gia cố vấn chiến lược, ngân hàng và đối tác công nghệ uy tín.'}
+                ? 'Discover the coffee capital and the majestic Central Highlands; connect with verified enterprises, high-value agricultural projects, and investment opportunities on an AI-powered platform.'
+                : 'Khám phá thủ phủ cà phê và đại ngàn Tây Nguyên; kết nối doanh nghiệp, chuỗi giá trị nông sản và cơ hội hợp tác đầu tư trên nền tảng số tích hợp Trí tuệ Nhân tạo.'}
             </p>
+
+            {/* Trending Tags */}
+            <div className="daklak-hero-tags">
+              <span className="daklak-hero-tag" onClick={() => navigate('/posts?category=Cà%20phê%20Đắk%20Lắk')}>☕ #ThuPhuCaPhe</span>
+              <span className="daklak-hero-tag" onClick={() => navigate('/posts?category=Khám%20phá%20Đắk%20Lắk')}>🌄 #BazanDo</span>
+              <span className="daklak-hero-tag" onClick={() => navigate('/posts?category=Du%20lịch%20&%20Trải%20nghiệm')}>🥁 #VanHoaCongChieng</span>
+              <span className="daklak-hero-tag" onClick={() => navigate('/posts?category=Đầu%20tư%20&%20Dự%20án')}>💰 #KetNoiDauTu</span>
+              <span className="daklak-hero-tag" onClick={() => navigate('/posts?category=Doanh%20nghiệp%20&%20Sản%20phẩm')}>🚀 #DoanhNghiepDakLak</span>
+              <span className="daklak-hero-tag" onClick={() => navigate('/ai-chat')}>🤖 #AIMatching</span>
+            </div>
+
+            {/* Search Box with Scope Tabs */}
+            <form className="daklak-hero-search-box" onSubmit={handleSearchSubmit}>
+              <i className="ti ti-search" style={{ color: 'var(--bazan-brown)', marginLeft: '14px', fontSize: '1.2rem' }} />
+              <input 
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={currentLang === 'en' ? 'Search coffee, agricultural projects, enterprises, destinations...' : 'Tìm kiếm cà phê, dự án nông nghiệp, doanh nghiệp, điểm đến...'}
+              />
+              <button type="submit">
+                <span>{currentLang === 'en' ? 'Search' : 'Tìm kiếm'}</span>
+                <i className="ti ti-arrow-right" />
+              </button>
+            </form>
+
+            {/* Action Buttons */}
+            <div className="daklak-hero-actions">
+              <a href="#kham-pha" className="btn-daklak-primary">
+                <i className="ti ti-compass" />
+                <span>{currentLang === 'en' ? 'Explore Dak Lak' : 'Khám phá Đắk Lắk'}</span>
+              </a>
+              <button onClick={() => scrollToConsult()} className="btn-daklak-gold">
+                <i className="ti ti-briefcase" />
+                <span>{currentLang === 'en' ? 'Connect Investment' : 'Kết nối Đầu tư'}</span>
+              </button>
+              <Link to="/ai-chat" className="btn-daklak-outline">
+                <i className="ti ti-robot" />
+                <span>{currentLang === 'en' ? 'Ask AI Assistant' : 'Hỏi Trợ lý AI'}</span>
+              </Link>
+            </div>
           </div>
+        </section>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
-            {CONSULTING_SERVICES.map((srv) => (
-              <div
-                key={srv.id}
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  borderRadius: '18px',
-                  padding: '2rem',
-                  border: '1px solid #E2E8F0',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.04)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  transition: 'all 0.25s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 14px 20px -4px rgba(0, 0, 0, 0.08)';
-                  e.currentTarget.style.borderColor = '#1E63E9';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.04)';
-                  e.currentTarget.style.borderColor = '#E2E8F0';
-                }}
-              >
+        {/* ========================================================
+            SECTION 2: 4 LỐI VÀO THEO NHU CẦU (QUICK ACCESS HUB)
+            ======================================================== */}
+        <section className="daklak-section" style={{ paddingTop: '0', paddingBottom: '50px' }}>
+          <div className="daklak-container">
+            <div className="quick-access-grid">
+              {/* Card 1 */}
+              <div className="quick-access-card" onClick={() => navigate('/posts?category=Khám%20phá%20Đắk%20Lắk')}>
                 <div>
-                  <div style={{
-                    width: '56px',
-                    height: '56px',
-                    borderRadius: '16px',
-                    background: srv.bgGradient || `${srv.color}15`,
-                    color: srv.color,
-                    border: `1.5px solid ${srv.borderColor || `${srv.color}35`}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '1.25rem',
-                    boxShadow: `0 8px 16px -4px ${srv.shadowColor || `${srv.color}25`}`,
-                    transition: 'transform 0.3s ease'
-                  }}>
-                    <i className={srv.icon} style={{ fontSize: '28px', lineHeight: 1, display: 'inline-block' }} />
+                  <div className="quick-access-icon">🧭</div>
+                  <h3 className="quick-access-title">{currentLang === 'en' ? 'I Want to Explore' : 'Tôi muốn Khám phá'}</h3>
+                  <p className="quick-access-desc">
+                    {currentLang === 'en' ? 'Discover coffee culture, pristine waterfalls, Lake Lak, and Central Highlands gong heritage.' : 'Khám phá văn hóa cà phê, thác Dray Nur, hồ Lắk, vườn quốc gia Yok Đôn và di sản cồng chiêng.'}
+                  </p>
+                </div>
+                <span className="quick-access-link">{currentLang === 'en' ? 'Start Journey →' : 'Bắt đầu trải nghiệm →'}</span>
+              </div>
+
+              {/* Card 2 */}
+              <div className="quick-access-card" onClick={() => navigate('/members')}>
+                <div>
+                  <div className="quick-access-icon">🏢</div>
+                  <h3 className="quick-access-title">{currentLang === 'en' ? 'I am a Business' : 'Tôi là Doanh nghiệp'}</h3>
+                  <p className="quick-access-desc">
+                    {currentLang === 'en' ? 'Join digital showroom, showcase OCOP specialty products, and connect with global trade partners.' : 'Mở showroom số, quảng bá nông sản OCOP, tìm kiếm đối tác cung ứng và mở rộng kênh phân phối.'}
+                  </p>
+                </div>
+                <span className="quick-access-link" style={{ color: 'var(--forest-green)' }}>{currentLang === 'en' ? 'Join Network →' : 'Mở hồ sơ số →'}</span>
+              </div>
+
+              {/* Card 3 */}
+              <div className="quick-access-card" onClick={() => scrollToConsult('Dự án Đầu tư Trọng điểm')}>
+                <div>
+                  <div className="quick-access-icon">💰</div>
+                  <h3 className="quick-access-title">{currentLang === 'en' ? 'I Seek Investment' : 'Tôi tìm Cơ hội Đầu tư'}</h3>
+                  <p className="quick-access-desc">
+                    {currentLang === 'en' ? 'Access verified key projects, industrial parks, raw material zones, and investment incentive policies.' : 'Truy cập danh mục dự án trọng điểm, quỹ đất KCN, vùng nguyên liệu và chính sách ưu đãi tỉnh.'}
+                  </p>
+                </div>
+                <span className="quick-access-link" style={{ color: 'var(--gong-gold)' }}>{currentLang === 'en' ? 'View Projects →' : 'Xem danh mục dự án →'}</span>
+              </div>
+
+              {/* Card 4 */}
+              <div className="quick-access-card" onClick={() => navigate('/ai-chat')}>
+                <div>
+                  <div className="quick-access-icon">🤖</div>
+                  <h3 className="quick-access-title">{currentLang === 'en' ? 'I Want to Connect & Ask AI' : 'Tôi muốn Kết nối & Hỏi AI'}</h3>
+                  <p className="quick-access-desc">
+                    {currentLang === 'en' ? 'Engage with 24/7 AI Assistant to match business partners, calculate project viability, and receive advice.' : 'Tương tác Trợ lý AI thông minh, giải đáp quy hoạch, phân tích hồ sơ và ghép nối đối tác tức thời.'}
+                  </p>
+                </div>
+                <span className="quick-access-link" style={{ color: 'var(--bazan-brown)' }}>{currentLang === 'en' ? 'Chat with AI →' : 'Trò chuyện ngay →'}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 3: SỨ MỆNH & KHÔNG GIAN SỐ CHUNG ĐẮK LẮK
+            ======================================================== */}
+        <section className="daklak-section" id="kham-pha">
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Strategic Mission' : 'Sứ Mệnh Số Hóa'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'A Unified Digital Space for Dak Lak' : 'Một Không Gian Số Chung Dành Cho Đắk Lắk'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'DakLak.today is not merely a news portal, but a collaborative digital ecosystem designed to aggregate, standardize, and amplify the enduring values of Dak Lak.'
+                  : 'DakLak.today không chỉ là một website tin tức, mà là một không gian số mở tập hợp, chuẩn hóa và lan tỏa những giá trị bền vững của Đắk Lắk đến bạn bè trong nước và quốc tế.'}
+              </p>
+            </div>
+
+            <div className="values-grid">
+              <div className="value-card">
+                <div className="value-card-icon"><i className="ti ti-network" /></div>
+                <h3>{currentLang === 'en' ? 'Digital Connectivity' : 'Kết Nối Số'}</h3>
+                <p>{currentLang === 'en' ? 'Bridging individuals, enterprises, investors, and local authorities within one unified interactive ecosystem.' : 'Thu hẹp khoảng cách giữa người dân, doanh nghiệp, nhà đầu tư và cơ quan ban ngành trên một giao diện thống nhất.'}</p>
+              </div>
+
+              <div className="value-card">
+                <div className="value-card-icon"><i className="ti ti-database" /></div>
+                <h3>{currentLang === 'en' ? 'Reliable Data' : 'Dữ Liệu Tin Cậy'}</h3>
+                <p>{currentLang === 'en' ? 'Standardized, verified information on planning, businesses, agricultural raw material areas, and economic data.' : 'Chuẩn hóa thông tin doanh nghiệp, chỉ số kinh tế, vùng trồng nông sản và quy hoạch dự án từ các nguồn chính thống.'}</p>
+              </div>
+
+              <div className="value-card">
+                <div className="value-card-icon"><i className="ti ti-cpu" /></div>
+                <h3>{currentLang === 'en' ? 'Artificial Intelligence' : 'Trí Tuệ Nhân Tạo'}</h3>
+                <p>{currentLang === 'en' ? 'Harnessing generative AI to personalize search, recommend itineraries, and intelligently match investment needs.' : 'Ứng dụng AI thông minh hỗ trợ tìm kiếm ngữ nghĩa, gợi ý hành trình trải nghiệm và ghép nối nhu cầu đối tác chuẩn xác.'}</p>
+              </div>
+
+              <div className="value-card">
+                <div className="value-card-icon"><i className="ti ti-leaf" /></div>
+                <h3>{currentLang === 'en' ? 'Cultural Heritage' : 'Bản Sắc Văn Hóa'}</h3>
+                <p>{currentLang === 'en' ? 'Preserving and elevating the UNESCO Gong Culture, coffee pride, and the untamed spirit of the Central Highlands.' : 'Tôn vinh không gian văn hóa cồng chiêng Tây Nguyên, tự hào hạt cà phê Buôn Ma Thuột và vẻ đẹp đại ngàn hùng vĩ.'}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 4: 4 THẾ MẠNH HỘI TỤ ĐẮK LẮK
+            ======================================================== */}
+        <section className="daklak-section" style={{ backgroundColor: 'var(--cream-alt)' }}>
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Natural Advantages' : 'Thế Mạnh Nổi Bật'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Convergence of Coffee, Culture & the Great Highlands' : 'Đắk Lắk – Hội Tụ Cà Phê, Văn Hóa & Đại Ngàn Tây Nguyên'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'Endowed with fertile red basalt soil and a unique climate, Dak Lak possesses immense advantages for comprehensive socio-economic development.'
+                  : 'Sở hữu dải đất đỏ bazan màu mỡ cùng khí hậu đặc trưng, Đắk Lắk hội tụ những tiềm năng vượt trội để bứt phá kinh tế trong kỷ nguyên mới.'}
+              </p>
+            </div>
+
+            <div className="strengths-grid">
+              {/* Strength 1 */}
+              <div className="strength-card">
+                <div className="strength-img-box">
+                  <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80" alt="Cà phê Đắk Lắk" />
+                  <span className="strength-tag">{currentLang === 'en' ? 'Strategic Commodity' : 'Trụ cột Kinh tế'}</span>
+                </div>
+                <div className="strength-body">
+                  <h3>{currentLang === 'en' ? 'Coffee & Specialty Agro-Products' : 'Cà Phê & Nông Sản Đặc Hữu'}</h3>
+                  <p>{currentLang === 'en' ? 'Over 213,000 hectares of coffee, producing 560,000+ tons annually. Alongside durian, macadamia, and black pepper reaching top global exports.' : 'Hơn 213.000 ha cà phê, sản lượng trên 560.000 tấn/năm. Cùng sầu riêng, mắc ca, hồ tiêu đạt chuẩn xuất khẩu chất lượng cao vào EU, Mỹ, Nhật.'}</p>
+                  <Link to="/posts?category=Cà%20phê%20Đắk%20Lắk" className="quick-access-link">{currentLang === 'en' ? 'Explore value chain →' : 'Khám phá chuỗi giá trị →'}</Link>
+                </div>
+              </div>
+
+              {/* Strength 2 */}
+              <div className="strength-card">
+                <div className="strength-img-box">
+                  <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Văn hóa Du lịch" />
+                  <span className="strength-tag" style={{ background: 'rgba(31, 90, 58, 0.9)' }}>{currentLang === 'en' ? 'Living Heritage' : 'Di sản Sống'}</span>
+                </div>
+                <div className="strength-body">
+                  <h3>{currentLang === 'en' ? 'Ecotourism & Gong Culture' : 'Du Lịch Sinh Thái & Di Sản Cồng Chiêng'}</h3>
+                  <p>{currentLang === 'en' ? 'UNESCO Intangible Cultural Heritage of Humanity, majestic Dray Nur waterfalls, Yok Don National Park, and serene Lake Lak.' : 'Không gian văn hóa cồng chiêng được UNESCO vinh danh, hệ thống thác nước hùng vĩ, Vườn quốc gia Yok Đôn và vẻ đẹp thơ mộng của Hồ Lắk.'}</p>
+                  <Link to="/posts?category=Du%20lịch%20&%20Trải%20nghiệm" className="quick-access-link">{currentLang === 'en' ? 'Experience culture →' : 'Trải nghiệm văn hóa →'}</Link>
+                </div>
+              </div>
+
+              {/* Strength 3 */}
+              <div className="strength-card">
+                <div className="strength-img-box">
+                  <img src="https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&w=800&q=80" alt="Năng lượng tái tạo" />
+                  <span className="strength-tag" style={{ background: 'rgba(213, 163, 63, 0.9)', color: '#26160E' }}>{currentLang === 'en' ? 'Clean Energy' : 'Năng Lượng Xanh'}</span>
+                </div>
+                <div className="strength-body">
+                  <h3>{currentLang === 'en' ? 'Renewable Energy & Infrastructure' : 'Năng Lượng Tái Tạo & Công Nghiệp'}</h3>
+                  <p>{currentLang === 'en' ? 'Centrally positioned wind & solar farm hubs; developing Buon Ma Thuot - Khanh Hoa highway opening swift coastal trade access.' : 'Trung tâm điện gió, điện mặt trời quy mô lớn; tuyến cao tốc Buôn Ma Thuột — Khánh Hòa mở toang cửa ngõ giao thương hướng biển.'}</p>
+                  <Link to="/posts?category=Đầu%20tư%20&%20Dự%20án" className="quick-access-link">{currentLang === 'en' ? 'View infrastructure →' : 'Xem hạ tầng KCN →'}</Link>
+                </div>
+              </div>
+
+              {/* Strength 4 */}
+              <div className="strength-card">
+                <div className="strength-img-box">
+                  <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80" alt="Không gian phát triển" />
+                  <span className="strength-tag" style={{ background: 'rgba(122, 62, 29, 0.9)' }}>{currentLang === 'en' ? 'Urban Hub' : 'Đô Thị Trung Tâm'}</span>
+                </div>
+                <div className="strength-body">
+                  <h3>{currentLang === 'en' ? 'Open Regional Development Space' : 'Không Gian Phát Triển Vùng Mở'}</h3>
+                  <p>{currentLang === 'en' ? 'Buon Ma Thuot is oriented as the center of the Central Highlands region, featuring dynamic innovation, healthcare, and education.' : 'Buôn Ma Thuột định hướng trở thành đô thị trung tâm vùng Tây Nguyên, hạt nhân đổi mới sáng tạo, tài chính, giáo dục và y tế chuyên sâu.'}</p>
+                  <Link to="/posts?category=Dữ%20liệu%20&%20Báo%20cáo" className="quick-access-link">{currentLang === 'en' ? 'Economic data →' : 'Báo cáo kinh tế →'}</Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 5: 3 TẦNG GIÁ TRỊ (MEDIA - DATA - PLATFORM)
+            ======================================================== */}
+        <section className="daklak-section">
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Architecture' : 'Kiến Trúc Nền Tảng'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'From Information Portal to Investment Platform' : 'Từ Trang Thông Tin Đến Nền Tảng Kết Nối Đầu Tư'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'DakLak.today builds 3 interconnected value layers that form a compounding growth engine for the local business community.'
+                  : 'Mô hình 3 tầng giá trị Media — Data — Platform giúp nền tảng phát triển bền vững, giữ vị thế độc lập và tạo giao dịch kinh tế thực tế.'}
+              </p>
+            </div>
+
+            <div className="layers-grid">
+              {/* Layer 1: Media */}
+              <div className="layer-card">
+                <span className="layer-badge">1. MEDIA • Truyền thông</span>
+                <h3>{currentLang === 'en' ? 'Media & Storytelling' : 'Tin Tức & Kể Chuyện Địa Phương'}</h3>
+                <ul>
+                  <li><i className="ti ti-check" /> Phóng sự chuyên sâu về con người, buôn làng và nông sản Đắk Lắk.</li>
+                  <li><i className="ti ti-check" /> Chuyên mục phân tích ngành hàng cà phê, hồ tiêu, sầu riêng xuất khẩu.</li>
+                  <li><i className="ti ti-check" /> Gương mặt doanh nhân tiêu biểu, mô hình khởi nghiệp đổi mới sáng tạo.</li>
+                  <li><i className="ti ti-check" /> Cập nhật chính sách, quy hoạch và chỉ đạo điều hành tỉnh Đắk Lắk.</li>
+                </ul>
+              </div>
+
+              {/* Layer 2: Data */}
+              <div className="layer-card layer-data">
+                <span className="layer-badge">2. DATA • Cơ sở dữ liệu</span>
+                <h3>{currentLang === 'en' ? 'Structured Data Assets' : 'Dữ Liệu Doanh Nghiệp & Dự Án'}</h3>
+                <ul>
+                  <li><i className="ti ti-check" /> Danh bạ hồ sơ năng lực 12.000+ doanh nghiệp đã xác thực thông tin.</li>
+                  <li><i className="ti ti-check" /> Bản đồ dữ liệu quy hoạch quỹ đất công nghiệp, vùng nguyên liệu sạch.</li>
+                  <li><i className="ti ti-check" /> Báo cáo biến động giá nông sản, thị trường cà phê thế giới theo ngày.</li>
+                  <li><i className="ti ti-check" /> Hồ sơ năng lực các dự án trọng điểm đang kêu gọi dòng vốn đầu tư.</li>
+                </ul>
+              </div>
+
+              {/* Layer 3: Platform */}
+              <div className="layer-card layer-platform">
+                <span className="layer-badge">3. PLATFORM • Nền tảng số</span>
+                <h3>{currentLang === 'en' ? 'Smart Connection Platform' : 'Kết Nối Đầu Tư & AI Matching'}</h3>
+                <ul>
+                  <li><i className="ti ti-check" /> Cơ chế gửi yêu cầu kết nối giao thương B2B trực tiếp tới doanh nghiệp.</li>
+                  <li><i className="ti ti-check" /> AI Matching: Tự động ghép nối nhà đầu tư với quỹ đất và dự án tối ưu.</li>
+                  <li><i className="ti ti-check" /> Hệ thống cấp vé điện tử QR, soát vé thời gian thực cho sự kiện diễn đàn.</li>
+                  <li><i className="ti ti-check" /> Dịch vụ Data Room hỗ trợ thẩm định dự án và xúc tiến đầu tư một cửa.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 6: CÀ PHÊ — TRỤ CỘT THƯƠNG HIỆU CỦA DAKLAK.TODAY
+            ======================================================== */}
+        <section className="daklak-section dark" id="coffee">
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Brand Pillar' : 'Trụ Cột Bản Sắc'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Coffee — The Core Brand Pillar of DakLak.today' : 'Cà Phê — Trụ Cột Thương Hiệu Của DakLak.today'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'Kể câu chuyện hoàn chỉnh từ đất bazan, vùng trồng hữu cơ, bàn tay người nông dân đến công nghệ chế biến sâu và thị trường toàn cầu.'
+                  : 'DakLak.today kể câu chuyện hoàn chỉnh của cà phê: từ đất bazan, giọt mồ hôi người nông dân đến công nghệ chế biến sâu và hành trình vươn ra thế giới.'}
+              </p>
+            </div>
+
+            <div className="coffee-grid">
+              {/* Timeline 4 Chặng */}
+              <div className="coffee-timeline">
+                <div className="coffee-step">
+                  <div className="coffee-step-number">01</div>
+                  <div className="coffee-step-content">
+                    <h4>{currentLang === 'en' ? 'Raw Material Zone' : 'Vùng Nguyên Liệu Đất Đỏ Bazan'}</h4>
+                    <p>{currentLang === 'en' ? 'Over 800m altitude, nutrient-dense volcanic soil nurturing top-tier Robusta & Arabica beans.' : 'Độ cao lý tưởng trên 800m, tầng đất bazan màu mỡ giúp hạt cà phê Robusta Buôn Ma Thuột đạt hương vị đậm đà độc bản.'}</p>
                   </div>
+                </div>
 
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0F172A', marginBottom: '0.75rem' }}>
-                    {srv.title}
-                  </h3>
+                <div className="coffee-step">
+                  <div className="coffee-step-number">02</div>
+                  <div className="coffee-step-content">
+                    <h4>{currentLang === 'en' ? 'Coffee Farmers & Cooperatives' : 'Người Làm Cà Phê & HTX Kiểu Mới'}</h4>
+                    <p>{currentLang === 'en' ? 'Sustainable farming, 100% selective ripe cherry picking, ensuring high sugar content and transparent traceability.' : 'Mô hình liên kết nông hộ, hái chọn trái chín 100%, canh tác hữu cơ bền vững bảo vệ nguồn nước và đất đai đại ngàn.'}</p>
+                  </div>
+                </div>
 
-                  <p style={{ color: '#64748B', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '1.75rem' }}>
-                    {srv.desc}
+                <div className="coffee-step">
+                  <div className="coffee-step-number">03</div>
+                  <div className="coffee-step-content">
+                    <h4>{currentLang === 'en' ? 'Deep Processing Technology' : 'Công Nghệ Chế Biến Sâu Hiện Đại'}</h4>
+                    <p>{currentLang === 'en' ? 'Transitioning from raw green bean trade to specialty roasted beans, instant freeze-dried extracts, and craft coffee.' : 'Chuyển dịch mạnh mẽ từ xuất thô sang chế biến sâu: rang xay tiêu chuẩn châu Âu, sấy lạnh, trích ly tinh chất giá trị cao.'}</p>
+                  </div>
+                </div>
+
+                <div className="coffee-step">
+                  <div className="coffee-step-number">04</div>
+                  <div className="coffee-step-content">
+                    <h4>{currentLang === 'en' ? 'Global Market Expansion' : 'Chinh Phục Thị Trường Toàn Cầu'}</h4>
+                    <p>{currentLang === 'en' ? 'Exporting branded specialty coffee to 80+ countries, raising bean value up to 4x compared to raw exports.' : 'Xây dựng thương hiệu cà phê Đắk Lắk tại Mỹ, EU, Nhật Bản, Trung Quốc; nâng giá trị gia tăng thặng dư gấp 3 - 4 lần.'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Case Study & Chuỗi giá trị */}
+              <div className="coffee-case-box">
+                <h3>☕ {currentLang === 'en' ? 'Value Chain Case Study' : 'Điển Hình Chuỗi Giá Trị Cà Phê'}</h3>
+                
+                <div className="coffee-case-highlight">
+                  <h4>Bazan Heritage Coffee — Từ Nông Trường Đến Tách Cà Phê</h4>
+                  <p>
+                    Là minh chứng sống động cho chiến lược đầu tư công nghệ chế biến sâu tại Đắk Lắk. Sở hữu vùng trồng hữu cơ tại Cư M’gar, nhà máy rang xay chuẩn quốc tế và cam kết phát triển cộng đồng bền vững.
                   </p>
                 </div>
 
+                <p style={{ fontSize: '0.88rem', color: '#BFAEA2', fontStyle: 'italic', marginBottom: '20px' }}>
+                  * DakLak.today cam kết tính minh bạch: Các bài viết thương mại và đối tác tài trợ luôn được gắn nhãn độc lập để bảo vệ tính khách quan lâu dài của nền tảng.
+                </p>
+
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <Link to="/posts?category=Cà%20phê%20Đắk%20Lắk" className="btn-daklak-gold" style={{ padding: '10px 20px', fontSize: '0.88rem' }}>
+                    Xem Chuyên mục Cà phê
+                  </Link>
+                  <button onClick={() => scrollToConsult('Hợp tác Chuỗi giá trị Cà phê')} className="btn-daklak-outline" style={{ padding: '10px 20px', fontSize: '0.88rem' }}>
+                    Kết nối Doanh nghiệp Cà phê
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 7: ĐẮK LẮK DATA DASHBOARD (6 CHỈ SỐ KINH TẾ)
+            ======================================================== */}
+        <section className="daklak-section" style={{ backgroundColor: '#F3ECE1' }}>
+          <div className="daklak-container">
+            <div className="daklak-section-header" style={{ marginBottom: '30px' }}>
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Regional Indicators' : 'Dữ Liệu Kinh Tế'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Dak Lak by Verified Data' : 'Đắk Lắk Bằng Những Con Số Biết Nói'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'Key indicators illustrating the scale and growth potential of the Central Highlands economic hub.'
+                  : 'Các chỉ số tổng hợp minh họa quy mô và tiềm năng phát triển vượt bậc của trung tâm kinh tế Tây Nguyên.'}
+              </p>
+            </div>
+
+            <div className="data-stats-grid">
+              <div className="data-stat-card">
+                <div className="data-stat-num">213.000+</div>
+                <div className="data-stat-label">Hécta Cà phê</div>
+                <div className="data-stat-sub">Thủ phủ lớn nhất Việt Nam</div>
+              </div>
+
+              <div className="data-stat-card">
+                <div className="data-stat-num">560.000+</div>
+                <div className="data-stat-label">Tấn Sản lượng/Năm</div>
+                <div className="data-stat-sub">Cung ứng hơn 30% sản lượng cả nước</div>
+              </div>
+
+              <div className="data-stat-card">
+                <div className="data-stat-num">1,6+ Tỷ $</div>
+                <div className="data-stat-label">Kim ngạch Xuất khẩu</div>
+                <div className="data-stat-sub">Tăng trưởng bền vững 14%/năm</div>
+              </div>
+
+              <div className="data-stat-card">
+                <div className="data-stat-num">12.500+</div>
+                <div className="data-stat-label">Doanh nghiệp</div>
+                <div className="data-stat-sub">Cộng đồng hội viên năng động</div>
+              </div>
+
+              <div className="data-stat-card">
+                <div className="data-stat-num">50+</div>
+                <div className="data-stat-label">Dự án Kêu gọi Đầu tư</div>
+                <div className="data-stat-sub">Quy hoạch quỹ đất sạch 2026-2030</div>
+              </div>
+
+              <div className="data-stat-card">
+                <div className="data-stat-num">38,7%</div>
+                <div className="data-stat-label">Độ che phủ Rừng</div>
+                <div className="data-stat-sub">Lợi thế hấp thụ Carbon & Tín chỉ ESG</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 8: CƠ HỘI ĐẦU TƯ & DỰ ÁN TRỌNG ĐIỂM (id="tu-van-linh-vuc")
+            ======================================================== */}
+        <section className="daklak-section" id="tu-van-linh-vuc">
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Open Opportunities' : 'Cơ Hội Đang Mở'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Key Investment Projects in Dak Lak' : 'Dự Án Trọng Điểm Kêu Gọi Hợp Tác & Đầu Tư'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'Curated list of verified investment projects ready for capital injection and strategic cooperation.'
+                  : 'Danh mục các dự án đã được thẩm định quy hoạch, sẵn sàng quỹ đất sạch và chào đón các nhà đầu tư chiến lược.'}
+              </p>
+
+              {/* Filter Tabs */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '20px' }}>
                 <button
-                  onClick={() => scrollToConsult(srv.serviceKey)}
+                  onClick={() => setSelectedSector('all')}
                   style={{
-                    width: '100%',
-                    backgroundColor: '#FFFFFF',
-                    color: '#1E63E9',
-                    border: '1px solid #1E63E9',
-                    borderRadius: '10px',
-                    padding: '10px 16px',
-                    fontWeight: 700,
+                    padding: '8px 18px',
+                    borderRadius: '20px',
+                    border: '1px solid var(--bazan-red)',
+                    background: selectedSector === 'all' ? 'var(--bazan-red)' : 'transparent',
+                    color: selectedSector === 'all' ? '#FFF' : 'var(--primary-coffee)',
+                    fontWeight: '700',
                     fontSize: '0.85rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#1E63E9';
-                    e.currentTarget.style.color = '#FFFFFF';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#FFFFFF';
-                    e.currentTarget.style.color = '#1E63E9';
+                    cursor: 'pointer'
                   }}
                 >
-                  <span>{currentLang === 'en' ? 'Request Consulting' : 'Đăng ký tư vấn'}</span>
-                  <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.75rem' }} />
+                  Tất cả lĩnh vực ({investmentProjects.length})
+                </button>
+                <button
+                  onClick={() => setSelectedSector('agro')}
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: '20px',
+                    border: '1px solid var(--bazan-red)',
+                    background: selectedSector === 'agro' ? 'var(--bazan-red)' : 'transparent',
+                    color: selectedSector === 'agro' ? '#FFF' : 'var(--primary-coffee)',
+                    fontWeight: '700',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Chế biến nông sản
+                </button>
+                <button
+                  onClick={() => setSelectedSector('hitech')}
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: '20px',
+                    border: '1px solid var(--bazan-red)',
+                    background: selectedSector === 'hitech' ? 'var(--bazan-red)' : 'transparent',
+                    color: selectedSector === 'hitech' ? '#FFF' : 'var(--primary-coffee)',
+                    fontWeight: '700',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Nông nghiệp CNC
+                </button>
+                <button
+                  onClick={() => setSelectedSector('logistics')}
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: '20px',
+                    border: '1px solid var(--bazan-red)',
+                    background: selectedSector === 'logistics' ? 'var(--bazan-red)' : 'transparent',
+                    color: selectedSector === 'logistics' ? '#FFF' : 'var(--primary-coffee)',
+                    fontWeight: '700',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Logistics & Kho bãi
+                </button>
+                <button
+                  onClick={() => setSelectedSector('tourism')}
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: '20px',
+                    border: '1px solid var(--bazan-red)',
+                    background: selectedSector === 'tourism' ? 'var(--bazan-red)' : 'transparent',
+                    color: selectedSector === 'tourism' ? '#FFF' : 'var(--primary-coffee)',
+                    fontWeight: '700',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Du lịch Sinh thái
                 </button>
               </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* 4. TIN TỨC & BÁO CHÍ DOANH NGHIỆP */}
-      <section style={{ padding: '5rem 1.5rem', backgroundColor: '#FFFFFF' }}>
-        <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
-          
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', gap: '1rem' }}>
-            <div>
-              <span style={{ color: '#1E63E9', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {currentLang === 'en' ? 'News & Special Reports' : 'Tin tức & Phóng sự'}
-              </span>
-              <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#0F172A', marginTop: '6px' }}>
-                {currentLang === 'en' ? 'VIETNAM ENTERPRISE MAGAZINE' : 'TẠP CHÍ DOANH NGHIỆP VIỆT NAM'}
-              </h2>
-              <p style={{ color: '#64748B', fontSize: '1rem', marginTop: '6px' }}>
-                {currentLang === 'en'
-                  ? 'Economic insights, regulatory policy updates, market trends, and entrepreneurial success stories.'
-                  : 'Cập nhật thông tin kinh tế, cơ chế chính sách, thị trường và câu chuyện thành công của doanh nhân Việt.'}
-              </p>
-            </div>
-            <Link
-              to="/posts"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: '#1E63E9',
-                fontWeight: 700,
-                fontSize: '0.95rem',
-                textDecoration: 'none'
-              }}
-            >
-              <span>{currentLang === 'en' ? 'View all articles' : 'Xem tất cả bài viết'}</span>
-              <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.8rem' }} />
-            </Link>
-          </div>
-
-          {loadingPosts ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#94A3B8' }}>
-              <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '2rem', marginBottom: '1rem' }} />
-              <div>{currentLang === 'en' ? 'Loading latest news...' : 'Đang cập nhật tin tức mới nhất...'}</div>
-            </div>
-          ) : latestPosts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: '#F8FAFC', borderRadius: '16px' }}>
-              <p style={{ color: '#64748B', margin: 0 }}>{currentLang === 'en' ? 'No articles published yet.' : 'Chưa có bài viết nào được đăng tải.'}</p>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
-              {latestPosts.map((post) => {
-                const defaultFallback = 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80';
-                const isValid = (url) => url && typeof url === 'string' && url !== 'null' && url !== 'undefined' && url.trim() !== '';
-                const postCover = isValid(post.image_url)
-                  ? post.image_url.trim()
-                  : (isValid(post.thumbnail)
-                    ? post.thumbnail.trim()
-                    : (isValid(post.cover_image)
-                      ? post.cover_image.trim()
-                      : (isValid(post.image) ? post.image.trim() : defaultFallback)));
-
-                return (
-                  <article
-                    key={post.id}
-                    style={{
-                      backgroundColor: '#FFFFFF',
-                      borderRadius: '16px',
-                      border: '1px solid #E2E8F0',
-                      overflow: 'hidden',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-3px)';
-                      e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.08)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'none';
-                      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.05)';
-                    }}
-                  >
-                    <div style={{ height: '200px', backgroundColor: '#F1F5F9', overflow: 'hidden' }}>
-                      <img
-                        src={postCover}
-                        alt={post.title}
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = defaultFallback;
-                        }}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    </div>
-
-                  <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <span style={{
-                          backgroundColor: 'rgba(30, 99, 233, 0.1)',
-                          color: '#1E63E9',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          padding: '3px 8px',
-                          borderRadius: '4px'
-                        }}>
-                          {getCategoryLabel(post.category, currentLang) || (currentLang === 'en' ? 'Enterprises' : 'Doanh Nghiệp')}
-                        </span>
-                        <span style={{ color: '#94A3B8', fontSize: '0.75rem' }}>
-                          {post.created_at ? new Date(post.created_at).toLocaleDateString(currentLang === 'en' ? 'en-US' : 'vi-VN') : ''}
-                        </span>
-                      </div>
-
-                      <h4 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', lineHeight: 1.4 }}>
-                        <Link to={`/posts/${post.slug || post.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                          {post.title}
-                        </Link>
-                      </h4>
-
-                      <p style={{ color: '#64748B', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 }}>
-                        {post.summary || post.excerpt || (currentLang === 'en' ? 'View deep-dive analytical report from the Editorial Board...' : 'Xem chi tiết bài viết phân tích từ Ban Biên Tập Tạp chí Doanh Nghiệp Việt Nam...')}
-                      </p>
-                    </div>
-
-                    <div style={{ paddingTop: '1.25rem', marginTop: '1rem', borderTop: '1px solid #F1F5F9' }}>
-                      <Link
-                        to={`/posts/${post.slug || post.id}`}
-                        style={{
-                          fontSize: '0.85rem',
-                          fontWeight: 700,
-                          color: '#1E63E9',
-                          textDecoration: 'none',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}
-                      >
-                        <span>{currentLang === 'en' ? 'Read more' : 'Đọc tiếp'}</span>
-                        <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.75rem' }} />
-                      </Link>
-                    </div>
-                  </div>
-                </article>
-              ); })}
-            </div>
-          )}
-
-        </div>
-      </section>
-
-      {/* 5. CỘNG ĐỒNG HỘI VIÊN TIÊU BIỂU */}
-      <section style={{ padding: '5rem 1.5rem', backgroundColor: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
-        <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
-          
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', gap: '1rem' }}>
-            <div>
-              <span style={{ color: '#1E63E9', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {currentLang === 'en' ? 'Ecosystem Network' : 'Hệ sinh thái kết nối'}
-              </span>
-              <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#0F172A', marginTop: '6px' }}>
-                {currentLang === 'en' ? 'FEATURED ENTERPRISE MEMBERS' : 'DOANH NGHIỆP HỘI VIÊN TIÊU BIỂU'}
-              </h2>
-              <p style={{ color: '#64748B', fontSize: '1rem', marginTop: '4px' }}>
-                {currentLang === 'en'
-                  ? 'Verified enterprises and partners published on DoanhNghiepVN.today.'
-                  : 'Các doanh nghiệp và đối tác đã xác nhận và công bố hồ sơ trên DoanhNghiepVN.today.'}
-              </p>
             </div>
 
-            <button
-              onClick={() => scrollToConsult(currentLang === 'en' ? 'Enterprise Membership & Profile' : 'Hội viên & Trang riêng doanh nghiệp')}
-              style={{
-                background: 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)',
-                color: '#FFFFFF',
-                fontWeight: 700,
-                fontSize: '0.9rem',
-                padding: '10px 20px',
-                borderRadius: '10px',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 14px rgba(30, 99, 233, 0.4)'
-              }}
-            >
-              <i className="fa-solid fa-user-plus" />
-              <span>{currentLang === 'en' ? 'Join Network' : 'Đăng ký tham gia Hội'}</span>
-            </button>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
-            {featuredMembers.length > 0 ? featuredMembers.map((m) => (
-              <div key={m.id} style={{
-                backgroundColor: '#FFFFFF',
-                borderRadius: '16px',
-                padding: '1.75rem',
-                border: '1px solid #E2E8F0',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.04)'
-              }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '12px',
-                      backgroundColor: '#F1F5F9',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 800,
-                      color: '#0F172A',
-                      border: '1px solid #E2E8F0'
-                    }}>
-                      {m.company_name ? m.company_name.substring(0, 2).toUpperCase() : 'DN'}
-                    </div>
-                    <div>
-                      <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>
-                        {m.company_name || m.name}
-                      </h4>
-                      <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                        {m.city || (currentLang === 'en' ? 'Nationwide' : 'Toàn quốc')} • {m.industry || (currentLang === 'en' ? 'Commerce & Services' : 'Thương mại & Dịch vụ')}
-                      </span>
-                    </div>
-                  </div>
-                  <p style={{ color: '#64748B', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 }}>
-                    {m.description || m.bio || (currentLang === 'en' ? 'Official member of Vietnam Enterprise Magazine.' : 'Hội viên chính thức của Tạp chí Doanh Nghiệp Việt Nam.')}
-                  </p>
-                </div>
-
-                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #F1F5F9' }}>
-                  <Link
-                    to="/members"
-                    style={{
-                      display: 'block',
-                      textAlign: 'center',
-                      padding: '8px',
-                      backgroundColor: 'rgba(30, 99, 233, 0.08)',
-                      color: '#1E63E9',
-                      borderRadius: '8px',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
-                      textDecoration: 'none'
-                    }}
-                  >
-                    {currentLang === 'en' ? 'View Enterprise Profile' : 'Xem hồ sơ doanh nghiệp'}
-                  </Link>
-                </div>
-              </div>
-            )) : (
-              // Fallback sample businesses
-              (currentLang === 'en' ? [
-                { name: 'ADT International Joint Stock Company', field: 'Technology & AI ERP', city: 'Hanoi', desc: 'Developer of smart enterprise management systems, AI Agents, and DoanhNghiepVN.today digital platform.' },
-                { name: 'Global Logistics Co., Ltd.', field: 'Transport & Import-Export', city: 'Ho Chi Minh City', desc: 'Providing international container shipping, smart warehousing, and end-to-end customs clearance services.' },
-                { name: 'GreenAudit Advisory & Auditing Group', field: 'Finance & ESG', city: 'Da Nang', desc: 'Corporate financial advisory, sustainability reporting, and GHG emissions accounting standards.' }
-              ] : [
-                { name: 'Công ty Cổ phần ADT Quốc tế', field: 'Công nghệ & AI ERP', city: 'Hà Nội', desc: 'Đơn vị phát triển hệ thống điều hành doanh nghiệp thông minh, AI Agents và nền tảng số DoanhNghiepVN.today.' },
-                { name: 'Công ty TNHH Logistics Toàn Cầu', field: 'Vận tải & XNK', city: 'TP. Hồ Chí Minh', desc: 'Cung cấp dịch vụ vận chuyển container quốc tế, kho bãi thông minh và thủ tục thông quan hải quan trọn gói.' },
-                { name: 'Tập đoàn Tư vấn & Kiểm toán GreenAudit', field: 'Tài chính & ESG', city: 'Đà Nẵng', desc: 'Cố vấn tài chính doanh nghiệp, lập báo cáo phát triển bền vững và đánh giá tiêu chuẩn kiểm kê khí thải.' }
-              ]).map((b, i) => (
-                <div key={i} style={{
-                  backgroundColor: '#FFFFFF',
-                  borderRadius: '16px',
-                  padding: '1.75rem',
-                  border: '1px solid #E2E8F0',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.04)'
-                }}>
+            <div className="projects-grid">
+              {filteredProjects.map((project) => (
+                <div key={project.id} className="project-card">
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-                      <div style={{
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '12px',
-                        backgroundColor: '#F1F5F9',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 800,
-                        color: '#1E63E9',
-                        border: '1px solid #E2E8F0'
-                      }}>
-                        {b.name.substring(0, 2).toUpperCase()}
+                    <div className="project-header-row">
+                      <span className="project-sector-badge">{project.sector}</span>
+                      <span className="project-status-badge">⭐ {project.status}</span>
+                    </div>
+
+                    <h3>{project.title}</h3>
+
+                    <div className="project-meta-list">
+                      <div className="project-meta-item">
+                        <i className="ti ti-map-pin" />
+                        <span><strong>Địa bàn:</strong> {project.location}</span>
                       </div>
-                      <div>
-                        <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>
-                          {b.name}
-                        </h4>
-                        <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                          {b.city} • {b.field}
-                        </span>
+                      <div className="project-meta-item">
+                        <i className="ti ti-coin" />
+                        <span><strong>Quy mô vốn:</strong> {project.scale}</span>
+                      </div>
+                      <div className="project-meta-item">
+                        <i className="ti ti-info-circle" />
+                        <span>{project.desc}</span>
                       </div>
                     </div>
-                    <p style={{ color: '#64748B', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 }}>
-                      {b.desc}
-                    </p>
                   </div>
-                  <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #F1F5F9' }}>
-                    <Link
-                      to="/members"
-                      style={{
-                        display: 'block',
-                        width: '100%',
-                        textAlign: 'center',
-                        padding: '8px',
-                        backgroundColor: 'rgba(30, 99, 233, 0.08)',
-                        color: '#1E63E9',
-                        borderRadius: '8px',
-                        fontSize: '0.8rem',
-                        fontWeight: 700,
-                        textDecoration: 'none',
-                        boxSizing: 'border-box'
-                      }}
+
+                  <div className="project-btn-row">
+                    <button 
+                      onClick={() => scrollToConsult(`Dự án: ${project.title}`)}
+                      className="btn-daklak-primary"
+                      style={{ padding: '10px 18px', fontSize: '0.88rem', flex: 1, justifyContent: 'center' }}
                     >
-                      {currentLang === 'en' ? 'View Enterprise Profile' : 'Xem hồ sơ doanh nghiệp'}
+                      Gửi Yêu Cầu Kết Nối
+                    </button>
+                    <Link
+                      to={`/posts?category=Đầu%20tư%20&%20Dự%20án`}
+                      className="btn-daklak-outline"
+                      style={{ padding: '10px 16px', fontSize: '0.88rem', color: 'var(--primary-coffee)', borderColor: 'var(--border-strong)' }}
+                    >
+                      Hồ sơ
                     </Link>
                   </div>
                 </div>
-              ))
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 9: BẢNG TIN & CÂU CHUYỆN ĐẮK LẮK HÔM NAY (DYNAMIC POSTS)
+            ======================================================== */}
+        <section className="daklak-section" style={{ backgroundColor: 'var(--cream-alt)' }}>
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Stories & News' : 'Câu Chuyện Hôm Nay'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Dak Lak Stories & Latest Business Opportunities' : 'Nhịp Đập Kinh Tế & Cơ Hội Giao Thương Mới'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'Real-time updates, economic insights, and enterprise reports published on DakLak.today.'
+                  : 'Thông tin phân tích độc lập, câu chuyện sản xuất thực tế và các cơ hội kết nối giao thương được cập nhật liên tục.'}
+              </p>
+            </div>
+
+            <div className="posts-grid">
+              {latestPosts.map((post) => (
+                <div key={post.id || post.slug} className="post-card">
+                  <div className="post-card-img-box">
+                    <img 
+                      src={post.image_url || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80'} 
+                      alt={post.title}
+                      onError={(e) => {
+                        e.target.src = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80';
+                      }}
+                    />
+                    <span className="post-cat-badge">{post.category || 'Tin nổi bật'}</span>
+                  </div>
+                  <div className="post-card-body">
+                    <div className="post-card-date">
+                      <i className="ti ti-calendar" />
+                      <span>{post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : 'Mới cập nhật'}</span>
+                      {post.author_name && <span style={{ marginLeft: '8px' }}>• {post.author_name}</span>}
+                    </div>
+                    <h3 className="post-card-title">{post.title}</h3>
+                    <p className="post-card-summary">{post.summary || post.short_desc || 'Bấm để đọc toàn bộ bài viết và khám phá cơ hội giao thương...'}</p>
+                    <Link to={`/posts/${post.slug || post.id}`} className="quick-access-link" style={{ marginTop: 'auto' }}>
+                      {currentLang === 'en' ? 'Read full article →' : 'Đọc toàn văn →'}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '40px' }}>
+              <Link to="/posts" className="btn-daklak-outline" style={{ color: 'var(--primary-coffee)', borderColor: 'var(--bazan-red)' }}>
+                {currentLang === 'en' ? 'View all articles & opportunities' : 'Xem toàn bộ bảng tin & cơ hội giao thương'} <i className="ti ti-arrow-right" />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 10: DOANH NGHIỆP ĐẮK LẮK TIÊU BIỂU (DYNAMIC MEMBERS)
+            ======================================================== */}
+        <section className="daklak-section">
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Verified Directory' : 'Hội Viên Tiêu Biểu'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Leading Enterprises & Ecosystem Partners' : 'Cộng Đồng Doanh Nghiệp Đắk Lắk'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'Verified profiles of top local companies and strategic investment partners in Dak Lak.'
+                  : 'Hồ sơ năng lực của các doanh nghiệp đầu ngành đã xác thực, tiên phong nâng tầm chuỗi giá trị và hội nhập quốc tế.'}
+              </p>
+            </div>
+
+            <div className="members-grid">
+              {featuredMembers.map((m) => (
+                <div key={m.id} className="member-card">
+                  <div className="member-card-header">
+                    <img 
+                      src={m.logo_url || 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80'} 
+                      alt={m.company_name || m.name} 
+                      className="member-logo"
+                      onError={(e) => {
+                        e.target.src = 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80';
+                      }}
+                    />
+                    <div className="member-info">
+                      <h4>{m.company_name || m.name}</h4>
+                      <span className="member-tier-pill">⭐ {m.tier || 'Thành viên'} Partner</span>
+                    </div>
+                  </div>
+
+                  <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: '1.5', flexGrow: 1 }}>
+                    {m.bio || m.description || `Lĩnh vực hoạt động: ${m.industry || 'Sản xuất & kinh doanh nông sản'}.`}
+                  </p>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid rgba(122, 62, 29, 0.08)' }}>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>📍 {m.address || 'TP. Buôn Ma Thuột'}</span>
+                    <Link to="/members" className="quick-access-link" style={{ fontSize: '0.85rem' }}>
+                      Xem Showroom →
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '35px' }}>
+              <Link to="/members" className="btn-daklak-primary">
+                <i className="ti ti-address-book" />
+                <span>{currentLang === 'en' ? 'Explore Full Enterprise Directory' : 'Tra cứu Danh bạ Toàn bộ Doanh nghiệp'}</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 11: SỰ KIỆN NỔI BẬT & COUNTDOWN (id="su-kien")
+            ======================================================== */}
+        <section className="daklak-section" id="su-kien" style={{ backgroundColor: '#26160E', color: '#FFF' }}>
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge" style={{ background: 'rgba(213, 163, 63, 0.2)', color: 'var(--gong-gold)', borderColor: 'var(--gong-gold)' }}>
+                {currentLang === 'en' ? 'Upcoming Forum' : 'Sự Kiện Trọng Điểm'}
+              </span>
+              <h2 className="daklak-section-title" style={{ color: '#FFF' }}>
+                {currentLang === 'en' ? 'Upcoming Events & Trade Summits' : 'Lễ Hội & Diễn Đàn Xúc Tiến Sắp Diễn Ra'}
+              </h2>
+              <p className="daklak-section-desc" style={{ color: '#D1C5BC' }}>
+                {currentLang === 'en'
+                  ? 'Connect directly with government leaders, international trade delegations, and institutional investors.'
+                  : 'Nơi quy tụ các chuyên gia kinh tế, nhà xuất nhập khẩu quốc tế và cơ hội tiếp cận dòng vốn đầu tư trực tiếp.'}
+              </p>
+            </div>
+
+            {eventsList && eventsList.length > 0 && (
+              <div className="featured-event-box">
+                <div>
+                  <span style={{ display: 'inline-block', background: 'var(--bazan-red)', color: '#FFF', padding: '4px 12px', borderRadius: '14px', fontSize: '0.78rem', fontWeight: '800', marginBottom: '14px' }}>
+                    SỰ KIỆN TIÊU ĐIỂM
+                  </span>
+                  <h3 style={{ fontSize: '1.6rem', fontWeight: '900', color: '#FFF', marginBottom: '14px', lineHeight: '1.3' }}>
+                    {eventsList[0].title}
+                  </h3>
+                  <p style={{ fontSize: '0.95rem', color: '#E0D4CA', marginBottom: '18px', lineHeight: '1.6' }}>
+                    {eventsList[0].short_desc || eventsList[0].description}
+                  </p>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', color: '#D1C5BC' }}>
+                    <div>📍 <strong>Địa điểm:</strong> {eventsList[0].location || 'TP. Buôn Ma Thuột, Tỉnh Đắk Lắk'}</div>
+                    <div>🏢 <strong>Đơn vị tổ chức:</strong> {eventsList[0].organizer || 'DakLak.today Platform'}</div>
+                  </div>
+
+                  <div style={{ marginTop: '24px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                    <button 
+                      onClick={() => {
+                        setRegisterModalEvent(eventsList[0]);
+                        setRegSuccess(null);
+                      }}
+                      className="btn-daklak-gold"
+                    >
+                      <i className="ti ti-ticket" />
+                      <span>{currentLang === 'en' ? 'Get QR Ticket Now' : 'Đăng Ký Vé QR Miễn Phí'}</span>
+                    </button>
+                    <Link to={`/events/${eventsList[0].id}`} className="btn-daklak-outline">
+                      {currentLang === 'en' ? 'Event Details' : 'Xem chi tiết sự kiện'}
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Countdown Timer */}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1rem', color: 'var(--gong-gold)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    ⏳ ĐẾM NGƯỢC THỜI GIAN KHAI MẠC
+                  </div>
+
+                  <div className="countdown-timer-grid">
+                    <div className="countdown-timer-unit">
+                      <div className="countdown-timer-num">{String(timeLeft.days).padStart(2, '0')}</div>
+                      <div className="countdown-timer-label">Ngày</div>
+                    </div>
+                    <div className="countdown-timer-unit">
+                      <div className="countdown-timer-num">{String(timeLeft.hours).padStart(2, '0')}</div>
+                      <div className="countdown-timer-label">Giờ</div>
+                    </div>
+                    <div className="countdown-timer-unit">
+                      <div className="countdown-timer-num">{String(timeLeft.minutes).padStart(2, '0')}</div>
+                      <div className="countdown-timer-label">Phút</div>
+                    </div>
+                    <div className="countdown-timer-unit">
+                      <div className="countdown-timer-num">{String(timeLeft.seconds).padStart(2, '0')}</div>
+                      <div className="countdown-timer-label">Giây</div>
+                    </div>
+                  </div>
+
+                  <p style={{ fontSize: '0.85rem', color: '#BFAEA2' }}>
+                    Hệ thống cấp vé QR tự động • Quét mã camera điểm danh trong 1 giây
+                  </p>
+                </div>
+              </div>
             )}
           </div>
+        </section>
 
-        </div>
-      </section>
-
-      {/* STRATEGIC PARTNER: VIB PARTNERSHIP */}
-      <section style={{
-        padding: '5rem 1.5rem',
-        backgroundColor: '#F8FAFC',
-        borderTop: '1px solid #E2E8F0',
-        borderBottom: '1px solid #E2E8F0'
-      }}>
-        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
-          {/* Section Header */}
-          <div style={{ textAlign: 'center', marginBottom: '2.75rem' }}>
-            <span style={{
-              color: '#1E63E9',
-              fontSize: '0.825rem',
-              fontWeight: 800,
-              letterSpacing: '1.2px',
-              textTransform: 'uppercase',
-              display: 'inline-block',
-              marginBottom: '0.5rem'
-            }}>
-              {currentLang === 'en' ? 'STRATEGIC NETWORK' : 'MẠNG LƯỚI CHIẾN LƯỢC'}
-            </span>
-            <h2 style={{
-              fontSize: '2.25rem',
-              fontWeight: 800,
-              color: '#0F172A',
-              letterSpacing: '-0.02em',
-              margin: '0 0 0.75rem 0'
-            }}>
-              {currentLang === 'en' ? 'Empowering & Supporting Enterprises' : 'Đồng hành cùng doanh nghiệp'}
-            </h2>
-            <p style={{
-              color: '#64748B',
-              fontSize: '1rem',
-              lineHeight: 1.6,
-              maxWidth: '680px',
-              margin: '0 auto'
-            }}>
-              {currentLang === 'en'
-                ? 'Close collaboration with banks, financial institutions, leading industry experts, and major media organizations.'
-                : 'Hợp tác chặt chẽ cùng các ngân hàng, định chế tài chính, chuyên gia đầu ngành và các đơn vị truyền thông lớn.'}
-            </p>
-          </div>
-
-          {/* VIB Card */}
-          <div style={{
-            background: 'linear-gradient(135deg, #162B55 0%, #0F1E3D 55%, #0A152C 100%)',
-            borderRadius: '24px',
-            padding: '3rem',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 20px 45px -12px rgba(10, 25, 60, 0.45)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '2.5rem'
-          }}>
-            {/* Left Column */}
-            <div style={{ flex: '1 1 520px', minWidth: '280px' }}>
-              <span style={{
-                display: 'inline-block',
-                backgroundColor: 'rgba(59, 130, 246, 0.18)',
-                border: '1px solid rgba(147, 197, 253, 0.3)',
-                color: '#93C5FD',
-                padding: '5px 14px',
-                borderRadius: '9999px',
-                fontSize: '0.725rem',
-                fontWeight: 700,
-                letterSpacing: '0.8px',
-                textTransform: 'uppercase',
-                marginBottom: '1rem'
-              }}>
-                {currentLang === 'en' ? 'STRATEGIC FINANCIAL PARTNER' : 'ĐỐI TÁC CHIẾN LƯỢC TÀI CHÍNH'}
-              </span>
-
-              <h3 style={{
-                color: '#FFFFFF',
-                fontSize: '1.85rem',
-                fontWeight: 800,
-                lineHeight: 1.3,
-                margin: '0 0 1rem 0'
-              }}>
-                {currentLang === 'en' ? 'Special Partnership Program with VIB' : 'Chương trình hợp tác đặc biệt VIB'}
-              </h3>
-
-              <p style={{
-                color: '#CBD5E1',
-                fontSize: '0.975rem',
-                lineHeight: 1.65,
-                margin: '0 0 1.75rem 0',
-                maxWidth: '600px'
-              }}>
-                {currentLang === 'en'
-                  ? 'Providing flexible financial solutions, preferential credit limits, and expedited appraisal processes exclusively for Enterprise Association members.'
-                  : 'Cung cấp giải pháp tài chính linh hoạt, hạn mức tín dụng ưu đãi và quy trình thẩm định nhanh chóng dành riêng cho hội viên Hội Doanh Nghiệp.'}
-              </p>
-
-              <a
-                href="https://www.vib.com.vn/vn/the-tin-dung/vib-business-card"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  backgroundColor: '#2563EB',
-                  color: '#FFFFFF',
-                  fontWeight: 700,
-                  fontSize: '0.95rem',
-                  padding: '12px 24px',
-                  borderRadius: '10px',
-                  textDecoration: 'none',
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1D4ED8';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2563EB';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <span>{currentLang === 'en' ? 'Explore VIB Program' : 'Khám phá chương trình VIB'}</span>
-                <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>→</span>
-              </a>
-            </div>
-
-            {/* Right Column: VIB Business Card Image */}
-            <a
-              href="https://www.vib.com.vn/vn/the-tin-dung/vib-business-card"
-              target="_blank"
-              rel="noopener noreferrer"
-              title={currentLang === 'en' ? 'Open VIB Business Card details' : 'Xem chi tiết thẻ tín dụng doanh nghiệp VIB Business Card'}
-              style={{
-                display: 'inline-block',
-                textDecoration: 'none',
-                margin: '0 auto',
-                transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-6px) scale(1.03)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              }}
-            >
-              <img
-                src="/images/vib-business-card.webp"
-                alt="VIB Platinum Business Card"
-                style={{
-                  width: '100%',
-                  maxWidth: '340px',
-                  height: 'auto',
-                  borderRadius: '16px',
-                  boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.65), 0 0 25px rgba(56, 189, 248, 0.25)',
-                  border: '1px solid rgba(255, 255, 255, 0.18)',
-                  display: 'block'
-                }}
-              />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. FORM ĐĂNG KÝ TƯ VẤN & HỢP TÁC DOANH NGHIỆP */}
-      <section id="tu-van" style={{ padding: '5rem 1.5rem', backgroundColor: '#FFFFFF' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
-          
-          <div style={{
-            backgroundColor: '#0F172A',
-            color: '#FFFFFF',
-            borderRadius: '24px',
-            padding: '3rem 2.5rem',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            {/* Ambient pattern */}
-            <div style={{
-              position: 'absolute',
-              top: '-30%',
-              right: '-10%',
-              width: '400px',
-              height: '400px',
-              background: 'radial-gradient(circle, rgba(30, 99, 233, 0.3) 0%, transparent 70%)',
-              pointerEvents: 'none'
-            }} />
-
-            <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-              <span style={{ color: '#93C5FD', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {currentLang === 'en' ? 'Growth Partnership' : 'Đồng hành phát triển'}
-              </span>
-              <h2 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '6px', color: '#FFFFFF' }}>
-                {currentLang === 'en' ? 'REGISTER FOR ENTERPRISE CONSULTING' : 'ĐĂNG KÝ NHẬN TƯ VẤN DOANH NGHIỆP'}
+        {/* ========================================================
+            SECTION 12: DU LỊCH & TRẢI NGHIỆM ("ĐI ĐÂU CUỐI TUẦN?")
+            ======================================================== */}
+        <section className="daklak-section" style={{ backgroundColor: '#F8F3EC' }}>
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Travel Experiences' : 'Khám Phá Cuối Tuần'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Touch the Great Forests — Experience Dak Lak Deeper' : 'Chạm Vào Đại Ngàn — Trải Nghiệm Đắk Lắk Sâu Hơn'}
               </h2>
-              <p style={{ color: '#94A3B8', fontSize: '0.95rem', marginTop: '6px' }}>
+              <p className="daklak-section-desc">
                 {currentLang === 'en'
-                  ? 'Leave your contact info for direct advisory from Vietnam Enterprise Magazine experts.'
-                  : 'Để lại thông tin để Ban cố vấn Tạp chí Doanh Nghiệp Việt Nam kết nối và hỗ trợ trực tiếp.'}
+                  ? 'Carefully curated experiential itineraries designed for culture explorers and eco-travelers.'
+                  : 'Gợi ý các hành trình trải nghiệm được biên tập chuyên sâu, kết nối ẩm thực bản địa, thiên nhiên hùng vĩ và làng nghề cà phê.'}
               </p>
             </div>
 
-            {formSubmitted ? (
-              <div style={{
-                textAlign: 'center',
-                padding: '3rem 2rem',
-                backgroundColor: 'rgba(30, 99, 233, 0.15)',
-                borderRadius: '16px',
-                border: '1px solid #1E63E9'
-              }}>
-                <i className="fa-solid fa-circle-check" style={{ fontSize: '3rem', color: '#60A5FA', marginBottom: '1rem' }} />
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '0.5rem' }}>
-                  {currentLang === 'en' ? 'Request Submitted Successfully!' : 'Gửi yêu cầu thành công!'}
-                </h3>
-                <p style={{ color: '#CBD5E1', maxWidth: '500px', margin: '0 auto 1.5rem' }}>
-                  {currentLang === 'en'
-                    ? 'Thank you! The advisory team at Vietnam Enterprise Magazine will contact you within 24 working hours.'
-                    : 'Cảm ơn Quý doanh nghiệp. Đội ngũ chuyên gia Tạp chí Doanh Nghiệp Việt Nam sẽ liên hệ lại trong vòng 24 giờ làm việc.'}
+            <div className="itinerary-grid">
+              {/* Itinerary 1 */}
+              <div className="itinerary-card">
+                <div style={{ position: 'relative', height: '200px' }}>
+                  <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Hành trình 2N1Đ" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <span className="itinerary-badge">Hành trình 2 Ngày 1 Đêm</span>
+                </div>
+                <div className="itinerary-body">
+                  <h3>Hành Trình Di Sản Cà Phê & Thác Nước Đại Ngàn</h3>
+                  <div className="itinerary-stops">Buôn Ma Thuột ➔ Thác Dray Nur ➔ Bảo tàng Cà phê</div>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5', flexGrow: 1 }}>
+                    Khám phá ly cà phê nồng nàn tại thủ phủ, thưởng lãm kiến trúc Bảo tàng Thế giới Cà phê và đón hoàng hôn bên cụm thác Dray Nur - Dray Sáp huyền thoại.
+                  </p>
+                  <Link to="/posts?category=Du%20lịch%20&%20Trải%20nghiệm" className="quick-access-link" style={{ marginTop: '14px' }}>
+                    Xem lịch trình chi tiết →
+                  </Link>
+                </div>
+              </div>
+
+              {/* Itinerary 2 */}
+              <div className="itinerary-card">
+                <div style={{ position: 'relative', height: '200px' }}>
+                  <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80" alt="Hành trình 3N2Đ" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <span className="itinerary-badge" style={{ background: 'var(--bazan-brown)' }}>Hành trình 3 Ngày 2 Đêm</span>
+                </div>
+                <div className="itinerary-body">
+                  <h3>Thảo Nguyên Xanh, Hồ Lắk & Hồn Sử Thi M’Nông</h3>
+                  <div className="itinerary-stops">TP. Buôn Ma Thuột ➔ Vườn QG Yok Đôn ➔ Hồ Lắk</div>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5', flexGrow: 1 }}>
+                    Trải nghiệm đi thuyền độc mộc trên Hồ Lắk thơ mộng, nghỉ đêm tại biệt điện Bảo Đại, nghe nghệ nhân kể Khan và thưởng thức cơm lam gà sa lửa.
+                  </p>
+                  <Link to="/posts?category=Du%20lịch%20&%20Trải%20nghiệm" className="quick-access-link" style={{ marginTop: '14px' }}>
+                    Xem lịch trình chi tiết →
+                  </Link>
+                </div>
+              </div>
+
+              {/* Itinerary 3 */}
+              <div className="itinerary-card">
+                <div style={{ position: 'relative', height: '200px' }}>
+                  <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80" alt="Cà phê farmstay" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <span className="itinerary-badge" style={{ background: 'var(--bazan-red)' }}>Nông nghiệp Sinh thái</span>
+                </div>
+                <div className="itinerary-body">
+                  <h3>Coffee Farm Tour: Một Ngày Làm Nông Dân Hái Cà Phê</h3>
+                  <div className="itinerary-stops">Cư M’gar ➔ Nông trường Hữu cơ ➔ Xưởng Rang thủ công</div>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5', flexGrow: 1 }}>
+                    Trực tiếp hái những trái cà phê chín mọng, học kỹ thuật thử nếm Cupping quốc tế và tự tay rang mẻ cà phê kỷ niệm mang về làm quà.
+                  </p>
+                  <Link to="/posts?category=Du%20lịch%20&%20Trải%20nghiệm" className="quick-access-link" style={{ marginTop: '14px' }}>
+                    Xem lịch trình chi tiết →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 13: TRỢ LÝ AI & AI MATCHING ĐẦU TƯ
+            ======================================================== */}
+        <section className="daklak-section" style={{ backgroundColor: '#1C0F08' }}>
+          <div className="daklak-container">
+            <div className="ai-box">
+              <div style={{ maxWidth: '820px', margin: '0 auto', textAlign: 'center' }}>
+                <span className="daklak-section-badge" style={{ background: 'rgba(213, 163, 63, 0.2)', color: 'var(--gong-gold)', border: '1px solid var(--gong-gold)' }}>
+                  🤖 TRÍ TUỆ NHÂN TẠO TÂY NGUYÊN
+                </span>
+                <h2 style={{ fontSize: '2.2rem', fontWeight: '900', color: '#FFF', margin: '14px 0 16px' }}>
+                  Hỏi AI Về Đắk Lắk — Biến Dữ Liệu Thành Cơ Hội Hợp Tác
+                </h2>
+                <p style={{ color: '#D1C5BC', fontSize: '1.05rem', lineHeight: '1.6', marginBottom: '25px' }}>
+                  Trợ lý AI Gemini Flash được nạp sẵn tri thức về quy hoạch tỉnh, danh bạ doanh nghiệp, cơ chế thuế, dự án kêu gọi đầu tư và cẩm nang du lịch Đắk Lắk.
                 </p>
-                <button
-                  onClick={() => setFormSubmitted(false)}
-                  style={{
-                    backgroundColor: '#1E63E9',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    padding: '10px 24px',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(30, 99, 233, 0.4)'
-                  }}
+
+                {/* AI Input Form */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  borderRadius: '50px',
+                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                  marginBottom: '20px'
+                }}>
+                  <input 
+                    type="text" 
+                    placeholder="Ví dụ: Tôi muốn đầu tư 50 tỷ vào nông nghiệp công nghệ cao..."
+                    style={{
+                      flex: 1,
+                      border: 'none',
+                      outline: 'none',
+                      padding: '12px 22px',
+                      fontSize: '1rem',
+                      fontFamily: 'inherit',
+                      color: 'var(--text-dark)',
+                      background: 'transparent'
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.target.value.trim()) {
+                        navigate(`/ai-chat?q=${encodeURIComponent(e.target.value.trim())}`);
+                      }
+                    }}
+                  />
+                  <Link 
+                    to="/ai-chat"
+                    className="btn-daklak-primary"
+                    style={{ padding: '12px 26px', borderRadius: '40px' }}
+                  >
+                    <span>Hỏi AI</span>
+                    <i className="ti ti-sparkles" />
+                  </Link>
+                </div>
+
+                {/* Quick suggestions */}
+                <div style={{ fontSize: '0.85rem', color: '#BFAEA2', marginBottom: '8px' }}>
+                  Gợi ý câu hỏi thông minh:
+                </div>
+                <div className="ai-query-chips" style={{ justifyContent: 'center' }}>
+                  <span className="ai-query-chip" onClick={() => navigate('/ai-chat?q=Tìm%20doanh%20nghiệp%20chế%20biến%20sâu%20cà%20phê%20uy%20tín')}>
+                    ☕ Tìm doanh nghiệp chế biến sâu cà phê
+                  </span>
+                  <span className="ai-query-chip" onClick={() => navigate('/ai-chat?q=Quy%20hoạch%20khu%20công%20nghiệp%20Hòa%20Phú%20mở%20rộng')}>
+                    🏭 Quy hoạch KCN Hòa Phú mở rộng
+                  </span>
+                  <span className="ai-query-chip" onClick={() => navigate('/ai-chat?q=Lịch%20trình%20du%20lịch%20Buôn%20Ma%20Thuột%202%20ngày%201%20đêm')}>
+                    🧭 Gợi ý lịch trình 2 ngày 1 đêm
+                  </span>
+                  <span className="ai-query-chip" onClick={() => navigate('/ai-chat?q=Chính%20sách%20ưu%20đãi%20thuế%20đầu%20tư%20vào%20Đắk%20Lắk')}>
+                    💰 Chính sách ưu đãi thuế đầu tư
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 14: LỘ TRÌNH 6 GIAI ĐOẠN PHÁT TRIỂN HỆ SINH THÁI SỐ
+            ======================================================== */}
+        <section className="daklak-section">
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Digital Roadmap' : 'Lộ Trình Phát Triển'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'From Vision to a Comprehensive Digital Ecosystem' : 'Lộ Trình Xây Dựng Hệ Sinh Thái Số Đắk Lắk'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'A disciplined multi-stage development plan ensuring sustainability, credibility, and lasting commercial value.'
+                  : 'Chiến lược phát triển 6 giai đoạn đưa DakLak.today từng bước trở thành cổng kết nối đầu tư hạt nhân của toàn vùng Tây Nguyên.'}
+              </p>
+            </div>
+
+            <div className="roadmap-grid">
+              <div className="roadmap-card">
+                <div className="roadmap-stage">Giai đoạn 1 (0 – 6 tháng)</div>
+                <h4>Xây Dựng Uy Tín</h4>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Xuất bản tin tức kinh tế chất lượng, văn hóa cà phê, thu hút độc giả tự nhiên và định vị nhận diện thương hiệu số.</p>
+              </div>
+
+              <div className="roadmap-card" style={{ borderLeftColor: 'var(--forest-green)' }}>
+                <div className="roadmap-stage" style={{ color: 'var(--forest-green)' }}>Giai đoạn 2 (3 – 9 tháng)</div>
+                <h4>Cơ Sở Dữ Liệu Nền</h4>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Chuẩn hóa danh mục doanh nghiệp, vùng nguyên liệu, quỹ đất và dự án kêu gọi đầu tư theo cấu trúc số hiện đại.</p>
+              </div>
+
+              <div className="roadmap-card" style={{ borderLeftColor: 'var(--gong-gold)' }}>
+                <div className="roadmap-stage" style={{ color: '#B3832B' }}>Giai đoạn 3 (6 – 12 tháng)</div>
+                <h4>MVP Kết Nối Đầu Tư</h4>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Mở tính năng đăng dự án, gửi yêu cầu kết nối giao thương B2B, quản lý hồ sơ và đặt lịch làm việc với nhà đầu tư.</p>
+              </div>
+
+              <div className="roadmap-card" style={{ borderLeftColor: 'var(--bazan-brown)' }}>
+                <div className="roadmap-stage" style={{ color: 'var(--bazan-brown)' }}>Giai đoạn 4 (12 – 18 tháng)</div>
+                <h4>AI Matching Đa Nguồn</h4>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Ứng dụng AI ghép đôi nhà đầu tư với doanh nghiệp, phân tích khả năng gọi vốn và tự động gợi ý đối tác theo chuỗi giá trị.</p>
+              </div>
+
+              <div className="roadmap-card">
+                <div className="roadmap-stage">Giai đoạn 5 (18 – 24 tháng)</div>
+                <h4>Hệ Sinh Thái Đầu Tư</h4>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Tích hợp mạng lưới ngân hàng, quỹ ESG, kiểm toán, luật sư tư vấn M&A và các công ty logistics hỗ trợ trọn gói.</p>
+              </div>
+
+              <div className="roadmap-card" style={{ borderLeftColor: 'var(--gong-gold)' }}>
+                <div className="roadmap-stage" style={{ color: '#B3832B' }}>Tầm nhìn 2 – 5 năm</div>
+                <h4>Tài Sản Dữ Liệu & AI</h4>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Phát triển chỉ số môi trường đầu tư Đắk Lắk, bản đồ dòng vốn FDI, phòng dữ liệu ảo Data Room phục vụ giao dịch lớn.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 15: GÓI THAM GIA MẠNG LƯỚI (MEMBERSHIP TIERS)
+            ======================================================== */}
+        <section className="daklak-section" style={{ backgroundColor: 'var(--cream-alt)' }}>
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Membership' : 'Gia Nhập Mạng Lưới'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Flexible Membership Packages' : 'Lựa Chọn Gói Tham Gia Phù Hợp'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'Join our verified business community to expand your network, elevate brand awareness, and capture growth.'
+                  : 'Gia nhập cộng đồng doanh nghiệp và đối tác đầu tư Đắk Lắk. Gói Khám phá & Gói Silver được duyệt tự động ngay lập tức.'}
+              </p>
+            </div>
+
+            <div className="tiers-grid">
+              {/* Tier 1 */}
+              <div className="tier-card">
+                <div>
+                  <span className="tier-badge">CƠ BẢN</span>
+                  <h3 className="tier-title">Khám Phá</h3>
+                  <div className="tier-price">Miễn phí</div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', textAlign: 'left', fontSize: '0.88rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <li>✓ Xem đầy đủ tin tức & sự kiện</li>
+                    <li>✓ Tra cứu danh bạ doanh nghiệp</li>
+                    <li>✓ Hỏi đáp Trợ lý AI miễn phí</li>
+                    <li>✓ Đăng ký vé QR tham gia sự kiện</li>
+                  </ul>
+                </div>
+                <Link to="/register" className="btn-daklak-outline" style={{ color: 'var(--primary-coffee)', borderColor: 'var(--border-strong)', justifyContent: 'center' }}>
+                  Đăng ký miễn phí
+                </Link>
+              </div>
+
+              {/* Tier 2 */}
+              <div className="tier-card featured">
+                <div>
+                  <span className="tier-badge" style={{ background: 'var(--bazan-red)', color: '#FFF' }}>PHỔ BIẾN NHẤT</span>
+                  <h3 className="tier-title">Doanh Nghiệp Kết Nối</h3>
+                  <div className="tier-price" style={{ color: 'var(--bazan-red)' }}>Silver Partner</div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', textAlign: 'left', fontSize: '0.88rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <li>✓ Tự động duyệt ngay lập tức</li>
+                    <li>✓ Cấp Showroom số xác thực</li>
+                    <li>✓ Đăng bài viết & cơ hội giao thương</li>
+                    <li>✓ Nhận lead liên hệ đối tác trực tiếp</li>
+                    <li>✓ Ưu tiên hiển thị trên trang chủ</li>
+                  </ul>
+                </div>
+                <Link to="/register" className="btn-daklak-primary" style={{ justifyContent: 'center' }}>
+                  Đăng ký Silver Ngay
+                </Link>
+              </div>
+
+              {/* Tier 3 */}
+              <div className="tier-card">
+                <div>
+                  <span className="tier-badge" style={{ background: 'rgba(213, 163, 63, 0.2)', color: '#B3832B' }}>CAO CẤP</span>
+                  <h3 className="tier-title">Doanh Nghiệp Tiêu Biểu</h3>
+                  <div className="tier-price" style={{ color: 'var(--primary-coffee)' }}>Gold Partner</div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', textAlign: 'left', fontSize: '0.88rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <li>✓ Đầy đủ quyền lợi gói Silver</li>
+                    <li>✓ Huy hiệu Đối tác Vàng chứng nhận</li>
+                    <li>✓ Bài PR chuyên đề phóng sự báo chí</li>
+                    <li>✓ Ghép đôi ưu tiên với Nhà đầu tư</li>
+                    <li>✓ Hỗ trợ chuẩn hóa hồ sơ gọi vốn</li>
+                  </ul>
+                </div>
+                <button onClick={() => scrollToConsult('Gói Hội viên Gold Partner')} className="btn-daklak-gold" style={{ justifyContent: 'center' }}>
+                  Tư vấn Nâng hạng
+                </button>
+              </div>
+
+              {/* Tier 4 */}
+              <div className="tier-card">
+                <div>
+                  <span className="tier-badge" style={{ background: 'rgba(31, 90, 58, 0.2)', color: 'var(--forest-green)' }}>CHIẾN LƯỢC</span>
+                  <h3 className="tier-title">Nhà Đầu Tư Chiến Lược</h3>
+                  <div className="tier-price" style={{ color: 'var(--forest-green)' }}>Diamond VIP</div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', textAlign: 'left', fontSize: '0.88rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <li>✓ Tiếp cận hồ sơ dự án bí mật Data Room</li>
+                    <li>✓ Kết nối trực tiếp Lãnh đạo ban ngành</li>
+                    <li>✓ Tham dự các phiên bàn tròn kín</li>
+                    <li>✓ Cố vấn xúc tiến đầu tư 1 kèm 1</li>
+                  </ul>
+                </div>
+                <button onClick={() => scrollToConsult('Gói Đối tác Chiến lược Diamond')} className="btn-daklak-outline" style={{ color: 'var(--forest-green)', borderColor: 'var(--forest-green)', justifyContent: 'center' }}>
+                  Liên hệ Chuyên gia
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 16: CÂU HỎI THƯỜNG GẶP (FAQ ACCORDION)
+            ======================================================== */}
+        <section className="daklak-section">
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'FAQ' : 'Hỏi & Đáp'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Frequently Asked Questions' : 'Câu Hỏi Thường Gặp'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'Common inquiries regarding DakLak.today ecosystem features, memberships, and investor services.'
+                  : 'Giải đáp những thắc mắc phổ biến về cơ chế hoạt động, bảo mật dữ liệu và quyền lợi tham gia mạng lưới.'}
+              </p>
+            </div>
+
+            <div className="faq-list">
+              {faqs.map((faq, index) => {
+                const isOpen = activeFaq === index;
+                return (
+                  <div key={index} className="faq-item">
+                    <button 
+                      className="faq-question"
+                      onClick={() => setActiveFaq(isOpen ? null : index)}
+                    >
+                      <span>{faq.q}</span>
+                      <i className={`ti ti-chevron-${isOpen ? 'up' : 'down'}`} style={{ color: 'var(--bazan-red)' }} />
+                    </button>
+                    {isOpen && (
+                      <div className="faq-answer">
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            SECTION 17: FORM ĐĂNG KÝ TƯ VẤN & HỢP TÁC ĐẦU TƯ (id="tu-van")
+            ======================================================== */}
+        <section className="daklak-section" id="tu-van" style={{ backgroundColor: '#F0E6DC' }}>
+          <div className="daklak-container">
+            <div className="daklak-section-header">
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Consultation & Partnership' : 'Đăng Ký Tư Vấn'}</span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Partner with DakLak.today' : 'Đăng Ký Tư Vấn & Kết Nối Hợp Tác Đầu Tư'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'Submit your enterprise details or project inquiries. Our investment specialists will contact you within 24 hours.'
+                  : 'Quý doanh nghiệp và nhà đầu tư vui lòng gửi thông tin yêu cầu. Ban xúc tiến đầu tư sẽ liên hệ hỗ trợ trong vòng 24 giờ làm việc.'}
+              </p>
+            </div>
+
+            <div className="consult-form-box">
+              {formSubmitted ? (
+                <div style={{ textAlign: 'center', padding: '30px 10px' }}>
+                  <div style={{ fontSize: '3rem', color: 'var(--forest-green)', marginBottom: '14px' }}>✓</div>
+                  <h3 style={{ fontSize: '1.5rem', color: 'var(--primary-coffee)', marginBottom: '10px' }}>
+                    {currentLang === 'en' ? 'Submission Successful!' : 'Đã Tiếp Nhận Thông Tin Thành Công!'}
+                  </h3>
+                  <p style={{ color: 'var(--text-muted)', maxWidth: '520px', margin: '0 auto 20px', lineHeight: '1.6' }}>
+                    Cảm ơn quý đơn vị đã quan tâm tới hệ sinh thái số Đắk Lắk. Chuyên viên cố vấn sẽ trực tiếp kết nối qua số điện thoại <strong>{formData.phone}</strong>.
+                  </p>
+                  <button 
+                    onClick={() => {
+                      setFormSubmitted(false);
+                      setFormData({
+                        fullName: '',
+                        phone: '',
+                        email: '',
+                        city: 'Đắk Lắk',
+                        serviceNeed: 'Đầu tư nông nghiệp công nghệ cao & chế biến sâu',
+                        companyName: '',
+                        notes: '',
+                        agreeTerms: true
+                      });
+                    }}
+                    className="btn-daklak-primary"
+                  >
+                    Gửi yêu cầu khác
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleConsultSubmit}>
+                  <div className="form-grid-2">
+                    <div className="daklak-form-group">
+                      <label>Họ và tên người liên hệ (*)</label>
+                      <input 
+                        type="text"
+                        className="daklak-form-input"
+                        placeholder="Ví dụ: Nguyễn Văn An"
+                        value={formData.fullName}
+                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="daklak-form-group">
+                      <label>Số điện thoại liên hệ (*)</label>
+                      <input 
+                        type="tel"
+                        className="daklak-form-input"
+                        placeholder="Ví dụ: 0912 345 678"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-grid-2">
+                    <div className="daklak-form-group">
+                      <label>Email làm việc</label>
+                      <input 
+                        type="email"
+                        className="daklak-form-input"
+                        placeholder="Ví dụ: contact@doanhnghiep.vn"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="daklak-form-group">
+                      <label>Tên Doanh nghiệp / Đơn vị (*)</label>
+                      <input 
+                        type="text"
+                        className="daklak-form-input"
+                        placeholder="Ví dụ: Công ty Cổ phần Nông sản Tây Nguyên"
+                        value={formData.companyName}
+                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-grid-2">
+                    <div className="daklak-form-group">
+                      <label>Tỉnh / Thành phố hoạt động</label>
+                      <input 
+                        type="text"
+                        className="daklak-form-input"
+                        placeholder="Ví dụ: Đắk Lắk, TP.HCM, Hà Nội..."
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="daklak-form-group">
+                      <label>Lĩnh vực quan tâm & nhu cầu hợp tác</label>
+                      <select 
+                        className="daklak-form-select"
+                        value={formData.serviceNeed}
+                        onChange={(e) => setFormData({ ...formData, serviceNeed: e.target.value })}
+                      >
+                        <option value="Đầu tư nông nghiệp công nghệ cao & chế biến sâu">Đầu tư nông nghiệp CNC & chế biến sâu</option>
+                        <option value="Chuỗi giá trị cà phê & nông sản đặc hữu">Chuỗi giá trị cà phê & nông sản đặc hữu</option>
+                        <option value="Thuê đất KCN & Hạ tầng Logistics">Thuê đất KCN & Hạ tầng Logistics</option>
+                        <option value="Du lịch sinh thái & Dịch vụ lưu trú">Du lịch sinh thái & Dịch vụ lưu trú</option>
+                        <option value="Mở Showroom số & Quảng bá sản phẩm OCOP">Mở Showroom số & Quảng bá OCOP</option>
+                        <option value="Tư vấn tiếp cận vốn vay & Quỹ ESG">Tư vấn tiếp cận vốn vay & Quỹ ESG</option>
+                        <option value="Tham gia Mạng lưới Hội viên Doanh nghiệp">Tham gia Mạng lưới Hội viên Doanh nghiệp</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="daklak-form-group">
+                    <label>Chi tiết nhu cầu & nội dung cần hỗ trợ</label>
+                    <textarea 
+                      rows="3"
+                      className="daklak-form-textarea"
+                      placeholder="Mô tả cụ thể về quy mô dự án, sản phẩm cần hợp tác hoặc câu hỏi dành cho ban xúc tiến..."
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '22px' }}>
+                    <input 
+                      type="checkbox" 
+                      id="agreeTerms" 
+                      checked={formData.agreeTerms} 
+                      onChange={(e) => setFormData({ ...formData, agreeTerms: e.target.checked })} 
+                      required
+                    />
+                    <label htmlFor="agreeTerms" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                      Tôi đồng ý chia sẻ thông tin để Ban xúc tiến DakLak.today liên hệ tư vấn theo chính sách bảo mật.
+                    </label>
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    className="btn-daklak-primary"
+                    disabled={formLoading}
+                    style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '1.05rem' }}
+                  >
+                    {formLoading ? 'Đang gửi thông tin...' : 'Gửi Yêu Cầu Kết Nối Ngay'}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* QUICK EVENT REGISTRATION MODAL */}
+      {registerModalEvent && (
+        <div className="daklak-modal-overlay" onClick={() => setRegisterModalEvent(null)}>
+          <div className="daklak-modal-box" onClick={(e) => e.stopPropagation()}>
+            <button className="daklak-modal-close" onClick={() => setRegisterModalEvent(null)}>✕</button>
+
+            {regSuccess ? (
+              <div style={{ textAlign: 'center', padding: '10px' }}>
+                <div style={{ fontSize: '3rem', color: 'var(--forest-green)', marginBottom: '10px' }}>🎉</div>
+                <h3 style={{ fontSize: '1.4rem', color: 'var(--primary-coffee)', marginBottom: '8px' }}>
+                  Đăng Ký Vé Thành Công!
+                </h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
+                  Mã vé tham dự của quý vị:
+                </p>
+                <div style={{
+                  background: 'var(--light-cream)',
+                  border: '2px dashed var(--gong-gold)',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  fontFamily: 'monospace',
+                  fontSize: '1.4rem',
+                  fontWeight: '800',
+                  color: 'var(--bazan-red)',
+                  marginBottom: '18px'
+                }}>
+                  {regSuccess.ticketCode || 'DLK-TICKET-2026'}
+                </div>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
+                  Vui lòng lưu lại mã vé hoặc xuất trình tại bàn đón tiếp để check-in camera tự động.
+                </p>
+                <button 
+                  onClick={() => setRegisterModalEvent(null)}
+                  className="btn-daklak-primary"
+                  style={{ width: '100%', justifyContent: 'center' }}
                 >
-                  {currentLang === 'en' ? 'Submit another request' : 'Gửi thêm yêu cầu khác'}
+                  Hoàn tất
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleFormSubmit}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem', marginBottom: '1.25rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '6px' }}>
-                      {currentLang === 'en' ? 'Full Name *' : 'Họ và tên người liên hệ *'}
-                    </label>
-                    <input
-                      type="text"
+              <div>
+                <span style={{ fontSize: '0.8rem', color: 'var(--bazan-red)', fontWeight: '800', textTransform: 'uppercase' }}>
+                  ĐĂNG KÝ VÉ NHANH
+                </span>
+                <h3 style={{ fontSize: '1.3rem', color: 'var(--primary-coffee)', margin: '6px 0 14px', lineHeight: '1.3' }}>
+                  {registerModalEvent.title}
+                </h3>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '18px' }}>
+                  Vé tham gia: <strong>Miễn phí (Free Pass)</strong> • Nhận mã QR tức thời.
+                </p>
+
+                <form onSubmit={handleQuickRegisterSubmit}>
+                  <div className="daklak-form-group">
+                    <label>Họ và tên (*)</label>
+                    <input 
+                      type="text" 
+                      className="daklak-form-input" 
                       required
-                      placeholder={currentLang === 'en' ? 'John Doe' : 'Nguyễn Văn A'}
-                      value={formData.fullName}
-                      onChange={(e) => setFormData(p => ({ ...p, fullName: e.target.value }))}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#1E293B',
-                        border: '1px solid #334155',
-                        borderRadius: '10px',
-                        padding: '12px 14px',
-                        color: '#FFFFFF',
-                        fontSize: '0.9rem',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
+                      placeholder="Nguyễn Văn An"
+                      value={regFormData.fullName}
+                      onChange={(e) => setRegFormData({ ...regFormData, fullName: e.target.value })}
                     />
                   </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '6px' }}>
-                      {currentLang === 'en' ? 'Phone Number *' : 'Số điện thoại liên hệ *'}
-                    </label>
-                    <input
-                      type="tel"
+                  <div className="daklak-form-group">
+                    <label>Số điện thoại (*)</label>
+                    <input 
+                      type="tel" 
+                      className="daklak-form-input" 
                       required
-                      placeholder={currentLang === 'en' ? '+84 912 345 678' : '0912 345 678'}
-                      value={formData.phone}
-                      onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#1E293B',
-                        border: '1px solid #334155',
-                        borderRadius: '10px',
-                        padding: '12px 14px',
-                        color: '#FFFFFF',
-                        fontSize: '0.9rem',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
+                      placeholder="0912 345 678"
+                      value={regFormData.phone}
+                      onChange={(e) => setRegFormData({ ...regFormData, phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="daklak-form-group">
+                    <label>Email</label>
+                    <input 
+                      type="email" 
+                      className="daklak-form-input" 
+                      placeholder="email@example.com"
+                      value={regFormData.email}
+                      onChange={(e) => setRegFormData({ ...regFormData, email: e.target.value })}
+                    />
+                  </div>
+                  <div className="daklak-form-group">
+                    <label>Tên đơn vị / Công ty</label>
+                    <input 
+                      type="text" 
+                      className="daklak-form-input" 
+                      placeholder="Công ty TNHH ABC"
+                      value={regFormData.company}
+                      onChange={(e) => setRegFormData({ ...regFormData, company: e.target.value })}
                     />
                   </div>
 
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '6px' }}>
-                      {currentLang === 'en' ? 'Email Address' : 'Email liên hệ'}
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="contact@company.vn"
-                      value={formData.email}
-                      onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#1E293B',
-                        border: '1px solid #334155',
-                        borderRadius: '10px',
-                        padding: '12px 14px',
-                        color: '#FFFFFF',
-                        fontSize: '0.9rem',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '6px' }}>
-                      {currentLang === 'en' ? 'Company / Organization Name *' : 'Tên doanh nghiệp / Đơn vị *'}
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder={currentLang === 'en' ? 'ABC Corporation / Ltd...' : 'Công ty CP / TNHH...'}
-                      value={formData.companyName}
-                      onChange={(e) => setFormData(p => ({ ...p, companyName: e.target.value }))}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#1E293B',
-                        border: '1px solid #334155',
-                        borderRadius: '10px',
-                        padding: '12px 14px',
-                        color: '#FFFFFF',
-                        fontSize: '0.9rem',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '6px' }}>
-                      {currentLang === 'en' ? 'Province / City' : 'Tỉnh / Thành phố'}
-                    </label>
-                    <input
-                      type="text"
-                      placeholder={currentLang === 'en' ? 'Hanoi, HCMC, Da Nang...' : 'Hà Nội, TP.HCM, Đà Nẵng...'}
-                      value={formData.city}
-                      onChange={(e) => setFormData(p => ({ ...p, city: e.target.value }))}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#1E293B',
-                        border: '1px solid #334155',
-                        borderRadius: '10px',
-                        padding: '12px 14px',
-                        color: '#FFFFFF',
-                        fontSize: '0.9rem',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '6px' }}>
-                      {currentLang === 'en' ? 'Consulting Field / Service Needed' : 'Lĩnh vực cần tư vấn'}
-                    </label>
-                    <select
-                      value={formData.serviceNeed}
-                      onChange={(e) => setFormData(p => ({ ...p, serviceNeed: e.target.value }))}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#1E293B',
-                        border: '1px solid #334155',
-                        borderRadius: '10px',
-                        padding: '12px 14px',
-                        color: '#FFFFFF',
-                        fontSize: '0.9rem',
-                        outline: 'none',
-                        boxSizing: 'border-box'
-                      }}
-                    >
-                      <option value="Tư vấn vốn & tiếp cận tín dụng">{currentLang === 'en' ? 'Capital & Credit Access Advisory' : 'Tư vấn Vốn & Tín dụng'}</option>
-                      <option value="Truyền thông & Thương hiệu">{currentLang === 'en' ? 'PR & Brand Communications' : 'Truyền thông & Thương hiệu'}</option>
-                      <option value="Marketing & Bán hàng">{currentLang === 'en' ? 'Marketing & Sales Growth' : 'Marketing & Bán hàng'}</option>
-                      <option value="Ứng dụng AI & Chuyển đổi số">{currentLang === 'en' ? 'AI Applications & Digital Transformation' : 'Ứng dụng AI & Chuyển đổi số'}</option>
-                      <option value="Thực hành ESG">{currentLang === 'en' ? 'ESG Practice & Green Reporting' : 'Thực hành ESG & Báo cáo xanh'}</option>
-                      <option value="Kết nối Công nghệ & Đối tác B2B">{currentLang === 'en' ? 'B2B Tech & Partner Matchmaking' : 'Kết nối Công nghệ & Đối tác B2B'}</option>
-                      <option value="Hội viên & Trang riêng doanh nghiệp">{currentLang === 'en' ? 'Enterprise Membership & Dedicated Profile' : 'Hội viên & Trang riêng doanh nghiệp'}</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '6px' }}>
-                    {currentLang === 'en' ? 'Specific Requirement / Detailed Request' : 'Nội dung cụ thể / Nhu cầu chi tiết'}
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder={currentLang === 'en' ? 'Describe your company needs, enterprise size or specific inquiries...' : 'Mô tả nhu cầu, quy mô doanh nghiệp hoặc câu hỏi cần giải đáp...'}
-                    value={formData.notes}
-                    onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))}
-                    style={{
-                      width: '100%',
-                      backgroundColor: '#1E293B',
-                      border: '1px solid #334155',
-                      borderRadius: '10px',
-                      padding: '12px 14px',
-                      color: '#FFFFFF',
-                      fontSize: '0.9rem',
-                      outline: 'none',
-                      resize: 'vertical',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
-                  <input
-                    type="checkbox"
-                    id="agreeTerms"
-                    checked={formData.agreeTerms}
-                    onChange={(e) => setFormData(p => ({ ...p, agreeTerms: e.target.checked }))}
-                    style={{ width: '16px', height: '16px', accentColor: '#1E63E9' }}
-                  />
-                  <label htmlFor="agreeTerms" style={{ fontSize: '0.8rem', color: '#94A3B8' }}>
-                    {currentLang === 'en'
-                      ? 'I agree to allow Vietnam Enterprise Magazine to process my information and contact me for advisory services.'
-                      : 'Tôi đồng ý để Tạp chí Doanh Nghiệp Việt Nam xử lý thông tin và liên hệ phục vụ công tác tư vấn.'}
-                  </label>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={formLoading}
-                  style={{
-                    width: '100%',
-                    background: 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '14px',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    cursor: formLoading ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 4px 14px rgba(30, 99, 233, 0.4)',
-                    transition: 'opacity 0.2s'
-                  }}
-                >
-                  {formLoading
-                    ? (currentLang === 'en' ? 'Submitting request...' : 'Đang gửi thông tin...')
-                    : (currentLang === 'en' ? 'SUBMIT CONSULTING REQUEST NOW' : 'GỬI YÊU CẦU TƯ VẤN NGAY')}
-                </button>
-              </form>
-            )}
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* 7. HỎI ĐÁP THƯỜNG GẶP (FAQ) */}
-      <section style={{ padding: '5rem 1.5rem', backgroundColor: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <span style={{ color: '#1E63E9', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {currentLang === 'en' ? 'Support & Advisory' : 'Hỗ trợ giải đáp'}
-            </span>
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#0F172A', marginTop: '6px' }}>
-              {currentLang === 'en' ? 'FREQUENTLY ASKED QUESTIONS' : 'CÂU HỎI THƯỜNG GẶP'}
-            </h2>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {FAQS.map((faq, idx) => {
-              const isOpen = activeFaq === idx;
-              return (
-                <div
-                  key={idx}
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: '14px',
-                    border: '1px solid #E2E8F0',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <button
-                    onClick={() => setActiveFaq(isOpen ? null : idx)}
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '1.25rem 1.5rem',
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      textAlign: 'left'
-                    }}
+                  <button 
+                    type="submit" 
+                    className="btn-daklak-gold"
+                    disabled={regLoading}
+                    style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: '10px' }}
                   >
-                    <span style={{ fontSize: '1rem', fontWeight: 700, color: '#0F172A' }}>
-                      {faq.q}
-                    </span>
-                    <i
-                      className={`fa-solid fa-chevron-down`}
-                      style={{
-                        color: '#64748B',
-                        fontSize: '0.85rem',
-                        transform: isOpen ? 'rotate(180deg)' : 'none',
-                        transition: 'transform 0.2s'
-                      }}
-                    />
+                    {regLoading ? 'Đang cấp vé...' : 'Xác Nhận & Lấy Mã Vé QR'}
                   </button>
-
-                  {isOpen && (
-                    <div style={{ padding: '0 1.5rem 1.25rem', color: '#64748B', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                </form>
+              </div>
+            )}
           </div>
-
         </div>
-      </section>
+      )}
 
-      {/* Footer */}
       <Footer />
-
-      {/* Floating AI Bot Assistant */}
       <FloatingAIBot />
     </div>
   );

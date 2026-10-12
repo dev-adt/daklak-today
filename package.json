@@ -1,12 +1,12 @@
 {
-  "name": "doanhnghiepvn-today",
+  "name": "daklak-today",
   "version": "2.0.0",
-  "description": "DoanhNghiepVN.today — Hệ sinh thái số Tạp chí Doanh Nghiệp Việt Nam tích hợp AI",
+  "description": "DakLak.today — Cổng thông tin, dữ liệu và kết nối đầu tư Đắk Lắk",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "pm2": "pm2 start server.js --name doanhnghiepvn-today"
+    "pm2": "pm2 start ecosystem.config.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

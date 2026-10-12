@@ -1,22 +1,22 @@
-// PM2 Ecosystem Config cho DoanhNghiepVN.today
+// PM2 Ecosystem Config cho DakLak.today
 // Chạy: pm2 start ecosystem.config.js
-// Xem log: pm2 logs doanhnghiepvn-today
-// Reload: pm2 reload doanhnghiepvn-today
+// Xem log: pm2 logs daklak-today
+// Reload: pm2 reload daklak-today
 // Auto-start khi reboot: pm2 startup && pm2 save
 
 module.exports = {
   apps: [
     {
-      name        : 'doanhnghiepvn-today',
+      name        : 'daklak-today',
       script      : 'server.js',
       instances   : 1,           // tăng lên 'max' nếu muốn cluster
       exec_mode   : 'fork',
       watch       : false,
-      max_memory_restart: '400M',
+      max_memory_restart: '500M',
 
       env: {
         NODE_ENV : 'production',
-        PORT     : 3026,
+        PORT     : 3028,
       },
 
       // Log

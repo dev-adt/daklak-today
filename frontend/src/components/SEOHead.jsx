@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import brandConfig from '../brand.config';
 
 /**
  * SEOHead Component
@@ -17,11 +18,11 @@ const SEOHead = ({
   schemaData
 }) => {
   useEffect(() => {
-    const defaultSiteName = 'DoanhNghiepVN.today — Tạp chí Doanh Nghiệp Việt Nam | Hệ sinh thái số Kết nối Giao thương & Trợ lý AI';
-    const siteUrl = 'https://doanhnghiepvn.today';
+    const defaultSiteName = `${brandConfig.brandName} — ${brandConfig.slogan}`;
+    const siteUrl = brandConfig.baseUrl || 'https://daklak.today';
 
     // 1. Set Document Title
-    const fullTitle = title ? `${title} | DoanhNghiepVN.today` : defaultSiteName;
+    const fullTitle = title ? (title.includes(brandConfig.brandName) ? title : `${title} | ${brandConfig.brandName}`) : defaultSiteName;
     document.title = fullTitle;
 
     // Helper function to create or update meta tags
@@ -48,8 +49,8 @@ const SEOHead = ({
     };
 
     // 2. Standard Meta Tags
-    const pageDesc = description || 'Hệ sinh thái số Tạp chí Doanh Nghiệp Việt Nam DoanhNghiepVN.today kết nối giao thương, cơ hội đầu tư, tư vấn vay vốn và trợ lý AI cho doanh nghiệp.';
-    const pageKeywords = keywords || 'DoanhNghiepVN, doanhnghiepvn today, tạp chí doanh nghiệp việt nam, kết nối giao thương, hội viên doanh nghiệp, trợ lý AI doanh nghiệp';
+    const pageDesc = description || brandConfig.description;
+    const pageKeywords = keywords || `${brandConfig.brandName}, ${brandConfig.brandShortName}, Đắk Lắk, Buôn Ma Thuột, cà phê Đắk Lắk, doanh nghiệp Đắk Lắk, đầu tư Đắk Lắk, du lịch Tây Nguyên, AI Matching`;
     const canonicalUrl = url ? (url.startsWith('http') ? url : `${siteUrl}${url}`) : window.location.href;
     const ogImage = image || `${siteUrl}/assets/og-image.jpg`;
 
@@ -58,7 +59,7 @@ const SEOHead = ({
     setCanonical(canonicalUrl);
 
     // 3. Open Graph Tags (Facebook, Zalo, LinkedIn)
-    setMetaTag('property', 'og:site_name', 'DoanhNghiepVN.today');
+    setMetaTag('property', 'og:site_name', brandConfig.brandName);
     setMetaTag('property', 'og:title', fullTitle);
     setMetaTag('property', 'og:description', pageDesc);
     setMetaTag('property', 'og:image', ogImage);

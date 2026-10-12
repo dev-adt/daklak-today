@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '../contexts/LanguageContext';
+import brandConfig from '../brand.config';
 
 export const FloatingAIBot = () => {
   const { currentLang, t } = useTranslation();
@@ -9,7 +10,7 @@ export const FloatingAIBot = () => {
     <Link
       to="/ai-chat"
       className="floating-ai-bot"
-      title={currentLang === 'en' ? 'Vietnam Enterprise AI Assistant' : 'Trợ lý AI DoanhNghiepVN.today'}
+      title={currentLang === 'en' ? 'Dak Lak AI Assistant' : brandConfig.aiAssistant.name}
       style={{
         position: 'fixed',
         right: '20px',
@@ -27,15 +28,15 @@ export const FloatingAIBot = () => {
         @keyframes breathingEffect {
           0% {
             transform: scale(1);
-            filter: drop-shadow(0 4px 12px rgba(2, 132, 199, 0.4));
+            filter: drop-shadow(0 4px 12px rgba(213, 163, 63, 0.5));
           }
           50% {
             transform: scale(1.12);
-            filter: drop-shadow(0 8px 24px rgba(2, 132, 199, 0.75));
+            filter: drop-shadow(0 8px 24px rgba(213, 163, 63, 0.85));
           }
           100% {
             transform: scale(1);
-            filter: drop-shadow(0 4px 12px rgba(2, 132, 199, 0.4));
+            filter: drop-shadow(0 4px 12px rgba(213, 163, 63, 0.5));
           }
         }
         .ai-breathing-head {

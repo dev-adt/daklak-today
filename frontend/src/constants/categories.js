@@ -1,92 +1,92 @@
 /**
- * Cấu hình Chuyên mục chính và Lĩnh vực con mặc định cho DoanhNghiepVN.today
- * (Đồng bộ theo Hạng mục triển khai Hợp đồng ADT - Tạp chí Doanh Nghiệp VN)
- * Lưu ý: Trong ứng dụng thực tế, dữ liệu được tải động từ API /api/categories (Quản lý chuyên mục trong Admin).
+ * Cấu hình Chuyên mục chính và Lĩnh vực con mặc định cho DakLak.today
+ * (Đồng bộ theo Đặc tả thiết kế trang chủ và Dự án hệ sinh thái số Đắk Lắk)
+ * Lưu ý: Dữ liệu được tải động từ API /api/categories (Quản lý chuyên mục trong Admin).
  */
 
 export const CATEGORIES_DATA = [
   {
+    id: 'kham-pha-dak-lak',
+    name: 'Khám phá Đắk Lắk',
+    name_en: 'Discover Dak Lak',
+    order_index: 1,
+    subcategories: [
+      'Điểm đến & Thắng cảnh',
+      'Văn hóa Cồng chiêng',
+      'Ẩm thực Tây Nguyên',
+      'Di sản & Lịch sử'
+    ]
+  },
+  {
+    id: 'doanh-nghiep-san-pham',
+    name: 'Doanh nghiệp & Sản phẩm',
+    name_en: 'Enterprises & Products',
+    order_index: 2,
+    subcategories: [
+      'Danh bạ Doanh nghiệp',
+      'Sản phẩm OCOP & Nông sản',
+      'Khởi nghiệp Đổi mới sáng tạo',
+      'Showroom số'
+    ]
+  },
+  {
+    id: 'dau-tu-du-an',
+    name: 'Đầu tư & Dự án',
+    name_en: 'Investment & Projects',
+    order_index: 3,
+    subcategories: [
+      'Danh mục Dự án Kêu gọi',
+      'Khu & Cụm công nghiệp',
+      'Vùng nguyên liệu & Quỹ đất',
+      'Chính sách & Ưu đãi Đầu tư'
+    ]
+  },
+  {
+    id: 'ca-phe-dak-lak',
+    name: 'Cà phê Đắk Lắk',
+    name_en: 'Dak Lak Coffee',
+    order_index: 4,
+    subcategories: [
+      'Chuỗi giá trị Cà phê',
+      'Công nghệ Chế biến sâu',
+      'Thương hiệu & Thị trường',
+      'Văn hóa Cà phê'
+    ]
+  },
+  {
+    id: 'du-lich-trai-nghiem',
+    name: 'Du lịch & Trải nghiệm',
+    name_en: 'Tourism & Experiences',
+    order_index: 5,
+    subcategories: [
+      'Hành trình 2N1Đ & 3N2Đ',
+      'Du lịch Sinh thái & Bản làng',
+      'Lưu trú & Homestay',
+      'Lễ hội & Sự kiện'
+    ]
+  },
+  {
+    id: 'du-lieu-bao-cao',
+    name: 'Dữ liệu & Báo cáo',
+    name_en: 'Data & Reports',
+    order_index: 6,
+    subcategories: [
+      'Chỉ số Kinh tế - Xã hội',
+      'Bản đồ Cơ hội Đắk Lắk',
+      'Báo cáo Ngành hàng',
+      'Quy hoạch Tỉnh Đắk Lắk'
+    ]
+  },
+  {
     id: 'su-kien-dien-dan',
     name: 'Sự kiện & Diễn đàn',
     name_en: 'Events & Forums',
-    order_index: 1,
-    subcategories: [
-      'Hội thảo & Tọa đàm',
-      'Diễn đàn kinh tế',
-      'Xúc tiến thương mại',
-      'Giao thương B2B'
-    ]
-  },
-  {
-    id: 'tu-van-vay-von',
-    name: 'Tư vấn Vay vốn & Tài chính',
-    name_en: 'Loan & Financial Consulting',
-    order_index: 2,
-    subcategories: [
-      'Tín dụng ngân hàng',
-      'Quỹ hỗ trợ SME',
-      'Vốn đầu tư khởi nghiệp',
-      'Cơ cấu tài chính doanh nghiệp'
-    ]
-  },
-  {
-    id: 'truyen-thong-thuong-hieu',
-    name: 'Truyền thông Thương hiệu',
-    name_en: 'Brand & Communication',
-    order_index: 3,
-    subcategories: [
-      'Báo chí & Truyền thông',
-      'Nhận diện thương hiệu',
-      'Chiến dịch PR',
-      'Quản trị khủng hoảng truyền thông'
-    ]
-  },
-  {
-    id: 'marketing-ban-hang',
-    name: 'Marketing & Bán hàng',
-    name_en: 'Marketing & Sales',
-    order_index: 4,
-    subcategories: [
-      'Digital Marketing & SEO',
-      'Thương mại điện tử',
-      'Kênh phân phối & Chuỗi cung ứng',
-      'Tối ưu chuyển đổi'
-    ]
-  },
-  {
-    id: 'ung-dung-ai-cong-nghe',
-    name: 'Ứng dụng AI & Công nghệ',
-    name_en: 'AI & Technology Application',
-    order_index: 5,
-    subcategories: [
-      'Trợ lý AI & Multi-Agent',
-      'Tự động hóa doanh nghiệp',
-      'ERP & CRM thông minh',
-      'Chuyển đổi số doanh nghiệp'
-    ]
-  },
-  {
-    id: 'thuc-hanh-esg',
-    name: 'Thực hành ESG & Phát triển bền vững',
-    name_en: 'ESG & Sustainable Development',
-    order_index: 6,
-    subcategories: [
-      'Chuyển đổi xanh & Năng lượng sạch',
-      'Tiêu chuẩn & Báo cáo ESG',
-      'Giảm phát thải Carbon',
-      'Trách nhiệm xã hội CSR'
-    ]
-  },
-  {
-    id: 'hiep-hoi-giao-thuong',
-    name: 'Hiệp hội & Giao thương',
-    name_en: 'Business Association & Networking',
     order_index: 7,
     subcategories: [
-      'Hiệp hội Doanh nghiệp',
-      'Danh bạ Hội viên',
-      'Tìm kiếm đối tác',
-      'Cơ hội đầu tư & Hợp tác'
+      'Lễ hội Cà phê Buôn Ma Thuột',
+      'Diễn đàn Xúc tiến Đầu tư',
+      'Hội thảo Kinh tế',
+      'Giao thương & Kết nối B2B'
     ]
   }
 ];
@@ -99,7 +99,16 @@ export const getSubcategoriesByCategory = (categoryName) => {
 };
 
 export const CATEGORY_LABELS = {
+  // Dak Lak Specific Categories
+  'Khám phá Đắk Lắk': { vi: 'Khám phá Đắk Lắk', en: 'Discover Dak Lak' },
+  'Doanh nghiệp & Sản phẩm': { vi: 'Doanh nghiệp & Sản phẩm', en: 'Enterprises & Products' },
+  'Đầu tư & Dự án': { vi: 'Đầu tư & Dự án', en: 'Investment & Projects' },
+  'Cà phê Đắk Lắk': { vi: 'Cà phê Đắk Lắk', en: 'Dak Lak Coffee' },
+  'Du lịch & Trải nghiệm': { vi: 'Du lịch & Trải nghiệm', en: 'Tourism & Experiences' },
+  'Dữ liệu & Báo cáo': { vi: 'Dữ liệu & Báo cáo', en: 'Data & Reports' },
   'Sự kiện & Diễn đàn': { vi: 'Sự kiện & Diễn đàn', en: 'Events & Forums' },
+  
+  // Legacy / Fallback Categories
   'Tư vấn Vay vốn & Tài chính': { vi: 'Tư vấn Vay vốn', en: 'Loan & Finance' },
   'Truyền thông Thương hiệu': { vi: 'Truyền thông', en: 'Brand & PR' },
   'Marketing & Bán hàng': { vi: 'Marketing & Bán hàng', en: 'Marketing & Sales' },
@@ -119,34 +128,35 @@ export const CATEGORY_LABELS = {
 };
 
 export const SUBCATEGORY_LABELS = {
-  'Hội thảo & Tọa đàm': { vi: 'Hội thảo & Tọa đàm', en: 'Conferences & Seminars' },
-  'Diễn đàn kinh tế': { vi: 'Diễn đàn kinh tế', en: 'Economic Forums' },
-  'Xúc tiến thương mại': { vi: 'Xúc tiến thương mại', en: 'Trade Promotion' },
-  'Giao thương B2B': { vi: 'Giao thương B2B', en: 'B2B Trade' },
-  'Tín dụng ngân hàng': { vi: 'Tín dụng ngân hàng', en: 'Bank Credit' },
-  'Quỹ hỗ trợ SME': { vi: 'Quỹ hỗ trợ SME', en: 'SME Support Funds' },
-  'Vốn đầu tư khởi nghiệp': { vi: 'Vốn đầu tư khởi nghiệp', en: 'Startup Capital' },
-  'Cơ cấu tài chính doanh nghiệp': { vi: 'Cơ cấu tài chính doanh nghiệp', en: 'Corporate Finance Restructuring' },
-  'Báo chí & Truyền thông': { vi: 'Báo chí & Truyền thông', en: 'Press & Media' },
-  'Nhận diện thương hiệu': { vi: 'Nhận diện thương hiệu', en: 'Brand Identity' },
-  'Chiến dịch PR': { vi: 'Chiến dịch PR', en: 'PR Campaigns' },
-  'Quản trị khủng hoảng truyền thông': { vi: 'Quản trị khủng hoảng truyền thông', en: 'Crisis Management' },
-  'Digital Marketing & SEO': { vi: 'Digital Marketing & SEO', en: 'Digital Marketing & SEO' },
-  'Thương mại điện tử': { vi: 'Thương mại điện tử', en: 'E-commerce' },
-  'Kênh phân phối & Chuỗi cung ứng': { vi: 'Kênh phân phối & Chuỗi cung ứng', en: 'Distribution & Supply Chain' },
-  'Tối ưu chuyển đổi': { vi: 'Tối ưu chuyển đổi', en: 'Conversion Optimization' },
-  'Trợ lý AI & Multi-Agent': { vi: 'Trợ lý AI & Multi-Agent', en: 'AI Assistant & Multi-Agent' },
-  'Tự động hóa doanh nghiệp': { vi: 'Tự động hóa doanh nghiệp', en: 'Enterprise Automation' },
-  'ERP & CRM thông minh': { vi: 'ERP & CRM thông minh', en: 'Smart ERP & CRM' },
-  'Chuyển đổi số doanh nghiệp': { vi: 'Chuyển đổi số doanh nghiệp', en: 'Digital Transformation' },
-  'Chuyển đổi xanh & Năng lượng sạch': { vi: 'Chuyển đổi xanh & Năng lượng sạch', en: 'Green Energy & Transition' },
-  'Tiêu chuẩn & Báo cáo ESG': { vi: 'Tiêu chuẩn & Báo cáo ESG', en: 'ESG Standards & Reporting' },
-  'Giảm phát thải Carbon': { vi: 'Giảm phát thải Carbon', en: 'Carbon Reduction' },
-  'Trách nhiệm xã hội CSR': { vi: 'Trách nhiệm xã hội CSR', en: 'CSR Responsibility' },
-  'Hiệp hội Doanh nghiệp': { vi: 'Hiệp hội Doanh nghiệp', en: 'Business Associations' },
-  'Danh bạ Hội viên': { vi: 'Danh bạ Hội viên', en: 'Member Directory' },
-  'Tìm kiếm đối tác': { vi: 'Tìm kiếm đối tác', en: 'Partner Matchmaking' },
-  'Cơ hội đầu tư & Hợp tác': { vi: 'Cơ hội đầu tư & Hợp tác', en: 'Investment Opportunities' }
+  // Dak Lak Subcategories
+  'Điểm đến & Thắng cảnh': { vi: 'Điểm đến & Thắng cảnh', en: 'Destinations & Landscapes' },
+  'Văn hóa Cồng chiêng': { vi: 'Văn hóa Cồng chiêng', en: 'Gong Culture' },
+  'Ẩm thực Tây Nguyên': { vi: 'Ẩm thực Tây Nguyên', en: 'Central Highlands Cuisine' },
+  'Di sản & Lịch sử': { vi: 'Di sản & Lịch sử', en: 'Heritage & History' },
+  'Danh bạ Doanh nghiệp': { vi: 'Danh bạ Doanh nghiệp', en: 'Business Directory' },
+  'Sản phẩm OCOP & Nông sản': { vi: 'Sản phẩm OCOP & Nông sản', en: 'OCOP & Agro-products' },
+  'Khởi nghiệp Đổi mới sáng tạo': { vi: 'Khởi nghiệp Đổi mới sáng tạo', en: 'Startups & Innovation' },
+  'Showroom số': { vi: 'Showroom số', en: 'Digital Showroom' },
+  'Danh mục Dự án Kêu gọi': { vi: 'Danh mục Dự án Kêu gọi', en: 'Invited Projects' },
+  'Khu & Cụm công nghiệp': { vi: 'Khu & Cụm công nghiệp', en: 'Industrial Parks' },
+  'Vùng nguyên liệu & Quỹ đất': { vi: 'Vùng nguyên liệu & Quỹ đất', en: 'Raw Material Zones' },
+  'Chính sách & Ưu đãi Đầu tư': { vi: 'Chính sách & Ưu đãi Đầu tư', en: 'Incentive Policies' },
+  'Chuỗi giá trị Cà phê': { vi: 'Chuỗi giá trị Cà phê', en: 'Coffee Value Chain' },
+  'Công nghệ Chế biến sâu': { vi: 'Công nghệ Chế biến sâu', en: 'Deep Processing Tech' },
+  'Thương hiệu & Thị trường': { vi: 'Thương hiệu & Thị trường', en: 'Brand & Markets' },
+  'Văn hóa Cà phê': { vi: 'Văn hóa Cà phê', en: 'Coffee Culture' },
+  'Hành trình 2N1Đ & 3N2Đ': { vi: 'Hành trình 2N1Đ & 3N2Đ', en: '2D1N & 3D2N Itineraries' },
+  'Du lịch Sinh thái & Bản làng': { vi: 'Du lịch Sinh thái & Bản làng', en: 'Ecotourism & Villages' },
+  'Lưu trú & Homestay': { vi: 'Lưu trú & Homestay', en: 'Stays & Homestays' },
+  'Lễ hội & Sự kiện': { vi: 'Lễ hội & Sự kiện', en: 'Festivals & Events' },
+  'Chỉ số Kinh tế - Xã hội': { vi: 'Chỉ số Kinh tế - Xã hội', en: 'Socio-economic Indicators' },
+  'Bản đồ Cơ hội Đắk Lắk': { vi: 'Bản đồ Cơ hội Đắk Lắk', en: 'Opportunity Map' },
+  'Báo cáo Ngành hàng': { vi: 'Báo cáo Ngành hàng', en: 'Industry Reports' },
+  'Quy hoạch Tỉnh Đắk Lắk': { vi: 'Quy hoạch Tỉnh Đắk Lắk', en: 'Provincial Master Plan' },
+  'Lễ hội Cà phê Buôn Ma Thuột': { vi: 'Lễ hội Cà phê Buôn Ma Thuột', en: 'Buon Ma Thuot Coffee Festival' },
+  'Diễn đàn Xúc tiến Đầu tư': { vi: 'Diễn đàn Xúc tiến Đầu tư', en: 'Investment Forum' },
+  'Hội thảo Kinh tế': { vi: 'Hội thảo Kinh tế', en: 'Economic Seminars' },
+  'Giao thương & Kết nối B2B': { vi: 'Giao thương & Kết nối B2B', en: 'B2B Trade & Networking' }
 };
 
 export const getCategoryLabel = (cat, lang = 'vi') => {

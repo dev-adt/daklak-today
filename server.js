@@ -62,7 +62,7 @@ if (process.env.SMTP_HOST) {
 }
 
 const app  = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3028;
 
 // Helper tạo URL slug chuẩn SEO từ chuỗi tiếng Việt
 function slugify(text) {

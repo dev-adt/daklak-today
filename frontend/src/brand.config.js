@@ -1,115 +1,118 @@
 /**
  * BRAND CONFIGURATION (CẤU HÌNH THƯƠNG HIỆU TẬP TRUNG)
  * -------------------------------------------------------------
- * File này quản lý toàn bộ thông tin nhận diện thương hiệu của nền tảng DoanhNghiepVN.today.
- * Đồng bộ theo Hợp đồng cung cấp dịch vụ số 204-100126/ADT-DNVN giữa:
- * - CÔNG TY CỔ PHẦN ADT QUỐC TẾ (Bên A)
- * - TẠP CHÍ DOANH NGHIỆP VIỆT NAM (Bên B)
+ * File này quản lý toàn bộ thông tin nhận diện thương hiệu của nền tảng DakLak.today.
+ * Định vị: Cổng thông tin, dữ liệu và kết nối đầu tư Đắk Lắk
+ * Triết lý: "Từ đất bazan đến cơ hội toàn cầu" (Media + Data + Platform + AI)
  */
 
 export const brandConfig = {
   // Thông tin định danh thương hiệu
-  brandName: 'DoanhNghiepVN.today', // Tên thương hiệu hiển thị chính
-  brandShortName: 'DoanhNghiepVN',  // Tên viết tắt ngắn gọn
-  platformName: 'DoanhNghiepVN.today Platform',
-  companyLegalName: 'Tạp chí Doanh Nghiệp Việt Nam',
+  brandName: 'DakLak.today',         // Tên thương hiệu hiển thị chính
+  brandShortName: 'DakLak Today',    // Tên viết tắt ngắn gọn
+  platformName: 'DakLak.today Digital Platform',
+  companyLegalName: 'Cổng thông tin, Dữ liệu & Xúc tiến Đầu tư Đắk Lắk',
   partnerLegalName: 'Công ty Cổ phần ADT Quốc tế',
   
   // Slogan & Định vị
-  slogan: 'Kết nối giao thương — Đồng hành cùng doanh nghiệp Việt',
-  tagline: 'Cổng kết nối đa lĩnh vực tích hợp Trí tuệ Nhân tạo AI cho Doanh nghiệp',
-  description: 'Hệ sinh thái số Tạp chí Doanh Nghiệp Việt Nam: Tổ chức sự kiện & diễn đàn giao thương, tư vấn tài chính & vay vốn, truyền thông thương hiệu, xúc tiến chuyển đổi số & AI, thực hành phát triển bền vững ESG.',
+  slogan: 'Cổng thông tin, dữ liệu và kết nối đầu tư Đắk Lắk',
+  tagline: 'Từ đất bazan đến cơ hội toàn cầu — Khám phá, Kết nối, Đầu tư & Trí tuệ Nhân tạo',
+  description: 'Nền tảng số kết nối con người, doanh nghiệp, sản phẩm, du lịch, dữ liệu và cơ hội đầu tư của tỉnh Đắk Lắk trong kỷ nguyên số và AI.',
   
   // Tên miền & Đường dẫn
-  domain: 'doanhnghiepvn.today',
-  demoDomain: 'demo.edunow.today',
-  baseUrl: 'https://doanhnghiepvn.today',
-  demoUrl: 'https://demo.edunow.today',
+  domain: 'daklak.today',
+  demoDomain: 'demo.daklak.today',
+  baseUrl: 'https://daklak.today',
+  demoUrl: 'https://demo.daklak.today',
   apiBaseUrl: '/api',
 
   // Nhận diện hình ảnh & Logo
   logo: {
-    primary: '/logo_doanhnghiepvn.png', // Đường dẫn logo chính (trong suốt)
-    dark: '/logo_doanhnghiepvn_dark.png', // Logo banner nền tối chuẩn
-    icon: '/logo_icon.png', // Biểu tượng icon vuông
-    alt: 'DoanhNghiepVN.today Logo',
+    primary: '/logo_doanhnghiepvn.png',
+    dark: '/logo_doanhnghiepvn_dark.png',
+    icon: '/logo_icon.png',
+    alt: 'DakLak.today Logo',
     favicon: '/favicon.png',
-    defaultThumbnail: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80',
-    fallbackCompanyLogo: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80'
+    defaultThumbnail: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
+    fallbackCompanyLogo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80'
   },
 
-  // Hệ màu chủ đạo (CSS Theme Variables - Đồng bộ theo phong cách Tre Việt Luminous Tech Blue)
+  // Hệ màu chủ đạo Tây Nguyên & Đất đỏ Bazan (Tây Nguyên Coffee & Bazan Earth Palette)
   colors: {
-    primary: '#1E63E9',       // Luminous Royal Blue sáng, hiện đại
-    primaryHover: '#1850C7',  // Vibrant Blue hover
-    primaryDark: '#0D3894',   // Royal Navy lịch lãm
-    primaryLight: '#EFF6FF',  // Ice Blue nền phụ thanh lịch phối trắng
-    secondary: '#1248BE',     // Vibrant Tech Blue
-    accent: '#00D2FF',        // Electric Ice Cyan lấy cảm hứng từ cây tre công nghệ
-    accentGlow: 'rgba(0, 210, 255, 0.4)',
-    gold: '#F59E0B',          // Vàng hổ phách rực rỡ "Khởi nghiệp"
-    goldLight: '#FBBF24',     // Vàng sáng
-    goldGlow: 'rgba(245, 158, 11, 0.35)',
-    emerald: '#0284C7',       // Xanh dương tươi thay thế màu xanh lá cũ
-    darkBg: '#0D348A',
-    darkCard: '#1244B8'
+    primary: '#7A3E1D',       // Nâu đỏ Bazan đặc trưng
+    primaryHover: '#5D3727',  // Nâu cà phê đậm hover
+    primaryDark: '#3B2417',   // Nâu hạt cà phê rang
+    primaryLight: '#F7F1E8',  // Kem ấm ánh bazan
+    secondary: '#1F5A3A',     // Xanh đại ngàn Tây Nguyên
+    accent: '#D5A33F',        // Vàng đồng cồng chiêng
+    accentGlow: 'rgba(213, 163, 63, 0.4)',
+    gold: '#D5A33F',          // Vàng cồng chiêng
+    goldLight: '#F3C562',     // Vàng sáng
+    goldGlow: 'rgba(213, 163, 63, 0.35)',
+    bazanRed: '#A84524',      // Đỏ đất Bazan nhiệt huyết
+    bazanBrown: '#7A3E1D',    // Nâu Bazan
+    coffee: '#3B2417',        // Nâu hạt cà phê
+    forestGreen: '#1F5A3A',   // Xanh rừng đại ngàn
+    cream: '#F7F1E8',         // Kem cát bazan nhạt
+    darkBg: '#26160E',
+    darkCard: '#3B2417'
   },
 
   // Trợ lý Trí tuệ Nhân tạo (AI Assistant)
   aiAssistant: {
-    name: 'AI Doanh Nghiệp VN',
-    shortName: 'DNVN AI',
-    title: 'Trợ lý AI Tư vấn Doanh nghiệp & Xúc tiến Giao thương',
+    name: 'AI Đắk Lắk Assistant',
+    shortName: 'Đắk Lắk AI',
+    title: 'Trợ lý AI Cố vấn Đầu tư & Điểm đến Đắk Lắk',
     avatar: '/ai_robot_avatar-removebg.png',
-    welcomeMessage: 'Xin chào! Tôi là Trợ lý AI của DoanhNghiepVN.today. Tôi có thể hỗ trợ quý doanh nghiệp tìm kiếm cơ hội giao thương, tư vấn hồ sơ vay vốn, truyền thông thương hiệu, chuyển đổi số AI và kết nối đối tác 24/7.',
-    systemRole: 'Bạn là trợ lý AI chuyên nghiệp của nền tảng DoanhNghiepVN.today — Hệ sinh thái số Tạp chí Doanh Nghiệp Việt Nam. Tư vấn chuẩn xác, nhiệt tình về phát triển doanh nghiệp, vay vốn tín dụng, truyền thông, thực hành ESG và ứng dụng AI.',
+    welcomeMessage: 'Xin chào! Tôi là Trợ lý AI của DakLak.today. Tôi có thể hỗ trợ quý vị tra cứu cơ hội đầu tư, chuỗi giá trị cà phê, doanh nghiệp địa phương, nông nghiệp công nghệ cao và hành trình khám phá Đắk Lắk 24/7.',
+    systemRole: 'Bạn là trợ lý AI chuyên nghiệp của nền tảng DakLak.today — Cổng thông tin, dữ liệu và kết nối đầu tư Đắk Lắk. Hãy tư vấn sâu sắc, chuẩn xác, giàu thông tin và truyền cảm hứng về cơ hội đầu tư, quy hoạch vùng, chuỗi giá trị cà phê Buôn Ma Thuột, nông sản Tây Nguyên, văn hóa cồng chiêng và du lịch sinh thái.',
     quickSuggestions: [
-      'Tìm hiểu các sự kiện và diễn đàn giao thương sắp diễn ra',
-      'Tư vấn gói hỗ trợ vay vốn ngân hàng và quỹ hỗ trợ SME',
-      'Cách thức đăng ký thành viên Hiệp hội Doanh nghiệp',
-      'Giải pháp ứng dụng Trí tuệ nhân tạo (AI) cho doanh nghiệp'
+      'Tìm doanh nghiệp chế biến sâu cà phê tại Đắk Lắk',
+      'Các dự án nông nghiệp công nghệ cao đang kêu gọi đầu tư',
+      'Gợi ý hành trình du lịch sinh thái & văn hóa 2 ngày 1 đêm',
+      'Chính sách ưu đãi và thủ tục đầu tư vào cụm công nghiệp Đắk Lắk'
     ]
   },
 
-  // Thông tin liên hệ & Văn phòng (Theo hợp đồng số 204-100126/ADT-DNVN)
+  // Thông tin liên hệ & Văn phòng
   contact: {
-    hotline: '024 2216 9595',
+    hotline: '0262 3888 999',
     phone: '0912 480 246',
     techHotline: '0986 354 152',
-    email: 'bbt@doanhnghiepvn.today',
-    supportEmail: 'contact@doanhnghiepvn.today',
-    address: 'A1.4 (A5A) Khu Liền kề 671 Hoàng Hoa Thám, P. Ngọc Hà, TP. Hà Nội',
+    email: 'contact@daklak.today',
+    supportEmail: 'support@daklak.today',
+    address: 'Số 01 Lê Duẩn, Phường Tự An, TP. Buôn Ma Thuột, Tỉnh Đắk Lắk',
     techAddress: '26 TT23 Khu đô thị Văn Phú, P. Kiến Hưng, Hà Nội',
     workingHours: '08:00 - 17:30 (Thứ 2 - Thứ 6)',
-    copyright: '© 2026 Tạp chí Doanh Nghiệp Việt Nam — Hệ thống xây dựng & chuyển giao bởi ADT Quốc tế.'
+    copyright: '© 2026 DakLak.today — Nền tảng phát triển & vận hành bởi ADT Quốc tế.'
   },
 
-  // Thông tin thanh toán / Chuyển khoản sự kiện (Theo Hợp đồng)
+  // Thông tin thanh toán / Chuyển khoản sự kiện (VietQR)
   bankAccount: {
     bankName: 'Techcombank',
-    bankBranch: 'PGD Văn Quán - Hà Đông - Hà Nội',
+    bankBranch: 'PGD Buôn Ma Thuột / PGD Văn Quán',
     accountNumber: '19036730021017',
     accountHolder: 'CONG TY CO PHAN ADT QUOC TE',
-    binCode: '970407' // Mã BIN VietQR của Techcombank
+    binCode: '970407'
   },
 
   // Mạng xã hội
   socials: {
-    facebook: 'https://facebook.com/doanhnghiepvn.today',
-    youtube: 'https://youtube.com/@doanhnghiepvn.today',
-    zalo: 'https://zalo.me/doanhnghiepvn',
-    linkedin: 'https://linkedin.com/company/doanhnghiepvn'
+    facebook: 'https://facebook.com/daklak.today',
+    youtube: 'https://youtube.com/@daklak.today',
+    zalo: 'https://zalo.me/daklaktoday',
+    linkedin: 'https://linkedin.com/company/daklak-today'
   },
 
   // Thông tin Đăng ký Hội viên & Gói dịch vụ
   membership: {
-    benefitsTitle: 'Quyền lợi Hội viên DoanhNghiepVN.today',
-    badgeText: 'Mạng lưới cộng đồng doanh nghiệp toàn quốc',
+    benefitsTitle: 'Quyền lợi Hội viên DakLak.today',
+    badgeText: 'Mạng lưới kết nối doanh nghiệp & nhà đầu tư Đắk Lắk',
     tiers: [
-      { id: 'Standard', name: 'Standard Member', badge: 'Hội viên Tiêu chuẩn' },
-      { id: 'Silver', name: 'Silver Partner', badge: 'Đối tác Bạc' },
-      { id: 'Gold', name: 'Gold Partner', badge: 'Đối tác Vàng' },
-      { id: 'Diamond', name: 'Diamond VIP', badge: 'Đối tác Kim Cương' }
+      { id: 'Standard', name: 'Khám phá (Cơ bản)', badge: 'Thành viên Khám phá' },
+      { id: 'Silver', name: 'Doanh nghiệp Kết nối', badge: 'Đối tác Bạc' },
+      { id: 'Gold', name: 'Doanh nghiệp Tiêu biểu', badge: 'Đối tác Vàng' },
+      { id: 'Diamond', name: 'Nhà đầu tư Chiến lược', badge: 'Đối tác Kim Cương' }
     ]
   }
 };

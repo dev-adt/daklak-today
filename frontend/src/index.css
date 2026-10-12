@@ -1,63 +1,72 @@
-/* DoanhNghiepVN.today — High-End Tech & Enterprise Design System */
-/* Inspired by TECHFEST Vietnam 2025: Tech Royal Blue, Electric Cyan & Radiant Enterprise Gold */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+/* DakLak.today — High-End Regional & Investment Platform Design System */
+/* Inspired by Central Highlands Bazan Earth, Roasted Coffee & Gong Bronze Gold */
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 *{box-sizing:border-box;margin:0;padding:0}
 
 :root {
   /* Fonts */
-  --font-title: 'Outfit', system-ui, -apple-system, sans-serif;
-  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-title: 'Be Vietnam Pro', 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-body: 'Be Vietnam Pro', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 
-  /* Color Tokens (Luminous Royal Blue & Bamboo Cyber Palette) */
-  --primary: #1E63E9;
-  --primary-glow: rgba(30, 99, 233, 0.35);
-  --primary-dark: #0D3894;
-  --primary-light: #3B82F6;
+  /* DakLak Bazan, Coffee & Gong Gold Tokens */
+  --primary-coffee: #3B2417;
+  --bazan-brown: #7A3E1D;
+  --bazan-red: #A84524;
+  --forest-green: #1F5A3A;
+  --gong-gold: #D5A33F;
+  --light-cream: #F7F1E8;
+  --text-dark: #2C221E;
+
+  /* Color Tokens */
+  --primary: #7A3E1D;
+  --primary-glow: rgba(122, 62, 29, 0.35);
+  --primary-dark: #3B2417;
+  --primary-light: #A84524;
   
-  --neon-cyan: #00D2FF;
-  --neon-glow: rgba(0, 210, 255, 0.4);
+  --neon-cyan: #D5A33F;
+  --neon-glow: rgba(213, 163, 63, 0.4);
 
-  --emerald: #0284C7;
-  --emerald-bg: rgba(2, 132, 199, 0.12);
-  --emerald-dark: #0369A1;
+  --emerald: #1F5A3A;
+  --emerald-bg: rgba(31, 90, 58, 0.12);
+  --emerald-dark: #16432B;
 
-  --amber: #F59E0B;
-  --amber-bg: rgba(245, 158, 11, 0.12);
-  --amber-dark: #D97706;
-  --gold: #F59E0B;
-  --gold-light: #FBBF24;
-  --gold-glow: rgba(245, 158, 11, 0.3);
+  --amber: #D5A33F;
+  --amber-bg: rgba(213, 163, 63, 0.15);
+  --amber-dark: #B3832B;
+  --gold: #D5A33F;
+  --gold-light: #F3C562;
+  --gold-glow: rgba(213, 163, 63, 0.35);
 
-  --rose: #EF4444;
-  --rose-bg: rgba(239, 68, 68, 0.1);
-  --rose-dark: #DC2626;
+  --rose: #A84524;
+  --rose-bg: rgba(168, 69, 36, 0.12);
+  --rose-dark: #8A341A;
 
-  /* Default Theme: Premium Tech Slate Canvas (Crisp, High-Contrast, Clean) */
-  --bg-base: #F4F7FC;
+  /* Default Theme: Warm Cream & Crisp Canvas */
+  --bg-base: #F7F1E8;
   --surface-2: #FFFFFF;
-  --surface-0: #EBF1FA;
-  --surface-1: #DFE9F6;
+  --surface-0: #EFE6D8;
+  --surface-1: #E4D7C3;
   
-  --text-primary: #0A1C3E;
-  --text-secondary: #243A69;
-  --text-muted: #64748B;
+  --text-primary: #2C221E;
+  --text-secondary: #5D4336;
+  --text-muted: #7A6960;
   
-  --border: rgba(15, 82, 186, 0.08);
-  --border-strong: rgba(15, 82, 186, 0.18);
+  --border: rgba(122, 62, 29, 0.12);
+  --border-strong: rgba(122, 62, 29, 0.22);
 
   /* Glassmorphism Parameters */
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(15, 82, 186, 0.1);
-  --glass-glow: rgba(0, 229, 255, 0.12);
+  --glass-bg: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(122, 62, 29, 0.14);
+  --glass-glow: rgba(213, 163, 63, 0.18);
 
   /* Shared parameters */
   --radius: 12px;
   --radius-lg: 20px;
   --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  --shadow: 0 10px 30px -10px rgba(10, 28, 62, 0.08);
-  --shadow-lg: 0 20px 40px -15px rgba(10, 28, 62, 0.14);
-  --shadow-light: 0 8px 24px -8px rgba(10, 28, 62, 0.04);
+  --shadow: 0 10px 30px -10px rgba(59, 36, 23, 0.08);
+  --shadow-lg: 0 20px 40px -15px rgba(59, 36, 23, 0.16);
+  --shadow-light: 0 8px 24px -8px rgba(59, 36, 23, 0.05);
 }
 
 /* Card Hover Micro-animations */

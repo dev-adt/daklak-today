@@ -8,11 +8,11 @@
 require('dotenv').config();
 
 const brandConfig = {
-  appName: process.env.APP_NAME || 'DoanhNghiepVN.today Platform',
-  brandName: process.env.BRAND_NAME || 'DoanhNghiepVN.today',
-  brandShortName: process.env.BRAND_SHORT_NAME || 'DoanhNghiepVN',
-  siteUrl: process.env.SITE_URL || 'https://doanhnghiepvn.today',
-  demoSiteUrl: 'https://demo.edunow.today',
+  appName: process.env.APP_NAME || 'DakLak.today Platform',
+  brandName: process.env.BRAND_NAME || 'DakLak.today',
+  brandShortName: process.env.BRAND_SHORT_NAME || 'DakLak Today',
+  siteUrl: process.env.SITE_URL || 'https://daklak.today',
+  demoSiteUrl: 'https://demo.daklak.today',
   
   // Nhận diện logo thương hiệu
   logo: {
@@ -22,38 +22,38 @@ const brandConfig = {
     favicon: '/favicon.png'
   },
   
-  // Thông tin thanh toán ngân hàng (Theo hợp đồng số 204-100126/ADT-DNVN)
+  // Thông tin thanh toán ngân hàng (VietQR)
   bankAccount: {
     bankName: 'Techcombank',
-    bankBranch: 'PGD Văn Quán - Hà Đông - Hà Nội',
+    bankBranch: 'PGD Buôn Ma Thuột / PGD Văn Quán',
     accountNumber: '19036730021017',
     accountHolder: 'CONG TY CO PHAN ADT QUOC TE',
     binCode: '970407'
   },
 
-  // AI System Persona Prompt
+  // AI System Persona Prompt cho Đắk Lắk
   ai: {
-    agentName: process.env.AI_AGENT_NAME || 'AI Doanh Nghiệp VN',
+    agentName: process.env.AI_AGENT_NAME || 'AI Đắk Lắk Assistant',
     systemPrompt: process.env.AI_SYSTEM_PROMPT || 
-      "Bạn là trợ lý AI chuyên nghiệp của nền tảng DoanhNghiepVN.today — Hệ sinh thái số Tạp chí Doanh Nghiệp Việt Nam. Kết nối giao thương — Đồng hành cùng doanh nghiệp Việt. Hãy tư vấn chuyên sâu, chuẩn xác, truyền cảm hứng và tận tâm về các giải pháp vay vốn, truyền thông thương hiệu, marketing bán hàng, ứng dụng AI và thực hành ESG."
+      "Bạn là trợ lý AI chuyên nghiệp của nền tảng DakLak.today — Cổng thông tin, dữ liệu và kết nối đầu tư Đắk Lắk. Hãy tư vấn sâu sắc, chuẩn xác, giàu thông tin và truyền cảm hứng về cơ hội đầu tư, quy hoạch vùng, chuỗi giá trị cà phê Buôn Ma Thuột, nông sản Tây Nguyên, văn hóa cồng chiêng và du lịch sinh thái."
   },
 
   // Email Brand Info
   email: {
-    fromName: process.env.SMTP_FROM_NAME || 'Ban Biên Tập DoanhNghiepVN.today',
-    fromAddress: process.env.SMTP_FROM || `"DoanhNghiepVN.today" <${process.env.SMTP_USER || 'no-reply@doanhnghiepvn.today'}>`,
-    supportEmail: process.env.SUPPORT_EMAIL || 'support@doanhnghiepvn.today'
+    fromName: process.env.SMTP_FROM_NAME || 'Ban Biên Tập DakLak.today',
+    fromAddress: process.env.SMTP_FROM || `"DakLak.today" <${process.env.SMTP_USER || 'no-reply@daklak.today'}>`,
+    supportEmail: process.env.SUPPORT_EMAIL || 'support@daklak.today'
   },
 
-  // Chuyên mục mặc định Doanh Nghiệp Việt Nam theo Hợp đồng
+  // 7 Chuyên mục mặc định Đắk Lắk theo Đặc tả kiến trúc hệ sinh thái số
   defaultCategories: [
-    { name: 'Sự kiện & Diễn đàn', slug: 'su-kien-dien-dan', icon: '📅', description: 'Hội thảo, diễn đàn kinh tế, xúc tiến thương mại và kết nối B2B' },
-    { name: 'Tư vấn Vay vốn & Tài chính', slug: 'tu-van-vay-von', icon: '💰', description: 'Tín dụng ngân hàng, quỹ hỗ trợ SME và cơ cấu tài chính' },
-    { name: 'Truyền thông Thương hiệu', slug: 'truyen-thong-thuong-hieu', icon: '📢', description: 'Báo chí, quan hệ công chúng PR và nhận diện thương hiệu' },
-    { name: 'Marketing & Bán hàng', slug: 'marketing-ban-hang', icon: '📈', description: 'Chuyển đổi số bán hàng, thương mại điện tử và chuỗi cung ứng' },
-    { name: 'Ứng dụng AI & Công nghệ', slug: 'ung-dung-ai-cong-nghe', icon: '🤖', description: 'Trợ lý AI Agent, tự động hóa quy trình và ERP thông minh' },
-    { name: 'Thực hành ESG', slug: 'thuc-hanh-esg', icon: '🌱', description: 'Tiêu chuẩn xanh, giảm phát thải Carbon và phát triển bền vững' },
-    { name: 'Hiệp hội & Giao thương', slug: 'hiep-hoi-giao-thuong', icon: '🤝', description: 'Hiệp hội doanh nghiệp, danh bạ hội viên và tìm kiếm đối tác' }
+    { name: 'Khám phá Đắk Lắk', slug: 'kham-pha-dak-lak', icon: '🌄', description: 'Điểm đến, di tích, danh lam thắng cảnh và văn hóa Tây Nguyên' },
+    { name: 'Doanh nghiệp & Sản phẩm', slug: 'doanh-nghiep-san-pham', icon: '🏢', description: 'Hồ sơ doanh nghiệp, nông sản OCOP, showroom số và kết nối thương mại' },
+    { name: 'Đầu tư & Dự án', slug: 'dau-tu-du-an', icon: '💰', description: 'Danh mục dự án kêu gọi đầu tư, KCN, vùng nguyên liệu và chính sách' },
+    { name: 'Cà phê Đắk Lắk', slug: 'ca-phe-dak-lak', icon: '☕', description: 'Chuỗi giá trị cà phê, công nghệ chế biến sâu, thương hiệu và xuất khẩu' },
+    { name: 'Du lịch & Trải nghiệm', slug: 'du-lich-trai-nghiem', icon: '🧭', description: 'Hành trình 2N1Đ, 3N2Đ, du lịch sinh thái, homestay và lễ hội' },
+    { name: 'Dữ liệu & Báo cáo', slug: 'du-lieu-bao-cao', icon: '📊', description: 'Chỉ số kinh tế Đắk Lắk, bản đồ cơ hội và phân tích dữ liệu ngành' },
+    { name: 'Sự kiện & Diễn đàn', slug: 'su-kien-dien-dan', icon: '📅', description: 'Lễ hội cà phê, diễn đàn xúc tiến đầu tư và kết nối giao thương B2B' }
   ]
 };
 

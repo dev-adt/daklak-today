@@ -97,7 +97,7 @@ export const Navbar = () => {
   };
 
   const getInitials = (name) => {
-    if (!name) return 'DN';
+    if (!name) return 'DL';
     return name.trim().split(/\s+/).map(w => w[0]).join('').substring(0, 2).toUpperCase();
   };
 
@@ -138,10 +138,10 @@ export const Navbar = () => {
           position: sticky !important;
           top: 0 !important;
           z-index: 9999 !important;
-          background: #0B2E7C !important;
-          background-image: linear-gradient(90deg, #092569 0%, #1243B5 50%, #092569 100%) !important;
-          border-bottom: 1px solid rgba(147, 197, 253, 0.22) !important;
-          box-shadow: 0 4px 20px rgba(9, 37, 105, 0.45), 0 1px 0 rgba(0, 210, 255, 0.18) !important;
+          background: #26160E !important;
+          background-image: linear-gradient(90deg, #1C0F08 0%, #3B2417 50%, #1C0F08 100%) !important;
+          border-bottom: 1px solid rgba(213, 163, 63, 0.28) !important;
+          box-shadow: 0 4px 20px rgba(28, 15, 8, 0.65), 0 1px 0 rgba(213, 163, 63, 0.2) !important;
           width: 100% !important;
           max-width: 100vw !important;
           box-sizing: border-box !important;
@@ -250,233 +250,147 @@ export const Navbar = () => {
           .dnvn-nav-right {
             gap: 4px !important;
           }
-          .dnvn-lang-switcher button {
+          .dnvn-lang-btn {
             padding: 2px 5px !important;
             font-size: 9.5px !important;
           }
-          .dnvn-btn-pwa-install {
-            padding: 4px 6px !important;
-            font-size: 10px !important;
-            gap: 3px !important;
-          }
           .dnvn-btn-join-desktop {
-            padding: 5px 8px !important;
-            font-size: 10.5px !important;
-            gap: 3px !important;
+            padding: 4px 7px !important;
+            font-size: 10px !important;
           }
           .dnvn-login-btn {
-            padding: 4px 6px !important;
-            font-size: 11px !important;
+            padding: 4px 5px !important;
+            font-size: 10.5px !important;
           }
         }
 
-        /* Extra compact scaling for narrow laptops (1081px - 1240px) */
-        @media (min-width: 1081px) and (max-width: 1240px) {
-          .dnvn-navbar-container {
-            padding: 0 4px !important;
-          }
+        @media (min-width: 1441px) {
           .dnvn-nav-item-btn {
-            font-size: 9.2px !important;
-            max-width: 68px !important;
-            padding: 2px 2px !important;
+            font-size: 11.5px !important;
+            padding: 4px 7px !important;
+            max-width: 115px !important;
+          }
+          .dnvn-brand-title {
+            font-size: 17px !important;
           }
           .dnvn-brand-subtitle {
-            display: none !important;
-          }
-          .dnvn-btn-pwa-install span {
-            display: none !important;
-          }
-          .dnvn-btn-pwa-install {
-            padding: 4px 5px !important;
-          }
-          .dnvn-btn-join-desktop {
-            padding: 4px 6px !important;
-            font-size: 10px !important;
+            font-size: 7.5px !important;
           }
         }
 
-        /* Brand logo container & text scaling (Never shrink, never wrap vertically) */
+        /* Brand Styling */
         .dnvn-brand-link {
           display: flex !important;
           align-items: center !important;
-          gap: 10px !important;
+          gap: 9px !important;
           text-decoration: none !important;
-          flex: 0 0 auto !important;
-          flex-shrink: 0 !important;
-          min-width: max-content !important;
-          white-space: nowrap !important;
           margin-right: 8px !important;
+          flex-shrink: 0 !important;
         }
 
         .dnvn-brand-icon {
-          width: 38px !important;
-          height: 38px !important;
-          border-radius: 10px !important;
-          overflow: hidden !important;
+          width: 36px !important;
+          height: 36px !important;
+          border-radius: 9px !important;
+          background: linear-gradient(135deg, #7A3E1D 0%, #D5A33F 100%) !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
           color: #ffffff !important;
           font-weight: 900 !important;
-          box-shadow: 0 2px 14px rgba(0, 229, 255, 0.4) !important;
-          border: 1.5px solid rgba(0, 229, 255, 0.5) !important;
+          font-size: 14px !important;
+          border: 1px solid rgba(213, 163, 63, 0.4) !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+          overflow: hidden !important;
           flex-shrink: 0 !important;
-          background: #051336 !important;
         }
 
         .dnvn-brand-icon-img {
           width: 100% !important;
           height: 100% !important;
           object-fit: cover !important;
-          display: block !important;
         }
 
         .dnvn-brand-text-box {
           display: flex !important;
           flex-direction: column !important;
-          justify-content: center !important;
-          flex-shrink: 0 !important;
-          white-space: nowrap !important;
+          line-height: 1.1 !important;
         }
 
         .dnvn-brand-title {
-          font-size: 18px !important;
+          font-family: 'Be Vietnam Pro', 'Outfit', sans-serif !important;
           font-weight: 800 !important;
           color: #ffffff !important;
           letter-spacing: -0.3px !important;
-          line-height: 1.15 !important;
-          white-space: nowrap !important;
-          word-break: keep-all !important;
         }
 
         .dnvn-brand-subtitle {
-          font-size: 8px !important;
-          letter-spacing: 0.6px !important;
-          color: #93C5FD !important;
+          font-size: 7px !important;
           font-weight: 700 !important;
+          color: #D5A33F !important;
+          letter-spacing: 0.5px !important;
           text-transform: uppercase !important;
           margin-top: 2px !important;
-          white-space: nowrap !important;
-          word-break: keep-all !important;
-          line-height: 1.2 !important;
         }
 
-        /* Mobile specific fluid text scaling (Keep horizontal, never break into vertical letters) */
-        @media (max-width: 768px) {
-          .dnvn-brand-link {
-            gap: 8px !important;
-            flex-shrink: 0 !important;
-            white-space: nowrap !important;
-          }
-          .dnvn-brand-icon {
-            width: 32px !important;
-            height: 32px !important;
-            font-size: 12px !important;
-            border-radius: 8px !important;
-          }
-          .dnvn-brand-title {
-            font-size: clamp(13px, 3.8vw, 16px) !important;
-            line-height: 1.2 !important;
-            white-space: nowrap !important;
-            word-break: keep-all !important;
-          }
-          .dnvn-brand-subtitle {
-            font-size: clamp(6.5px, 1.8vw, 7.5px) !important;
-            letter-spacing: 0.3px !important;
-            white-space: nowrap !important;
-            word-break: keep-all !important;
-          }
-          .dnvn-btn-join-desktop {
-            display: none !important;
-          }
-          .dnvn-lang-switcher button {
-            padding: 2px 6px !important;
-            font-size: 10px !important;
-          }
-        }
-
-        @media (max-width: 540px) {
-          .dnvn-btn-pwa-install span {
-            display: none !important;
-          }
-          .dnvn-btn-pwa-install {
-            padding: 5px 8px !important;
-          }
-        }
-
-        @media (max-width: 420px) {
-          .dnvn-brand-title {
-            font-size: 13px !important;
-            white-space: nowrap !important;
-          }
-          .dnvn-brand-subtitle {
-            font-size: 6.5px !important;
-            letter-spacing: 0.2px !important;
-            white-space: nowrap !important;
-          }
-          .dnvn-lang-switcher {
-            display: none !important;
-          }
-        }
-
-        @media (max-width: 360px) {
-          .dnvn-brand-link {
-            gap: 6px !important;
-          }
-          .dnvn-brand-icon {
-            width: 28px !important;
-            height: 28px !important;
-          }
-          .dnvn-brand-title {
-            font-size: 12px !important;
-          }
-          .dnvn-brand-subtitle {
-            display: none !important;
-          }
-          .dnvn-btn-pwa-install {
-            display: none !important;
-          }
-        }
-
-        .dnvn-cat-wrapper {
-          position: relative !important;
-          flex-shrink: 0 !important;
-          overflow: visible !important;
-        }
-
-        /* 2-line flexible item: user explicitly requested text can wrap onto 2 lines to never overlap */
-        .dnvn-nav-item-btn {
-          color: #E2E8F0 !important;
-          font-size: 11.5px !important;
-          line-height: 1.25 !important;
-          font-weight: 600 !important;
-          padding: 5px 6px !important;
-          border-radius: 8px !important;
+        /* AI Assistant Nav Button */
+        .dnvn-ai-nav-btn {
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
-          gap: 3px !important;
+          gap: 4px !important;
+          background: rgba(213, 163, 63, 0.15) !important;
+          border: 1px solid rgba(213, 163, 63, 0.45) !important;
+          color: #F3C562 !important;
+          font-weight: 700 !important;
           text-decoration: none !important;
-          text-align: center !important;
-          max-width: 100px !important;
-          white-space: normal !important;
-          word-break: break-word !important;
+          border-radius: 8px !important;
+          padding: 4px 9px !important;
+          transition: all 0.2s ease !important;
+          flex-shrink: 0 !important;
+          white-space: nowrap !important;
+        }
+
+        .dnvn-ai-nav-btn:hover {
+          background: rgba(213, 163, 63, 0.3) !important;
+          color: #ffffff !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 4px 12px rgba(213, 163, 63, 0.3) !important;
+        }
+
+        /* Nav Item wrapper & Button */
+        .dnvn-cat-wrapper {
+          position: relative !important;
+          display: inline-flex !important;
+          align-items: center !important;
+        }
+
+        .dnvn-nav-item-btn {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          color: #E6DCD2 !important;
+          text-decoration: none !important;
+          font-weight: 600 !important;
+          border-radius: 6px !important;
           transition: all 0.18s ease !important;
-          flex-shrink: 1 !important;
-          min-height: 38px !important;
+          cursor: pointer !important;
+          background: transparent !important;
           border: 1px solid transparent !important;
+          box-sizing: border-box !important;
+          user-select: none !important;
         }
 
         .dnvn-nav-item-btn:hover {
-          color: #93C5FD !important;
-          background-color: rgba(30, 99, 233, 0.18) !important;
-          border-color: rgba(147, 197, 253, 0.4) !important;
+          color: #D5A33F !important;
+          background-color: rgba(213, 163, 63, 0.14) !important;
+          border-color: rgba(213, 163, 63, 0.35) !important;
         }
 
         .dnvn-nav-item-btn.active {
           color: #FFFFFF !important;
-          background-color: rgba(30, 99, 233, 0.45) !important;
-          border-bottom: 2px solid #60A5FA !important;
+          background-color: rgba(168, 69, 36, 0.45) !important;
+          border-bottom: 2px solid #D5A33F !important;
         }
 
         .dnvn-nav-text {
@@ -492,12 +406,12 @@ export const Navbar = () => {
           top: calc(100% + 4px) !important;
           left: 0 !important;
           min-width: 250px !important;
-          background-color: #0A2E78 !important;
-          background-image: linear-gradient(180deg, #103B99 0%, #0A2E78 100%) !important;
-          border: 1px solid rgba(147, 197, 253, 0.35) !important;
+          background-color: #2A170F !important;
+          background-image: linear-gradient(180deg, #351E13 0%, #22120B 100%) !important;
+          border: 1px solid rgba(213, 163, 63, 0.35) !important;
           border-radius: 10px !important;
           padding: 8px 0 !important;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.75), 0 0 20px rgba(30, 99, 233, 0.25) !important;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(213, 163, 63, 0.2) !important;
           z-index: 999999 !important;
           animation: dnvnFadeIn 0.15s ease-out !important;
         }
@@ -521,7 +435,7 @@ export const Navbar = () => {
         .dnvn-dropdown-item {
           display: block !important;
           padding: 8px 16px !important;
-          color: #E2E8F0 !important;
+          color: #F1ECE6 !important;
           font-size: 12.5px !important;
           font-weight: 500 !important;
           text-decoration: none !important;
@@ -530,12 +444,12 @@ export const Navbar = () => {
         }
 
         .dnvn-dropdown-item:hover {
-          background-color: rgba(30, 99, 233, 0.3) !important;
-          color: #93C5FD !important;
+          background-color: rgba(213, 163, 63, 0.2) !important;
+          color: #D5A33F !important;
           padding-left: 20px !important;
         }
 
-        /* Right side action container: sits seamlessly next to Trợ lý AI with no artificial gap */
+        /* Right side action container */
         .dnvn-nav-right {
           display: flex !important;
           align-items: center !important;
@@ -564,18 +478,18 @@ export const Navbar = () => {
             <div className="dnvn-brand-icon">
               <img 
                 src="/logo_icon.png" 
-                alt="DN Logo" 
+                alt="DakLak Logo" 
                 className="dnvn-brand-icon-img"
-                onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerText = 'DN'; }}
+                onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerText = 'DL'; }}
               />
             </div>
             <div className="dnvn-brand-text-box">
               <span className="dnvn-brand-title">
-                {brandConfig.brandShortName || 'DoanhNghiepVN'}
-                <span style={{ color: '#00E5FF' }}>.today</span>
+                {brandConfig.brandShortName || 'DakLak'}
+                <span style={{ color: '#D5A33F' }}>.today</span>
               </span>
               <span className="dnvn-brand-subtitle">
-                {currentLang === 'en' ? 'VIETNAM ENTERPRISE MAGAZINE' : 'TẠP CHÍ DOANH NGHIỆP VIỆT NAM'}
+                {currentLang === 'en' ? 'DAK LAK INFORMATION, DATA & INVESTMENT' : 'CỔNG THÔNG TIN, DỮ LIỆU & ĐẦU TƯ ĐẮK LẮK'}
               </span>
             </div>
           </Link>
@@ -601,51 +515,58 @@ export const Navbar = () => {
                   onMouseEnter={() => handleMouseEnter(cat.id || cat.name)}
                   onMouseLeave={handleMouseLeave}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Link
-                      to={`/posts?category=${encodeURIComponent(cat.name)}`}
-                      className={`dnvn-nav-item-btn ${isCatActive ? 'active' : ''}`}
-                    >
-                      <span className="dnvn-nav-text">{catDisplayName}</span>
-                      {hasSubs && (
-                        <i 
-                          className="ti ti-chevron-down" 
-                          style={{
-                            fontSize: '10px',
-                            color: isOpen ? '#60A5FA' : '#94A3B8',
-                            transform: isOpen ? 'rotate(180deg)' : 'none',
-                            transition: 'transform 0.18s ease',
-                            flexShrink: 0
-                          }} 
-                        />
-                      )}
-                    </Link>
-                  </div>
+                  <Link
+                    to={`/posts?category=${encodeURIComponent(cat.name)}`}
+                    className={`dnvn-nav-item-btn ${isCatActive ? 'active' : ''}`}
+                    aria-expanded={isOpen}
+                    aria-haspopup={hasSubs ? 'true' : 'false'}
+                    onClick={(e) => {
+                      if (window.innerWidth <= 1080 && hasSubs) {
+                        e.preventDefault();
+                        handleToggleDropdown(cat.id || cat.name, e);
+                      }
+                    }}
+                    onKeyDown={(e) => handleKeyDown(cat.id || cat.name, e)}
+                    title={catDisplayName}
+                  >
+                    <span className="dnvn-nav-text">{catDisplayName}</span>
+                    {hasSubs && (
+                      <i 
+                        className={`ti ti-chevron-down ${isOpen ? 'rotate' : ''}`}
+                        style={{ 
+                          fontSize: '10px', 
+                          marginLeft: '2px', 
+                          opacity: 0.75, 
+                          transition: 'transform 0.18s ease',
+                          transform: isOpen ? 'rotate(180deg)' : 'none'
+                        }} 
+                      />
+                    )}
+                  </Link>
 
-                  {/* Subcategory Dropdown Panel (HIỂN THỊ ĐẦY ĐỦ KHI DI CHUỘT, KHÔNG BỊ KHUẤT) */}
+                  {/* Mega / Dropdown menu cho lĩnh vực chuyên ngành con */}
                   {hasSubs && isOpen && (
                     <div 
-                      role="menu"
                       className="dnvn-dropdown-panel"
+                      role="menu"
                     >
+                      {/* Lối vào xem toàn bộ chuyên mục cha */}
                       <Link
                         to={`/posts?category=${encodeURIComponent(cat.name)}`}
-                        onClick={() => setActiveDropdownId(null)}
+                        className="dnvn-dropdown-item"
                         style={{
+                          color: '#D5A33F',
+                          fontWeight: '700',
+                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                          marginBottom: '4px',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '8px 16px',
-                          color: '#F59E0B',
-                          fontWeight: '700',
-                          fontSize: '12px',
-                          textDecoration: 'none',
-                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                          marginBottom: '4px'
+                          gap: '6px'
                         }}
+                        onClick={() => setActiveDropdownId(null)}
                       >
-                        <span>{catDisplayName} {currentLang === 'en' ? '(All Articles)' : '(Tất cả bài viết)'}</span>
-                        <i className="ti ti-arrow-right" style={{ fontSize: '11px' }}></i>
+                        <i className="ti ti-layout-grid" style={{ fontSize: '13px' }} />
+                        <span>{currentLang === 'en' ? `All ${catDisplayName}` : `Tất cả ${catDisplayName}`}</span>
                       </Link>
 
                       {subs.map((sub, idx) => {
@@ -655,10 +576,11 @@ export const Navbar = () => {
                           <Link
                             key={idx}
                             to={`/posts?category=${encodeURIComponent(cat.name)}&subCategory=${encodeURIComponent(subName)}`}
-                            onClick={() => setActiveDropdownId(null)}
                             className="dnvn-dropdown-item"
+                            role="menuitem"
+                            onClick={() => setActiveDropdownId(null)}
                           >
-                            • {subLabel}
+                            {subLabel}
                           </Link>
                         );
                       })}
@@ -667,88 +589,80 @@ export const Navbar = () => {
                 </div>
               );
             })}
-
-            {/* Nút Trợ lý AI: Đặt sát ngay sau danh mục cuối cùng theo yêu cầu của user */}
-            <Link
-              to="/ai-chat"
-              className="dnvn-nav-item-btn dnvn-ai-nav-btn"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                backgroundColor: 'rgba(30, 99, 233, 0.22)',
-                border: '1px solid rgba(147, 197, 253, 0.5)',
-                color: '#93C5FD',
-                padding: '5px 11px',
-                borderRadius: '8px',
-                fontSize: '11.5px',
-                fontWeight: '700',
-                textDecoration: 'none',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.18s ease',
-                flexShrink: 0,
-                minHeight: '36px',
-                marginLeft: '3px'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(30, 99, 233, 0.38)';
-                e.currentTarget.style.borderColor = '#60A5FA';
-                e.currentTarget.style.color = '#FFFFFF';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(30, 99, 233, 0.22)';
-                e.currentTarget.style.borderColor = 'rgba(147, 197, 253, 0.5)';
-                e.currentTarget.style.color = '#93C5FD';
-                e.currentTarget.style.transform = 'none';
-              }}
-              title={currentLang === 'en' ? "Vietnam Enterprise AI Assistant" : "Trợ lý AI Doanh Nghiệp Việt Nam"}
-            >
-              <i className="ti ti-sparkles" style={{ color: '#F59E0B', fontSize: '13px' }} />
-              <span>{currentLang === 'en' ? 'AI Assistant' : 'Trợ lý AI'}</span>
-            </Link>
           </nav>
 
-          {/* 3. RIGHT ACTIONS: LUÔN NẰM SÁT MÉP PHẢI (MARGIN-LEFT AUTO), KHÔNG BAO GIỜ BỊ KHUẤT */}
+          {/* 3. RIGHT CONTROLS: AI ASSISTANT, LANGUAGE, SEARCH, PWA & AUTH */}
           <div className="dnvn-nav-right">
-            {/* Chuyển đổi ngôn ngữ */}
-            <div className="dnvn-lang-switcher" style={{
-              display: 'flex',
+            
+            {/* Trợ lý Trí tuệ Nhân tạo AI Nav Button */}
+            <Link
+              to="/ai-chat"
+              className="dnvn-ai-nav-btn"
+              title={currentLang === 'en' ? "Dak Lak AI Assistant" : "Trợ lý AI Đắk Lắk"}
+            >
+              <i className="ti ti-sparkles" style={{ color: '#D5A33F', fontSize: '12px' }}></i>
+              <span>{currentLang === 'en' ? 'AI Assistant' : 'Trợ lý AI'}</span>
+            </Link>
+
+            {/* Tìm kiếm nhanh */}
+            <Link
+              to="/search"
+              title={currentLang === 'en' ? 'Search Database' : 'Tìm kiếm dữ liệu'}
+              style={{
+                color: '#E6DCD2',
+                padding: '5px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                textDecoration: 'none',
+                borderRadius: '6px',
+                transition: 'color 0.15s'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#D5A33F'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#E6DCD2'; }}
+            >
+              <i className="ti ti-search" style={{ fontSize: '16px' }}></i>
+            </Link>
+
+            {/* Bộ chuyển đổi Song ngữ VI / EN */}
+            <div style={{
+              display: 'inline-flex',
               alignItems: 'center',
               backgroundColor: 'rgba(255, 255, 255, 0.08)',
-              borderRadius: '14px',
+              borderRadius: '20px',
               padding: '2px',
-              border: '1px solid rgba(147, 197, 253, 0.25)',
-              flexShrink: 0
+              border: '1px solid rgba(213, 163, 63, 0.25)',
+              margin: '0 2px'
             }}>
               <button
                 onClick={() => changeLang('vi')}
+                className="dnvn-lang-btn"
                 style={{
-                  background: currentLang === 'vi' ? 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)' : 'transparent',
+                  background: currentLang === 'vi' ? '#A84524' : 'transparent',
                   color: '#ffffff',
                   border: 'none',
-                  borderRadius: '12px',
-                  padding: '3px 8px',
-                  fontSize: '11px',
+                  borderRadius: '16px',
+                  padding: '3px 7px',
+                  fontSize: '10.5px',
                   fontWeight: currentLang === 'vi' ? '700' : '500',
                   cursor: 'pointer',
-                  boxShadow: currentLang === 'vi' ? '0 2px 6px rgba(30, 99, 233, 0.5)' : 'none'
+                  boxShadow: currentLang === 'vi' ? '0 2px 6px rgba(168, 69, 36, 0.5)' : 'none'
                 }}
               >
                 VI
               </button>
               <button
                 onClick={() => changeLang('en')}
+                className="dnvn-lang-btn"
                 style={{
-                  background: currentLang === 'en' ? 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)' : 'transparent',
+                  background: currentLang === 'en' ? '#A84524' : 'transparent',
                   color: '#ffffff',
                   border: 'none',
-                  borderRadius: '12px',
-                  padding: '3px 8px',
-                  fontSize: '11px',
+                  borderRadius: '16px',
+                  padding: '3px 7px',
+                  fontSize: '10.5px',
                   fontWeight: currentLang === 'en' ? '700' : '500',
                   cursor: 'pointer',
-                  boxShadow: currentLang === 'en' ? '0 2px 6px rgba(30, 99, 233, 0.5)' : 'none'
+                  boxShadow: currentLang === 'en' ? '0 2px 6px rgba(168, 69, 36, 0.5)' : 'none'
                 }}
               >
                 EN
@@ -760,11 +674,11 @@ export const Navbar = () => {
               <button
                 onClick={installApp}
                 className="dnvn-btn-pwa-install"
-                title="Cài đặt ứng dụng DoanhNghiepVN.today (PWA)"
+                title="Cài đặt ứng dụng DakLak.today (PWA)"
                 style={{
-                  backgroundColor: 'rgba(30, 99, 233, 0.16)',
-                  border: '1px solid rgba(147, 197, 253, 0.45)',
-                  color: '#93C5FD',
+                  backgroundColor: 'rgba(213, 163, 63, 0.16)',
+                  border: '1px solid rgba(213, 163, 63, 0.45)',
+                  color: '#F3C562',
                   fontSize: '11.5px',
                   fontWeight: '700',
                   padding: '6px 10px',
@@ -778,14 +692,14 @@ export const Navbar = () => {
                   flexShrink: 0
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(30, 99, 233, 0.32)';
+                  e.currentTarget.style.backgroundColor = 'rgba(213, 163, 63, 0.32)';
                   e.currentTarget.style.color = '#FFFFFF';
                   e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = '0 3px 10px rgba(30, 99, 233, 0.35)';
+                  e.currentTarget.style.boxShadow = '0 3px 10px rgba(213, 163, 63, 0.35)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(30, 99, 233, 0.16)';
-                  e.currentTarget.style.color = '#93C5FD';
+                  e.currentTarget.style.backgroundColor = 'rgba(213, 163, 63, 0.16)';
+                  e.currentTarget.style.color = '#F3C562';
                   e.currentTarget.style.transform = 'none';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
@@ -795,22 +709,22 @@ export const Navbar = () => {
               </button>
             )}
 
-            {/* Nút Đăng ký trải nghiệm / Gia nhập Hội (Chỉ hiện khi chưa đăng nhập và trên desktop) */}
+            {/* Nút Đăng ký trải nghiệm / Kết nối (Chỉ hiện khi chưa đăng nhập và trên desktop) */}
             {role === 'guest' && (
               <Link
                 to="/register"
                 className="dnvn-btn-join-desktop"
                 style={{
-                  backgroundColor: '#1E63E9',
-                  backgroundImage: 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)',
+                  backgroundColor: '#A84524',
+                  backgroundImage: 'linear-gradient(135deg, #A84524 0%, #7A3E1D 100%)',
                   color: '#ffffff',
                   fontSize: '11.5px',
                   fontWeight: '700',
                   padding: '6px 12px',
                   borderRadius: '8px',
                   textDecoration: 'none',
-                  boxShadow: '0 2px 10px rgba(30, 99, 233, 0.45)',
-                  border: '1px solid rgba(147, 197, 253, 0.35)',
+                  boxShadow: '0 2px 10px rgba(168, 69, 36, 0.45)',
+                  border: '1px solid rgba(213, 163, 63, 0.35)',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '5px',
@@ -820,17 +734,17 @@ export const Navbar = () => {
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(30, 99, 233, 0.6)';
-                  e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #3B82F6 0%, #1E63E9 100%)';
+                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(168, 69, 36, 0.6)';
+                  e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #B54F2D 0%, #A84524 100%)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.boxShadow = '0 2px 10px rgba(30, 99, 233, 0.45)';
-                  e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)';
+                  e.currentTarget.style.boxShadow = '0 2px 10px rgba(168, 69, 36, 0.45)';
+                  e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #A84524 0%, #7A3E1D 100%)';
                 }}
               >
                 <i className="ti ti-user-plus" style={{ fontSize: '12px' }}></i>
-                <span>{currentLang === 'en' ? 'Join' : 'Gia nhập Hội'}</span>
+                <span>{currentLang === 'en' ? 'Connect' : 'Kết nối'}</span>
               </Link>
             )}
 
@@ -840,7 +754,7 @@ export const Navbar = () => {
                 to="/login"
                 className="dnvn-login-btn"
                 style={{
-                  color: '#E2E8F0',
+                  color: '#F1ECE6',
                   fontSize: '12px',
                   textDecoration: 'none',
                   fontWeight: '600',
@@ -850,8 +764,8 @@ export const Navbar = () => {
                   transition: 'color 0.18s',
                   flexShrink: 0
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = '#60A5FA'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = '#E2E8F0'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#D5A33F'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#F1ECE6'; }}
               >
                 {currentLang === 'en' ? 'Login' : 'Đăng nhập'}
               </Link>
@@ -863,7 +777,7 @@ export const Navbar = () => {
                     width: '32px',
                     height: '32px',
                     borderRadius: '50%',
-                    backgroundColor: '#1E63E9',
+                    backgroundColor: '#7A3E1D',
                     color: '#ffffff',
                     fontWeight: '700',
                     fontSize: '11px',
@@ -871,8 +785,8 @@ export const Navbar = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     textDecoration: 'none',
-                    border: '1.5px solid #ffffff',
-                    boxShadow: '0 2px 8px rgba(30, 99, 233, 0.5)'
+                    border: '1.5px solid #D5A33F',
+                    boxShadow: '0 2px 8px rgba(122, 62, 29, 0.5)'
                   }}
                   title={user?.name || 'Dashboard'}
                 >
@@ -919,8 +833,8 @@ export const Navbar = () => {
         {/* MOBILE DRAWER: DÙNG CHUNG CÙNG NGUỒN DỮ LIỆU ĐỘNG TỪ ADMIN */}
         {mobileMenuOpen && (
           <div style={{
-            backgroundColor: '#092257',
-            borderTop: '1px solid rgba(147, 197, 253, 0.2)',
+            backgroundColor: '#26160E',
+            borderTop: '1px solid rgba(213, 163, 63, 0.2)',
             padding: '1rem 1.25rem',
             display: 'flex',
             flexDirection: 'column',
@@ -930,19 +844,19 @@ export const Navbar = () => {
           }}>
             {/* Chuyển ngôn ngữ & Trạng thái trong Drawer */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              <div style={{ fontSize: '12px', color: '#94A3B8' }}>{currentLang === 'en' ? 'Language / Ngôn ngữ:' : 'Ngôn ngữ / Language:'}</div>
+              <div style={{ fontSize: '12px', color: '#BFAEA2' }}>{currentLang === 'en' ? 'Language / Ngôn ngữ:' : 'Ngôn ngữ / Language:'}</div>
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 backgroundColor: 'rgba(255, 255, 255, 0.08)',
                 borderRadius: '14px',
                 padding: '2px',
-                border: '1px solid rgba(147, 197, 253, 0.25)'
+                border: '1px solid rgba(213, 163, 63, 0.25)'
               }}>
                 <button
                   onClick={() => changeLang('vi')}
                   style={{
-                    background: currentLang === 'vi' ? '#1E63E9' : 'transparent',
+                    background: currentLang === 'vi' ? '#A84524' : 'transparent',
                     color: '#ffffff',
                     border: 'none',
                     borderRadius: '12px',
@@ -957,7 +871,7 @@ export const Navbar = () => {
                 <button
                   onClick={() => changeLang('en')}
                   style={{
-                    background: currentLang === 'en' ? '#1E63E9' : 'transparent',
+                    background: currentLang === 'en' ? '#A84524' : 'transparent',
                     color: '#ffffff',
                     border: 'none',
                     borderRadius: '12px',
@@ -971,14 +885,15 @@ export const Navbar = () => {
                 </button>
               </div>
             </div>
+
             {/* Nút Trợ lý AI trên Mobile */}
             <Link
               to="/ai-chat"
               onClick={() => setMobileMenuOpen(false)}
               style={{
-                backgroundColor: 'rgba(30, 99, 233, 0.25)',
-                border: '1px solid #60A5FA',
-                color: '#93C5FD',
+                backgroundColor: 'rgba(213, 163, 63, 0.2)',
+                border: '1px solid #D5A33F',
+                color: '#F3C562',
                 padding: '10px 14px',
                 borderRadius: '8px',
                 textDecoration: 'none',
@@ -990,8 +905,8 @@ export const Navbar = () => {
                 marginBottom: '8px'
               }}
             >
-              <i className="ti ti-sparkles" style={{ color: '#F59E0B', fontSize: '16px' }} />
-              <span>{currentLang === 'en' ? 'Vietnam Enterprise AI Assistant' : 'Trợ lý AI Doanh Nghiệp'}</span>
+              <i className="ti ti-sparkles" style={{ color: '#D5A33F', fontSize: '16px' }} />
+              <span>{currentLang === 'en' ? 'Dak Lak AI Assistant' : 'Trợ lý AI Đắk Lắk'}</span>
             </Link>
 
             {/* Danh mục cấp 1 & con động trên mobile */}
@@ -1013,7 +928,7 @@ export const Navbar = () => {
                     {subs.length > 0 && (
                       <button
                         onClick={() => setMobileExpandedCatId(isExpanded ? null : (cat.id || cat.name))}
-                        style={{ background: 'none', border: 'none', color: '#94a3b8', padding: '4px 8px', fontSize: '14px', cursor: 'pointer' }}
+                        style={{ background: 'none', border: 'none', color: '#BFAEA2', padding: '4px 8px', fontSize: '14px', cursor: 'pointer' }}
                         aria-label="Mở danh mục con"
                       >
                         <i className={isExpanded ? "ti ti-chevron-up" : "ti ti-chevron-down"}></i>
@@ -1026,7 +941,7 @@ export const Navbar = () => {
                       <Link
                         to={`/posts?category=${encodeURIComponent(cat.name)}`}
                         onClick={() => setMobileMenuOpen(false)}
-                        style={{ color: '#F59E0B', fontSize: '12px', textDecoration: 'none', fontWeight: '600' }}
+                        style={{ color: '#D5A33F', fontSize: '12px', textDecoration: 'none', fontWeight: '600' }}
                       >
                         👉 {catDisplayName} ({currentLang === 'en' ? 'All Articles' : 'Xem tất cả'})
                       </Link>
@@ -1057,9 +972,9 @@ export const Navbar = () => {
                 <button
                   onClick={() => { installApp(); setMobileMenuOpen(false); }}
                   style={{
-                    backgroundColor: 'rgba(30, 99, 233, 0.2)',
-                    border: '1px solid #60A5FA',
-                    color: '#93C5FD',
+                    backgroundColor: 'rgba(213, 163, 63, 0.2)',
+                    border: '1px solid #D5A33F',
+                    color: '#F3C562',
                     textAlign: 'center',
                     padding: '9px',
                     borderRadius: '8px',
@@ -1081,8 +996,8 @@ export const Navbar = () => {
                 to="/register"
                 onClick={() => setMobileMenuOpen(false)}
                 style={{
-                  backgroundColor: '#1E63E9',
-                  backgroundImage: 'linear-gradient(135deg, #1E63E9 0%, #154EC2 100%)',
+                  backgroundColor: '#A84524',
+                  backgroundImage: 'linear-gradient(135deg, #A84524 0%, #7A3E1D 100%)',
                   color: '#ffffff',
                   textAlign: 'center',
                   padding: '9px',
@@ -1090,10 +1005,10 @@ export const Navbar = () => {
                   textDecoration: 'none',
                   fontWeight: '700',
                   fontSize: '13px',
-                  boxShadow: '0 2px 8px rgba(30, 99, 233, 0.4)'
+                  boxShadow: '0 2px 8px rgba(168, 69, 36, 0.4)'
                 }}
               >
-                {currentLang === 'en' ? 'Join Vietnam Enterprise Network' : 'Gia nhập Hội Doanh Nghiệp'}
+                {currentLang === 'en' ? 'Join Dak Lak Investment Network' : 'Đăng ký Hội viên & Kết nối'}
               </Link>
               {role === 'guest' ? (
                 <Link

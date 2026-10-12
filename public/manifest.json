@@ -1,15 +1,15 @@
 {
-  "name": "Tạp chí Doanh Nghiệp Việt Nam — DoanhNghiepVN.today",
-  "short_name": "DoanhNghiepVN",
-  "description": "Hệ sinh thái số Tạp chí Doanh Nghiệp Việt Nam: Tổ chức sự kiện giao thương, tư vấn tài chính, truyền thông thương hiệu và ứng dụng AI.",
+  "name": "DakLak.today — Cổng thông tin, dữ liệu và kết nối đầu tư Đắk Lắk",
+  "short_name": "DakLak.today",
+  "description": "Nền tảng số kết nối con người, doanh nghiệp, sản phẩm, du lịch, dữ liệu và cơ hội đầu tư của tỉnh Đắk Lắk bằng nền tảng số và trí tuệ nhân tạo.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#051336",
-  "theme_color": "#0F52BA",
-  "categories": ["business", "news", "finance"],
+  "background_color": "#26160E",
+  "theme_color": "#3B2417",
+  "categories": ["business", "news", "travel", "investment"],
   "icons": [
     {
       "src": "/favicon.png",
@@ -50,23 +50,23 @@
   ],
   "shortcuts": [
     {
-      "name": "Sự kiện & Diễn đàn",
-      "short_name": "Sự kiện",
-      "description": "Lịch sự kiện và diễn đàn doanh nghiệp",
-      "url": "/events",
+      "name": "Cà phê & Nông sản Đắk Lắk",
+      "short_name": "Cà phê",
+      "description": "Khám phá chuỗi giá trị và thương hiệu cà phê",
+      "url": "/posts?category=Cà%20phê%20Đắk%20Lắk",
       "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Trợ lý AI Doanh Nghiệp",
-      "short_name": "AI Chat",
-      "description": "Hỏi đáp tư vấn cùng Trợ lý AI",
+      "name": "Trợ lý AI Đắk Lắk",
+      "short_name": "AI Assistant",
+      "description": "Hỏi đáp đầu tư và dữ liệu cùng Trợ lý AI",
       "url": "/ai-chat",
       "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Danh bạ Hội viên",
-      "short_name": "Hội viên",
-      "description": "Tra cứu hồ sơ doanh nghiệp hội viên",
+      "name": "Cơ hội Đầu tư & Doanh nghiệp",
+      "short_name": "Đầu tư",
+      "description": "Tra cứu dự án và danh bạ doanh nghiệp",
       "url": "/members",
       "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     }

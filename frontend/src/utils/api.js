@@ -39,67 +39,67 @@ export async function fetchJsonWithTimeout(url, options = {}, timeoutMs = DEFAUL
 }
 
 /**
- * Fallback data so the site immediately displays rich content even if DB is loading or empty
+ * Fallback data cho DakLak.today để trang luôn hiển thị nội dung phong phú và hấp dẫn
  */
 export const FALLBACK_POSTS = [
   {
     id: 'fb-post-1',
-    title: 'Thúc đẩy kết nối, xây dựng năng lực tiếp cận vốn tín dụng cho SME và hộ kinh doanh',
-    slug: 'thuc-day-ket-noi-xay-dung-nang-luc-tiep-can-von-tin-dung-cho-sme-va-ho-kinh-doanh-20260721095902983',
-    category: 'Tư vấn Vay vốn & Tài chính',
-    sub_category: 'Tín dụng Doanh nghiệp',
-    summary: 'Chương trình hợp tác thúc đẩy kết nối các tổ chức tài chính, ngân hàng thương mại và cộng đồng SME nhằm tháo gỡ điểm nghẽn nguồn vốn tín dụng năm 2026.',
-    image_url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
-    author_name: 'Ban Biên tập DoanhNghiepVN.today',
-    company_name: 'Tạp chí Doanh Nghiệp Việt Nam',
+    title: 'Vì sao Đắk Lắk đang vươn lên thành thủ phủ công nghiệp chế biến sâu cà phê của châu Á?',
+    slug: 'vi-sao-dak-lak-vuon-len-thanh-thu-phu-che-bien-sau-ca-phe',
+    category: 'Cà phê Đắk Lắk',
+    sub_category: 'Công nghệ Chế biến sâu',
+    summary: 'Phân tích chiến lược chuyển đổi từ xuất khẩu cà phê nhân thô sang chuỗi giá trị chế biến sâu, nâng cao giá trị thặng dư gấp 4 lần và định vị thương hiệu cà phê Buôn Ma Thuột toàn cầu.',
+    image_url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
+    author_name: 'Ban Biên tập DakLak.today',
+    company_name: 'Hiệp hội Cà phê Buôn Ma Thuột',
     company_tier: 'Diamond',
     created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-    views: 1240,
+    views: 3420,
     is_featured: 1
   },
   {
     id: 'fb-post-2',
-    title: 'Hệ sinh thái kết nối các nguồn lực hỗ trợ doanh nghiệp ứng dụng AI & công nghệ',
-    slug: 'ho-tro-doanh-nghiep-ung-dung-cong-nghe-tang-kha-nang-tiep-can-von-20260911105032450',
-    category: 'Ứng dụng AI & Công nghệ',
-    sub_category: 'Chuyển đổi số',
-    summary: 'Giải pháp toàn diện giúp doanh nghiệp vừa và nhỏ tích hợp trí tuệ nhân tạo, tối ưu hóa quy trình quản trị và nâng cao xếp hạng tín nhiệm tài chính.',
-    image_url: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80',
-    author_name: 'Viện Đổi mới Sáng tạo & AI',
-    company_name: 'Công ty Cổ phần ADT Quốc tế',
+    title: 'Bazan Heritage Coffee: Mô hình chuỗi giá trị cà phê đặc sản từ nông trường bazan đến ly cà phê cao cấp',
+    slug: 'bazan-heritage-coffee-mo-hinh-chuoi-gia-tri-ca-phe-dac-san',
+    category: 'Doanh nghiệp & Sản phẩm',
+    sub_category: 'Sản phẩm OCOP & Nông sản',
+    summary: 'Case study tiêu biểu về doanh nghiệp Đắk Lắk đầu tư đồng bộ vùng trồng hữu cơ, nhà máy rang xay chuẩn quốc tế và xây dựng câu chuyện thương hiệu đậm bản sắc đại ngàn.',
+    image_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80',
+    author_name: 'Nhóm Nghiên cứu Kinh tế Đắk Lắk',
+    company_name: 'Bazan Heritage Coffee',
     company_tier: 'Diamond',
     created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-    views: 980,
+    views: 2850,
     is_featured: 1
   },
   {
     id: 'fb-post-3',
-    title: 'Diễn đàn Doanh nghiệp Việt Nam: Nâng cao năng lực cạnh tranh trong kỷ nguyên số',
-    slug: 'dien-dan-doanh-nghiep-viet-nam-nang-cao-nang-luc-canh-tranh',
-    category: 'Sự kiện & Diễn đàn',
-    sub_category: 'Xúc tiến Thương mại',
-    summary: 'Tập hợp hơn 500 lãnh đạo doanh nghiệp hàng đầu cả nước thảo luận về chiến lược mở rộng thị trường xuất khẩu và chuỗi cung ứng bền vững.',
-    image_url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80',
-    author_name: 'Ban Thư ký Diễn đàn',
-    company_name: 'Tạp chí Doanh Nghiệp Việt Nam',
+    title: 'Danh mục 15 dự án trọng điểm kêu gọi đầu tư của tỉnh Đắk Lắk giai đoạn 2026 - 2030',
+    slug: 'danh-muc-15-du-an-trong-diem-keu-goi-dau-tu-dak-lak',
+    category: 'Đầu tư & Dự án',
+    sub_category: 'Danh mục Dự án Kêu gọi',
+    summary: 'Tập trung các lĩnh vực chế biến nông sản công nghệ cao, hạ tầng logistics Buôn Ma Thuột, khu công nghiệp Hòa Phú mở rộng và các tổ hợp du lịch sinh thái nghỉ dưỡng Hồ Lắk.',
+    image_url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+    author_name: 'Trung tâm Xúc tiến Đầu tư',
+    company_name: 'Cổng thông tin & Dữ liệu DakLak.today',
     company_tier: 'Gold',
     created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
-    views: 750,
-    is_featured: 0
+    views: 1980,
+    is_featured: 1
   },
   {
     id: 'fb-post-4',
-    title: 'Hướng dẫn thực hành bộ chỉ số ESG dành cho doanh nghiệp sản xuất và thương mại',
-    slug: 'huong-dan-thuc-hanh-bo-chi-so-esg-danh-cho-doanh-nghiep',
-    category: 'Thực hành ESG',
-    sub_category: 'Tiêu chuẩn Xanh',
-    summary: 'Bộ cẩm nang thực hành phát triển bền vững, tối ưu hóa năng lượng tái tạo và giảm phát thải carbon theo định hướng Net-Zero 2050.',
-    image_url: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80',
-    author_name: 'Hội đồng Cố vấn ESG',
-    company_name: 'Liên minh Doanh nghiệp Bền vững',
+    title: 'Hành trình di sản đại ngàn: Đánh thức không gian văn hóa cồng chiêng và du lịch cộng đồng',
+    slug: 'hanh-trinh-di-san-dai-ngan-khong-gian-van-hoa-cong-chieng',
+    category: 'Du lịch & Trải nghiệm',
+    sub_category: 'Du lịch Sinh thái & Bản làng',
+    summary: 'Trải nghiệm văn hóa sống động cùng nghệ nhân bản địa, khám phá thác Dray Nur, vườn quốc gia Yok Đôn và những buôn làng lưu giữ trọn vẹn hồn thiêng sử thi Ê Đê.',
+    image_url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+    author_name: 'Ban Văn hóa & Du lịch',
+    company_name: 'Tổ hợp Du lịch Sinh thái Hồ Lắk',
     company_tier: 'Gold',
     created_at: new Date(Date.now() - 3600000 * 36).toISOString(),
-    views: 610,
+    views: 1650,
     is_featured: 0
   }
 ];
@@ -107,60 +107,63 @@ export const FALLBACK_POSTS = [
 export const FALLBACK_EVENTS = [
   {
     id: 'fb-evt-1',
-    title: 'Diễn đàn Xúc tiến Giao thương Doanh nghiệp Việt Nam & Quốc tế 2026',
-    slug: 'dien-dan-xuc-tien-giao-thuong-doanh-nghiep-viet-nam-2026',
-    short_desc: 'Sự kiện kết nối 300+ doanh nghiệp hàng đầu, quỹ đầu tư và ngân hàng thương mại.',
-    event_date: new Date(Date.now() + 86400000 * 15).toISOString(),
-    location: 'Trung tâm Hội nghị Quốc tế ICC, Ba Đình, Hà Nội',
-    organizer: 'Tạp chí Doanh Nghiệp Việt Nam & ADT Group',
-    image_url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80',
+    title: 'Lễ hội Cà phê Buôn Ma Thuột — Tôn vinh Hạt ngọc Bazan & Kết nối Giao thương Toàn cầu',
+    slug: 'le-hoi-ca-phe-buon-ma-thuot-2026',
+    short_desc: 'Sự kiện văn hóa kinh tế tầm vóc quốc tế kết nối hơn 500 nhà xuất nhập khẩu, chuyên gia rang xay và nhà đầu tư trong chuỗi giá trị cà phê.',
+    event_date: new Date(Date.now() + 86400000 * 18).toISOString(),
+    location: 'Quảng trường 10/3 & Bảo tàng Thế giới Cà phê, TP. Buôn Ma Thuột, Đắk Lắk',
+    organizer: 'Ban Tổ chức Lễ hội Cà phê & DakLak.today',
+    image_url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
+    is_paid: 0,
+    price: 0,
+    remaining_tickets: 450,
+    registered_count: 350
+  },
+  {
+    id: 'fb-evt-2',
+    title: 'Diễn đàn Xúc tiến Đầu tư Nông nghiệp Công nghệ cao & Logistics Tây Nguyên 2026',
+    slug: 'dien-dan-xuc-tien-dau-tu-nong-nghiep-cnc-logistics-tay-nguyen',
+    short_desc: 'Đối thoại trực tiếp giữa Lãnh đạo tỉnh, tổ chức tài chính, quỹ đầu tư ESG và cộng đồng doanh nghiệp về cơ chế tiếp cận đất đai và ưu đãi đầu tư.',
+    event_date: new Date(Date.now() + 86400000 * 28).toISOString(),
+    location: 'Trung tâm Hội nghị Tỉnh Đắk Lắk, TP. Buôn Ma Thuột',
+    organizer: 'Trung tâm Xúc tiến Đầu tư & ADT Group',
+    image_url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80',
     is_paid: 0,
     price: 0,
     remaining_tickets: 180,
     registered_count: 120
-  },
-  {
-    id: 'fb-evt-2',
-    title: 'Hội thảo: Giải pháp Tiếp cận Vốn Tín dụng và Bảo lãnh Vay vốn SME',
-    slug: 'hoi-thao-giai-phap-tiep-can-von-tin-dung-sme',
-    short_desc: 'Tư vấn trực tiếp hồ sơ vay vốn, giải ngân nhanh và hỗ trợ lãi suất từ các ngân hàng đối tác.',
-    event_date: new Date(Date.now() + 86400000 * 22).toISOString(),
-    location: 'Hội trường Tầng 5, Khách sạn Daewoo Hà Nội',
-    organizer: 'Ban Tư vấn Tài chính & Tiếp cận Vốn Doanh Nghiệp',
-    image_url: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=800&q=80',
-    is_paid: 0,
-    price: 0,
-    remaining_tickets: 95,
-    registered_count: 55
   }
 ];
 
 export const FALLBACK_MEMBERS = [
   {
     id: 1,
-    name: 'Công ty Cổ phần Công nghệ & Dữ liệu ADT Quốc tế',
-    tier: 'Diamond',
-    industry: 'Công nghệ thông tin & Trí tuệ nhân tạo',
-    email: 'contact@adt.vn',
-    description: 'Đơn vị tiên phong chuyển giao giải pháp chuyển đổi số, nền tảng AI Agent và hệ sinh thái số doanh nghiệp.',
-    created_at: new Date().toISOString()
+    name: 'Công ty Cổ phần Bazan Heritage Coffee',
+    company_name: 'Công ty Cổ phần Bazan Heritage Coffee',
+    tier: 'Platinum',
+    industry: 'Cà phê đặc sản & Chế biến sâu',
+    address: 'Khu công nghiệp Tân An, TP. Buôn Ma Thuột, Đắk Lắk',
+    logo_url: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80',
+    bio: 'Doanh nghiệp tiên phong ứng dụng công nghệ rang xay hiện đại chuẩn Châu Âu, sở hữu vùng nguyên liệu cà phê hữu cơ bền vững tại Cư M’gar và Krông Năng.'
   },
   {
     id: 2,
-    name: 'Ngân hàng Thương mại Cổ phần Ngoại thương Việt Nam',
-    tier: 'Diamond',
-    industry: 'Tài chính — Ngân hàng',
-    email: 'sme-support@bank.vn',
-    description: 'Đối tác chiến lược cung ứng các gói tín dụng ưu đãi, thanh toán số và bảo lãnh vay vốn cho doanh nghiệp SME.',
-    created_at: new Date().toISOString()
+    name: 'Tập đoàn Nông nghiệp Công nghệ cao Tây Nguyên',
+    company_name: 'Tập đoàn Nông nghiệp Công nghệ cao Tây Nguyên',
+    tier: 'Gold',
+    industry: 'Nông nghiệp CNC, Sầu riêng & Mắc ca',
+    address: 'Xã Hòa Đông, Huyện Krông Pắc, Tỉnh Đắk Lắk',
+    logo_url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80',
+    bio: 'Đơn vị sở hữu chuỗi liên kết bao tiêu nông sản xuất khẩu chủ lực đạt chuẩn VietGAP & GlobalGAP, cung ứng thị trường Trung Quốc, Nhật Bản và EU.'
   },
   {
     id: 3,
-    name: 'Tập đoàn Nông nghiệp Công nghệ cao & Xuất khẩu Xanh',
-    tier: 'Gold',
-    industry: 'Nông nghiệp & Chế biến thực phẩm',
-    email: 'info@agritech.vn',
-    description: 'Đơn vị xuất khẩu nông sản đạt chuẩn ESG quốc tế, mở rộng kết nối giao thương chuỗi cung ứng toàn cầu.',
-    created_at: new Date().toISOString()
+    name: 'Công ty Cổ phần ADT Quốc tế',
+    company_name: 'Công ty Cổ phần ADT Quốc tế',
+    tier: 'Platinum',
+    industry: 'Công nghệ số, AI Agent & Nền tảng Đô thị thông minh',
+    address: 'Hà Nội & Chi nhánh Đại diện Tây Nguyên',
+    logo_url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80',
+    bio: 'Đơn vị kiến trúc và phát triển nền tảng số DakLak.today, hệ thống kết nối đầu tư thông minh và giải pháp chuyển đổi số toàn diện cho doanh nghiệp.'
   }
 ];
