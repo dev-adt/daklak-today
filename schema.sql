@@ -4,52 +4,143 @@
 -- Database: doanhnghiepvn_db | User: dnvn_user
 -- ============================================
 
--- ── Bảng hội viên ─────────────────────────────────────────────
+-- ── 1. Bảng hội viên doanh nghiệp ─────────────────────────────
 CREATE TABLE IF NOT EXISTS members (
-  id            INT AUTO_INCREMENT PRIMARY KEY,
-  name          VARCHAR(255) NOT NULL COMMENT 'Tên doanh nghiệp / Đơn vị',
-  tax_code      VARCHAR(20)  COMMENT 'Mã số thuế',
-  license       VARCHAR(50)  COMMENT 'Số giấy phép kinh doanh',
-  industry      VARCHAR(100) COMMENT 'Ngành nghề / Lĩnh vực',
-  size          VARCHAR(50)  COMMENT 'Quy mô nhân sự',
-  address       TEXT         COMMENT 'Địa chỉ',
-  website       VARCHAR(255) COMMENT 'Website',
-  social        VARCHAR(255) COMMENT 'Fanpage / LinkedIn',
-  description   TEXT         COMMENT 'Mô tả hoạt động',
-  tier          ENUM('Silver','Gold','Platinum') DEFAULT 'Silver' COMMENT 'Gói hội viên',
-  status        ENUM('pending','approved','rejected') DEFAULT 'pending',
-  contact_name  VARCHAR(100) COMMENT 'Tên người đại diện',
-  contact_pos   VARCHAR(100) COMMENT 'Chức vụ',
-  email         VARCHAR(255) NOT NULL COMMENT 'Email liên hệ',
-  phone         VARCHAR(20)  COMMENT 'Số điện thoại',
-  goal          TEXT         COMMENT 'Mục tiêu tham gia',
-  referral      VARCHAR(100) COMMENT 'Biết đến qua kênh nào',
-  reject_reason TEXT         COMMENT 'Lý do từ chối',
-  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  id                    INT AUTO_INCREMENT PRIMARY KEY,
+  name                  VARCHAR(255) NOT NULL COMMENT 'Tên doanh nghiệp / Đơn vị',
+  tax_code              VARCHAR(20)  COMMENT 'Mã số thuế',
+  license               VARCHAR(50)  COMMENT 'Số giấy phép kinh doanh',
+  industry              VARCHAR(100) COMMENT 'Ngành nghề / Lĩnh vực',
+  size                  VARCHAR(50)  COMMENT 'Quy mô nhân sự',
+  address               TEXT         COMMENT 'Địa chỉ',
+  city                  VARCHAR(100) DEFAULT NULL COMMENT 'Tỉnh / Thành phố',
+  website               VARCHAR(255) COMMENT 'Website',
+  social                VARCHAR(255) COMMENT 'Fanpage / LinkedIn',
+  description           TEXT         COMMENT 'Mô tả hoạt động',
+  tier                  ENUM('Silver','Gold','Platinum') DEFAULT 'Silver' COMMENT 'Gói hội viên',
+  tier_expires_at       TIMESTAMP    NULL DEFAULT NULL COMMENT 'Hạn gói hội viên',
+  pending_tier_upgrade  ENUM('Silver','Gold','Platinum') DEFAULT NULL COMMENT 'Yêu cầu nâng cấp gói',
+  is_featured           TINYINT(1)   DEFAULT 0 COMMENT '1: Hội viên tiêu biểu ghim trang chủ',
+  status                ENUM('pending','approved','rejected','suspended') DEFAULT 'pending' COMMENT 'Trạng thái tài khoản',
+  contact_name          VARCHAR(100) COMMENT 'Tên người đại diện',
+  contact_pos           VARCHAR(100) COMMENT 'Chức vụ',
+  email                 VARCHAR(255) DEFAULT NULL COMMENT 'Email liên hệ',
+  username              VARCHAR(100) UNIQUE DEFAULT NULL COMMENT 'Tên đăng nhập',
+  password_hash         VARCHAR(255) DEFAULT NULL COMMENT 'Mật khẩu mã hóa',
+  phone                 VARCHAR(20)  COMMENT 'Số điện thoại',
+  goal                  TEXT         COMMENT 'Mục tiêu tham gia',
+  referral              VARCHAR(100) COMMENT 'Biết đến qua kênh nào',
+  reject_reason         TEXT         COMMENT 'Lý do từ chối',
+  created_at            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  updated_at            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_status (status),
   INDEX idx_tier (tier),
-  INDEX idx_industry (industry)
+  INDEX idx_industry (industry),
+  INDEX idx_city (city)
 ) ENGINE=InnoDB COMMENT='Danh sách hội viên doanh nghiệp';
 
--- ── Bảng bài viết ─────────────────────────────────────────────
+-- ── 2. Bảng phiên đăng nhập hội viên ─────────────────────────
+CREATE TABLE IF NOT EXISTS member_sessions (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  member_id     INT NOT NULL,
+  token         VARCHAR(255) NOT NULL UNIQUE,
+  expires_at    TIMESTAMP NOT NULL,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
+  INDEX idx_token (token)
+) ENGINE=InnoDB COMMENT='Token phiên đăng nhập hội viên';
+
+-- ── 3. Bảng quản trị viên hệ thống ───────────────────────────
+CREATE TABLE IF NOT EXISTS admins (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  username      VARCHAR(50)  NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  name          VARCHAR(100) NOT NULL,
+  email         VARCHAR(255) NOT NULL,
+  role          ENUM('superadmin','admin','editor','creator','member') DEFAULT 'admin',
+  last_login    TIMESTAMP NULL DEFAULT NULL,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB COMMENT='Tài khoản quản trị và ban điều hành';
+
+-- ── 4. Bảng phiên đăng nhập quản trị ─────────────────────────
+CREATE TABLE IF NOT EXISTS admin_sessions (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  admin_id      INT NOT NULL,
+  token         VARCHAR(255) NOT NULL UNIQUE,
+  expires_at    DATETIME NOT NULL,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE,
+  INDEX idx_token (token)
+) ENGINE=InnoDB COMMENT='Phiên đăng nhập quản trị viên';
+
+-- ── 5. Bảng ban biên tập & Creator ───────────────────────────
+CREATE TABLE IF NOT EXISTS content_creators (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  name          VARCHAR(255) NOT NULL,
+  username      VARCHAR(100) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  phone         VARCHAR(50)  DEFAULT NULL,
+  email         VARCHAR(191) DEFAULT NULL,
+  role          VARCHAR(50)  DEFAULT 'creator',
+  status        VARCHAR(50)  DEFAULT 'active',
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB COMMENT='Tài khoản Ban biên tập & Creator';
+
+-- ── 6. Bảng phiên đăng nhập Creator ──────────────────────────
+CREATE TABLE IF NOT EXISTS creator_sessions (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  creator_id    INT NOT NULL,
+  token         VARCHAR(255) NOT NULL UNIQUE,
+  expires_at    DATETIME NOT NULL,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (creator_id) REFERENCES content_creators(id) ON DELETE CASCADE,
+  INDEX idx_token (token)
+) ENGINE=InnoDB COMMENT='Phiên đăng nhập Biên tập viên / Creator';
+
+-- ── 7. Bảng ban tổ chức sự kiện & soát vé ────────────────────
+CREATE TABLE IF NOT EXISTS event_organizers (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  name          VARCHAR(255) NOT NULL,
+  username      VARCHAR(100) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  phone         VARCHAR(50)  DEFAULT NULL,
+  email         VARCHAR(191) DEFAULT NULL,
+  role          VARCHAR(50)  DEFAULT 'organizer' COMMENT 'organizer hoặc ticket_inspector',
+  status        VARCHAR(50)  DEFAULT 'active',
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB COMMENT='Tài khoản Ban tổ chức Sự kiện & Soát vé';
+
+-- ── 8. Bảng phiên đăng nhập Ban tổ chức sự kiện ───────────────
+CREATE TABLE IF NOT EXISTS organizer_sessions (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  organizer_id  INT NOT NULL,
+  token         VARCHAR(255) NOT NULL UNIQUE,
+  expires_at    DATETIME NOT NULL,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (organizer_id) REFERENCES event_organizers(id) ON DELETE CASCADE,
+  INDEX idx_token (token)
+) ENGINE=InnoDB COMMENT='Phiên đăng nhập Ban tổ chức Sự kiện';
+
+-- ── 9. Bảng bài viết & tin tức ───────────────────────────────
 CREATE TABLE IF NOT EXISTS posts (
   id                  INT AUTO_INCREMENT PRIMARY KEY,
   member_id           INT          DEFAULT NULL COMMENT 'NULL nếu là bài từ ban biên tập/creator',
   creator_id          INT          DEFAULT NULL COMMENT 'NULL nếu là bài từ hội viên',
   title               VARCHAR(255) NOT NULL,
-  slug                VARCHAR(255),
+  slug                VARCHAR(550) DEFAULT NULL,
   category            VARCHAR(100) DEFAULT 'Tin tức',
   sub_category        VARCHAR(100) DEFAULT NULL,
   summary             TEXT,
   body                LONGTEXT     NOT NULL,
-  image_url           VARCHAR(500),
+  image_url           VARCHAR(1000) DEFAULT NULL,
   author_name         VARCHAR(100),
   author_pos          VARCHAR(100),
   contact_info        VARCHAR(255),
   source_url          VARCHAR(500) DEFAULT NULL,
   tags                JSON         DEFAULT NULL,
-  deadline            DATE         DEFAULT NULL,
+  deadline            VARCHAR(50)  DEFAULT NULL,
   type                VARCHAR(50)  DEFAULT 'Tin tức' COMMENT 'Tìm đối tác, Cần mua, Cần bán, Tin tức...',
   status              ENUM('draft','pending','approved','rejected','hidden') DEFAULT 'pending',
   is_featured         TINYINT(1)   DEFAULT 0,
@@ -65,10 +156,11 @@ CREATE TABLE IF NOT EXISTS posts (
   INDEX idx_featured (is_featured),
   INDEX idx_created (created_at),
   INDEX idx_category (category),
-  INDEX idx_creator (creator_id)
+  INDEX idx_creator (creator_id),
+  INDEX idx_slug (slug)
 ) ENGINE=InnoDB COMMENT='Bài viết và tin đăng doanh nghiệp';
 
--- ── Bảng sự kiện (Mở rộng theo Hợp đồng và thiết kế UI) ──────
+-- ── 10. Bảng sự kiện & hội thảo ──────────────────────────────
 CREATE TABLE IF NOT EXISTS events (
   id            INT AUTO_INCREMENT PRIMARY KEY,
   title         VARCHAR(255) NOT NULL COMMENT 'Tiêu đề sự kiện',
@@ -93,10 +185,11 @@ CREATE TABLE IF NOT EXISTS events (
   INDEX idx_published (is_published)
 ) ENGINE=InnoDB COMMENT='Quản lý sự kiện và hội thảo doanh nghiệp';
 
--- ── Bảng đăng ký tham gia sự kiện & cấp vé QR ─────────────────
+-- ── 11. Bảng đăng ký tham gia sự kiện & cấp vé QR ───────────
 CREATE TABLE IF NOT EXISTS event_registrations (
   id              INT AUTO_INCREMENT PRIMARY KEY,
   event_id        INT          NOT NULL,
+  member_id       INT          DEFAULT NULL COMMENT 'Khóa ngoại liên kết hội viên (nếu có)',
   ticket_code     VARCHAR(50)  NOT NULL UNIQUE COMMENT 'Mã vé / Mã QR check-in',
   full_name       VARCHAR(150) NOT NULL COMMENT 'Họ và tên người đăng ký',
   phone           VARCHAR(30)  NOT NULL COMMENT 'Số điện thoại',
@@ -117,33 +210,11 @@ CREATE TABLE IF NOT EXISTS event_registrations (
   INDEX idx_event (event_id),
   INDEX idx_ticket (ticket_code),
   INDEX idx_phone (phone),
+  INDEX idx_reg_member (member_id),
   INDEX idx_payment_status (payment_status)
 ) ENGINE=InnoDB COMMENT='Danh sách đăng ký tham gia sự kiện và vé QR';
 
--- ── Bảng ban tổ chức sự kiện & nhân viên soát vé ───────────────
-CREATE TABLE IF NOT EXISTS event_organizers (
-  id            INT AUTO_INCREMENT PRIMARY KEY,
-  name          VARCHAR(255) NOT NULL,
-  username      VARCHAR(100) NOT NULL UNIQUE,
-  password_hash VARCHAR(255) NOT NULL,
-  phone         VARCHAR(50)  DEFAULT NULL,
-  email         VARCHAR(191) DEFAULT NULL,
-  role          VARCHAR(50)  DEFAULT 'organizer' COMMENT 'organizer hoặc ticket_inspector',
-  status        VARCHAR(50)  DEFAULT 'active',
-  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB COMMENT='Tài khoản Ban tổ chức Sự kiện & Soát vé';
-
-CREATE TABLE IF NOT EXISTS organizer_sessions (
-  id            INT AUTO_INCREMENT PRIMARY KEY,
-  organizer_id  INT NOT NULL,
-  token         VARCHAR(255) NOT NULL UNIQUE,
-  expires_at    DATETIME NOT NULL,
-  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (organizer_id) REFERENCES event_organizers(id) ON DELETE CASCADE
-) ENGINE=InnoDB COMMENT='Phiên đăng nhập Ban tổ chức Sự kiện';
-
--- ── Bảng quan tâm sự kiện (Tương thích ngược) ─────────────────
+-- ── 12. Bảng quan tâm sự kiện (Tương thích ngược) ───────────
 CREATE TABLE IF NOT EXISTS event_interests (
   id            INT AUTO_INCREMENT PRIMARY KEY,
   event_id      INT NOT NULL,
@@ -157,40 +228,24 @@ CREATE TABLE IF NOT EXISTS event_interests (
   INDEX idx_member (member_id)
 ) ENGINE=InnoDB COMMENT='Đăng ký quan tâm sự kiện';
 
--- ── Bảng quản trị viên & tài khoản hệ thống ───────────────────
-CREATE TABLE IF NOT EXISTS admins (
+-- ── 13. Bảng Leads & Đăng ký tư vấn doanh nghiệp ─────────────
+CREATE TABLE IF NOT EXISTS leads (
   id            INT AUTO_INCREMENT PRIMARY KEY,
-  username      VARCHAR(50)  NOT NULL UNIQUE,
-  password_hash VARCHAR(255) NOT NULL,
-  name          VARCHAR(100) NOT NULL,
-  email         VARCHAR(255) NOT NULL,
-  role          ENUM('superadmin','admin','editor','creator','member') DEFAULT 'admin',
-  last_login    TIMESTAMP NULL DEFAULT NULL,
-  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB COMMENT='Tài khoản quản trị và biên tập viên';
-
--- ── Bảng cấu hình AI ──────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS ai_config (
-  id            INT AUTO_INCREMENT PRIMARY KEY,
-  provider      VARCHAR(50)  NOT NULL DEFAULT 'openrouter',
-  model         VARCHAR(100) NOT NULL,
-  system_prompt TEXT,
-  is_active     TINYINT(1)   DEFAULT 1,
-  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB COMMENT='Cấu hình AI Proxy';
-
--- ── Bảng phiên đăng nhập hội viên ─────────────────────────────
-CREATE TABLE IF NOT EXISTS member_sessions (
-  id            INT AUTO_INCREMENT PRIMARY KEY,
-  member_id     INT NOT NULL,
-  token         VARCHAR(255) NOT NULL UNIQUE,
-  expires_at    TIMESTAMP NOT NULL,
+  full_name     VARCHAR(255) NOT NULL,
+  phone         VARCHAR(50)  NOT NULL,
+  email         VARCHAR(255) DEFAULT NULL,
+  city          VARCHAR(100) DEFAULT NULL,
+  member_type   VARCHAR(100) DEFAULT 'Tư vấn chung',
+  company_name  VARCHAR(255) DEFAULT NULL,
+  notes         TEXT         DEFAULT NULL,
+  status        VARCHAR(50)  DEFAULT 'new',
   created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
-  INDEX idx_token (token)
-) ENGINE=InnoDB COMMENT='Token phiên đăng nhập hội viên';
+  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_phone (phone),
+  INDEX idx_status (status)
+) ENGINE=InnoDB COMMENT='Danh sách khách hàng tiềm năng & đăng ký tư vấn';
 
--- ── Bảng chuyên mục & lĩnh vực (Admin quản lý động) ───────────
+-- ── 14. Bảng chuyên mục & lĩnh vực con (Song ngữ) ───────────
 CREATE TABLE IF NOT EXISTS categories (
   id            INT AUTO_INCREMENT PRIMARY KEY,
   name          VARCHAR(255) NOT NULL,
@@ -216,6 +271,29 @@ CREATE TABLE IF NOT EXISTS sub_categories (
   INDEX idx_category (category_id)
 ) ENGINE=InnoDB COMMENT='Lĩnh vực con';
 
+-- ── 15. Bảng cấu hình AI & Trợ lý ảo ─────────────────────────
+CREATE TABLE IF NOT EXISTS ai_config (
+  id                  INT AUTO_INCREMENT PRIMARY KEY,
+  provider            VARCHAR(50)  NOT NULL DEFAULT 'openrouter',
+  model               VARCHAR(100) NOT NULL,
+  system_prompt       TEXT,
+  system_instruction  TEXT DEFAULT NULL,
+  is_active           TINYINT(1)   DEFAULT 1,
+  updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB COMMENT='Cấu hình AI Proxy';
+
+-- ── 16. Bảng lưu trữ lịch sử hội thoại AI Chat ───────────────
+CREATE TABLE IF NOT EXISTS chat_logs (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  session_id    VARCHAR(100) NOT NULL,
+  member_id     INT          DEFAULT NULL,
+  user_message  TEXT         NOT NULL,
+  bot_reply     TEXT         NOT NULL,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_session (session_id),
+  INDEX idx_member (member_id)
+) ENGINE=InnoDB COMMENT='Lịch sử trò chuyện với AI Bot';
+
 -- ============================================
 -- DỮ LIỆU KHỞI TẠO MẪU (DoanhNghiepVN.today)
 -- ============================================
@@ -225,6 +303,6 @@ INSERT INTO admins (username, password_hash, name, email, role) VALUES
 ('admin', '$2b$10$3luJFH.EMVPnxeH8BdXn9.5tnCQ9huv13yzOzHrwYGiRhgV7dcufq', 'Ban Biên Tập DoanhNghiepVN.today', 'admin@doanhnghiepvn.today', 'superadmin')
 ON DUPLICATE KEY UPDATE name=VALUES(name);
 
--- Cấu hình AI mặc định
-INSERT INTO ai_config (provider, model, is_active) VALUES ('openrouter', 'google/gemini-2.5-flash', 1)
+-- Cấu hình AI mặc định (Google Gemini Flash qua OpenRouter / Google API)
+INSERT INTO ai_config (provider, model, is_active) VALUES ('openrouter', 'google/gemini-3-flash-preview', 1)
 ON DUPLICATE KEY UPDATE model=VALUES(model);
