@@ -61,6 +61,7 @@ export const MemberDashboard = () => {
     image_url: '', featured_requested: 0
   });
   const [creatingPost, setCreatingPost] = useState(false);
+  const [imagePreview, setImagePreview] = useState('');
   const [categoriesList, setCategoriesList] = useState(CATEGORIES_DATA);
 
   useEffect(() => {
@@ -276,6 +277,11 @@ export const MemberDashboard = () => {
       alert(t('err_image_size'));
       return;
     }
+
+    try {
+      const localUrl = URL.createObjectURL(file);
+      setImagePreview(localUrl);
+    } catch (_) {}
 
     setUploadingImage(true);
     const reader = new FileReader();
@@ -1125,20 +1131,25 @@ export const MemberDashboard = () => {
                     </label>
                   </div>
                   {uploadingImage && <div style={{ fontSize: '11px', color: 'var(--primary-light)', marginTop: '2px' }}><i className="ti ti-loader animate-spin"></i> {t('status_uploading_image')}</div>}
-                  {newPostData.image_url && (
+                  {(imagePreview || newPostData.image_url) && (
                     <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <img 
-                        src={newPostData.image_url} 
+                        src={imagePreview || newPostData.image_url} 
                         alt="Preview" 
                         onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80';
+                          if (!imagePreview) {
+                            e.target.onerror = null;
+                            e.target.src = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80';
+                          }
                         }}
                         style={{ height: '70px', width: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border)' }} 
                       />
                       <button 
                         type="button" 
-                        onClick={() => setNewPostData(prev => ({ ...prev, image_url: '' }))}
+                        onClick={() => {
+                          setImagePreview('');
+                          setNewPostData(prev => ({ ...prev, image_url: '' }));
+                        }}
                         className="btn"
                         style={{ fontSize: '11px', padding: '4px 8px', color: 'var(--rose)', background: 'rgba(239, 68, 68, 0.1)', border: 'none' }}
                       >

@@ -25,7 +25,7 @@ export const AdminPosts = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/posts`, {
+      const res = await fetch(`/api/posts?include_body=true`, {
         headers: getAuthHeaders()
       });
       if (!res.ok) throw new Error('Không thể tải danh sách bài viết');
@@ -36,6 +36,24 @@ export const AdminPosts = () => {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenViewPost = async (p) => {
+    setSelectedPostToView(p);
+    setViewPostModalOpen(true);
+    if (!p.body) {
+      try {
+        const res = await fetch(`/api/posts/${p.id}`, { headers: getAuthHeaders() });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.data) {
+            setSelectedPostToView(data.data);
+          }
+        }
+      } catch (e) {
+        console.error("Lỗi lấy chi tiết bài viết:", e);
+      }
     }
   };
 
@@ -310,9 +328,9 @@ export const AdminPosts = () => {
                         </td>
                         <td style={{ padding: '12px 16px' }}>
                           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                            <button className="quick-btn" onClick={() => { setSelectedPostToView(p); setViewPostModalOpen(true); }} style={{ padding: '4px 8px', fontSize: '11px', background: '#3B82F6', color: '#fff', border: '1px solid #3B82F6', borderRadius: '4px', cursor: 'pointer' }}>Xem</button>
+                            <button className="quick-btn" onClick={() => handleOpenViewPost(p)} style={{ padding: '4px 8px', fontSize: '11px', background: '#3B82F6', color: '#fff', border: '1px solid #3B82F6', borderRadius: '4px', cursor: 'pointer' }}>Xem</button>
                             <a 
-                              href={`/posts/${p.id}`} 
+                              href={`/posts/${p.slug || p.id}`} 
                               target="_blank" 
                               rel="noopener noreferrer"
                               style={{ 
@@ -325,9 +343,9 @@ export const AdminPosts = () => {
                                 textDecoration: 'none', 
                                 display: 'inline-flex', 
                                 alignItems: 'center', 
-                                gap: '3px',
-                                fontWeight: 600,
-                                whiteSpace: 'nowrap'
+                                gap: '3px', 
+                                fontWeight: 600, 
+                                whiteSpace: 'nowrap' 
                               }}
                               title="Mở bài viết ngoài trang chủ"
                             >
@@ -421,11 +439,19 @@ export const AdminPosts = () => {
             </div>
 
             <div style={{ textAlign: 'left', fontSize: '13.5px', color: '#334155', lineHeight: 1.6 }}>
-              {selectedPostToView.image_url && (
-                <div style={{ width: '100%', maxHeight: '300px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1.5rem' }}>
-                  <img src={selectedPostToView.image_url} alt={selectedPostToView.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {selectedPostToView.image_url ? (
+                <div style={{ width: '100%', maxHeight: '350px', borderRadius: '8px', overflow: 'hidden', marginBottom: '1.5rem', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img 
+                    src={selectedPostToView.image_url} 
+                    alt={selectedPostToView.title} 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80';
+                    }}
+                    style={{ width: '100%', maxHeight: '350px', objectFit: 'contain' }} 
+                  />
                 </div>
-              )}
+              ) : null}
 
               {selectedPostToView.summary && (
                 <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', borderLeft: '4px solid #3B82F6', marginBottom: '1.5rem', fontWeight: '500' }}>
@@ -434,14 +460,26 @@ export const AdminPosts = () => {
               )}
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ fontWeight: '600', color: '#0F172A', marginBottom: '8px', fontSize: '14px', borderBottom: '1px solid #E2E8F0', paddingBottom: '4px' }}>Nội dung chi tiết</div>
-                <div dangerouslySetInnerHTML={{ __html: selectedPostToView.body }} style={{ padding: '4px 0' }} className="rich-content-view" />
+                <div style={{ fontWeight: '600', color: '#0F172A', marginBottom: '8px', fontSize: '14px', borderBottom: '1px solid #E2E8F0', paddingBottom: '4px' }}>
+                  Nội dung chi tiết
+                </div>
+                {selectedPostToView.body ? (
+                  <div 
+                    dangerouslySetInnerHTML={{ __html: selectedPostToView.body }} 
+                    style={{ padding: '8px 0', fontSize: '14px', lineHeight: 1.7, color: '#334155' }} 
+                    className="rich-content-view" 
+                  />
+                ) : (
+                  <div style={{ color: '#94A3B8', fontStyle: 'italic', padding: '12px 0' }}>
+                    (Đang tải nội dung hoặc bài viết chưa có nội dung chi tiết...)
+                  </div>
+                )}
               </div>
 
               <div style={{ gridTemplateColumns: '1fr 1fr', display: 'grid', gap: '15px', background: '#F8FAFC', padding: '12px 16px', borderRadius: '8px', marginBottom: '1.5rem' }}>
                 <div>
                   <div style={{ fontSize: '11px', color: '#64748B' }}>Thông tin liên hệ trực tiếp</div>
-                  <div style={{ fontWeight: '600', color: '#0F172A', marginTop: '2px' }}>{selectedPostToView.contact_info}</div>
+                  <div style={{ fontWeight: '600', color: '#0F172A', marginTop: '2px' }}>{selectedPostToView.contact_info || 'Chưa cung cấp'}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '11px', color: '#64748B' }}>Hạn đăng tin</div>
@@ -452,14 +490,14 @@ export const AdminPosts = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid #F1F5F9', paddingTop: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '14px', flexWrap: 'wrap', gap: '8px' }}>
               <a 
-                href={`/posts/${selectedPostToView.id}`} 
+                href={`/posts/${selectedPostToView.slug || selectedPostToView.id}`} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 style={{ 
                   fontSize: '12px', 
-                  padding: '6px 14px', 
+                  padding: '7px 14px', 
                   background: '#0EA5E9', 
                   color: '#ffffff', 
                   border: 'none', 
@@ -467,31 +505,61 @@ export const AdminPosts = () => {
                   textDecoration: 'none', 
                   display: 'inline-flex', 
                   alignItems: 'center', 
-                  gap: '4px',
+                  gap: '5px',
                   fontWeight: 600 
                 }}
               >
-                <i className="ti ti-external-link"></i> Xem ở trang chủ
+                <i className="ti ti-external-link"></i> Mở xem trên Web
               </a>
-              <button 
-                className="btn" 
-                onClick={() => setViewPostModalOpen(false)}
-                style={{ fontSize: '12px', padding: '6px 14px', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-              >
-                Đóng
-              </button>
-              {selectedPostToView.status !== 'approved' && (
+
+              <div style={{ display: 'flex', gap: '8px' }}>
                 <button 
-                  className="btn btn-primary" 
-                  onClick={() => {
-                    handleApprove(selectedPostToView.id, selectedPostToView.title);
-                    setViewPostModalOpen(false);
-                  }}
-                  style={{ fontSize: '12px', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer' }}
+                  className="btn" 
+                  onClick={() => setViewPostModalOpen(false)}
+                  style={{ fontSize: '12px', padding: '7px 14px', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
                 >
-                  Duyệt bài đăng này
+                  Đóng
                 </button>
-              )}
+                {selectedPostToView.status === 'pending' && (
+                  <>
+                    <button 
+                      onClick={() => {
+                        const id = selectedPostToView.id;
+                        const title = selectedPostToView.title;
+                        setViewPostModalOpen(false);
+                        handleReject(id, title);
+                      }}
+                      style={{ fontSize: '12px', padding: '7px 14px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      Từ chối bài
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const id = selectedPostToView.id;
+                        const title = selectedPostToView.title;
+                        setViewPostModalOpen(false);
+                        handleApprove(id, title);
+                      }}
+                      style={{ fontSize: '12px', padding: '7px 16px', background: '#10B981', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      <i className="ti ti-check"></i> Duyệt bài đăng này
+                    </button>
+                  </>
+                )}
+                {selectedPostToView.status !== 'pending' && selectedPostToView.status !== 'approved' && (
+                  <button 
+                    onClick={() => {
+                      const id = selectedPostToView.id;
+                      const title = selectedPostToView.title;
+                      setViewPostModalOpen(false);
+                      handleApprove(id, title);
+                    }}
+                    style={{ fontSize: '12px', padding: '7px 16px', background: '#10B981', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    <i className="ti ti-check"></i> Xuất bản bài viết
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

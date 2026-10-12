@@ -250,10 +250,16 @@ app.get('/robots.txt', (req, res) => {
 function saveUploadedFile(filename, buffer) {
   const dir1 = path.join(__dirname, 'uploads');
   const dir2 = path.join(__dirname, 'public', 'uploads');
-  if (!fs.existsSync(dir1)) fs.mkdirSync(dir1, { recursive: true });
-  if (!fs.existsSync(dir2)) fs.mkdirSync(dir2, { recursive: true });
-  fs.writeFileSync(path.join(dir1, filename), buffer);
-  fs.writeFileSync(path.join(dir2, filename), buffer);
+  if (!fs.existsSync(dir1)) fs.mkdirSync(dir1, { recursive: true, mode: 0o755 });
+  if (!fs.existsSync(dir2)) fs.mkdirSync(dir2, { recursive: true, mode: 0o755 });
+  const f1 = path.join(dir1, filename);
+  const f2 = path.join(dir2, filename);
+  fs.writeFileSync(f1, buffer);
+  fs.writeFileSync(f2, buffer);
+  try {
+    fs.chmodSync(f1, 0o644);
+    fs.chmodSync(f2, 0o644);
+  } catch (_) {}
 }
 
 // Đảm bảo đồng bộ tệp giữa 2 thư mục uploads/ nếu có
@@ -4873,6 +4879,46 @@ app.get('/api/debug-env', (req, res) => {
     timezone: process.env.TZ || 'N/A',
     time: new Date().toISOString()
   });
+});
+
+// Endpoint kiểm tra và liệt kê thư mục uploads phục vụ chẩn đoán
+app.get('/api/check-uploads', (req, res) => {
+  const dir1 = path.join(__dirname, 'uploads');
+  const dir2 = path.join(__dirname, 'public', 'uploads');
+  const files1 = fs.existsSync(dir1) ? fs.readdirSync(dir1) : [];
+  const files2 = fs.existsSync(dir2) ? fs.readdirSync(dir2) : [];
+  res.json({
+    uploads_dir: { path: dir1, exists: fs.existsSync(dir1), count: files1.length, files: files1 },
+    public_uploads_dir: { path: dir2, exists: fs.existsSync(dir2), count: files2.length, files: files2 }
+  });
+});
+
+// Phục vụ trực tiếp ảnh uploads đảm bảo 100% không bị sót hay vỡ
+app.get('/uploads/:filename', (req, res) => {
+  const filename = path.basename(req.params.filename);
+  
+  // 1. Kiểm tra uploads/ tại root
+  const rootPath = path.join(__dirname, 'uploads', filename);
+  if (fs.existsSync(rootPath)) {
+    res.setHeader('Cache-Control', 'public, max-age=2592000');
+    return res.sendFile(rootPath);
+  }
+  
+  // 2. Kiểm tra public/uploads/
+  const publicPath = path.join(__dirname, 'public', 'uploads', filename);
+  if (fs.existsSync(publicPath)) {
+    res.setHeader('Cache-Control', 'public, max-age=2592000');
+    return res.sendFile(publicPath);
+  }
+
+  // 3. Kiểm tra public/
+  const directPath = path.join(__dirname, 'public', filename);
+  if (fs.existsSync(directPath)) {
+    res.setHeader('Cache-Control', 'public, max-age=2592000');
+    return res.sendFile(directPath);
+  }
+
+  res.status(404).type('text/plain').send('File not found');
 });
 
 // Trả về 404 trực tiếp cho các file tĩnh không tồn tại (/uploads/*, /assets/*, *.jpg,...) để tránh SPA Fallback trả về HTML gây vỡ ảnh
