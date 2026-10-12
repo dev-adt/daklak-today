@@ -10,16 +10,16 @@ require('dotenv').config();
 const brandConfig = {
   appName: process.env.APP_NAME || 'DakLak.today Platform',
   brandName: process.env.BRAND_NAME || 'DakLak.today',
-  brandShortName: process.env.BRAND_SHORT_NAME || 'DakLak Today',
+  brandShortName: process.env.BRAND_SHORT_NAME || 'DakLak',
   siteUrl: process.env.SITE_URL || 'https://daklak.today',
   demoSiteUrl: 'https://demo.daklak.today',
   
   // Nhận diện logo thương hiệu
   logo: {
-    primary: '/logo_doanhnghiepvn.png',
-    dark: '/logo_doanhnghiepvn_dark.png',
-    icon: '/logo_icon.png',
-    favicon: '/favicon.png'
+    primary: '/logo_daklak.png',
+    dark: '/logo_daklak_dark.png',
+    icon: '/logo_icon.svg',
+    favicon: '/favicon.svg'
   },
   
   // Thông tin thanh toán ngân hàng (VietQR)

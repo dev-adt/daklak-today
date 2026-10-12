@@ -263,18 +263,18 @@ export const OrganizerDashboard = () => {
                 height: '36px',
                 borderRadius: '8px',
                 overflow: 'hidden',
-                backgroundColor: '#08101E',
-                border: '1px solid rgba(45, 212, 191, 0.4)',
+                backgroundColor: '#2A160D',
+                border: '1px solid rgba(213, 163, 63, 0.4)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0
               }}>
-                <img src="/logo_icon.png" alt="DNVN" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerText = 'DNVN'; }} />
+                <img src="/logo_icon.svg" alt="DakLak.today" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.src = '/logo_icon.png'; }} />
               </div>
               <div>
-                <div style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
-                  DoanhNghiepVN<span style={{ color: '#0D9488' }}>.today</span>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: '#2A160D' }}>
+                  DakLak<span style={{ color: '#D5A33F' }}>.today</span>
                 </div>
               </div>
             </Link>

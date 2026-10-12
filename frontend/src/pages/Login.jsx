@@ -86,10 +86,10 @@ export const Login = () => {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '1.75rem', textAlign: 'center' }}>
             <Link to="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
               <img 
-                src="/logo_doanhnghiepvn_dark.png" 
-                alt="DoanhNghiepVN.today Logo" 
-                onError={(e) => { e.target.src = "/logo_doanhnghiepvn.png"; }} 
-                style={{ height: '62px', width: 'auto', maxWidth: '100%', objectFit: 'contain', borderRadius: '10px', filter: 'drop-shadow(0 4px 16px rgba(13, 148, 136, 0.3))' }} 
+                src="/logo_daklak_dark.png" 
+                alt="DakLak.today Logo" 
+                onError={(e) => { e.target.src = "/logo_daklak.png"; }} 
+                style={{ height: '62px', width: 'auto', maxWidth: '100%', objectFit: 'contain', borderRadius: '10px', filter: 'drop-shadow(0 4px 16px rgba(213, 163, 63, 0.3))' }} 
               />
             </Link>
           </div>

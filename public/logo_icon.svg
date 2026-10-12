@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B2417" />
+      <stop offset="100%" stop-color="#1C0F08" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F3C562" />
+      <stop offset="50%" stop-color="#D5A33F" />
+      <stop offset="100%" stop-color="#B88523" />
+    </linearGradient>
+    <linearGradient id="bazanGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#A84524" />
+      <stop offset="100%" stop-color="#592511" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Squircle -->
+  <rect x="20" y="20" width="472" height="472" rx="110" fill="url(#bgGrad)" />
+  <rect x="24" y="24" width="464" height="464" rx="106" fill="none" stroke="url(#goldGrad)" stroke-width="10" opacity="0.9" />
+
+  <!-- Gong Sunburst Rays -->
+  <g stroke="url(#goldGrad)" stroke-width="6" opacity="0.65" stroke-linecap="round">
+    <line x1="256" y1="90" x2="256" y2="114" />
+    <line x1="256" y1="318" x2="256" y2="342" />
+    <line x1="142" y1="216" x2="166" y2="216" />
+    <line x1="346" y1="216" x2="370" y2="216" />
+    <line x1="175" y1="135" x2="192" y2="152" />
+    <line x1="320" y1="280" x2="337" y2="297" />
+    <line x1="337" y1="135" x2="320" y2="152" />
+    <line x1="192" y1="280" x2="175" y2="297" />
+  </g>
+
+  <!-- Gong Rings -->
+  <circle cx="256" cy="216" r="105" fill="none" stroke="url(#goldGrad)" stroke-width="12" opacity="0.85" />
+  <circle cx="256" cy="216" r="75" fill="none" stroke="url(#goldGrad)" stroke-width="6" opacity="0.7" stroke-dasharray="8 6" />
+  <circle cx="256" cy="216" r="45" fill="url(#goldGrad)" opacity="0.25" />
+
+  <!-- Western Highland Bazan Mountains -->
+  <polygon points="90,365 195,205 285,365" fill="#7A3E1D" opacity="0.9" />
+  <polygon points="180,365 315,175 422,365" fill="url(#bazanGrad)" />
+  
+  <!-- Mountain Golden Ridges -->
+  <line x1="315" y1="175" x2="295" y2="365" stroke="url(#goldGrad)" stroke-width="6" stroke-linecap="round" />
+  <line x1="195" y1="205" x2="175" y2="365" stroke="#F3C562" stroke-width="4" stroke-linecap="round" opacity="0.8" />
+
+  <!-- Stylized Coffee Bean at Center Base -->
+  <g transform="translate(256, 350)">
+    <ellipse cx="0" cy="0" rx="72" ry="42" fill="#2C160B" stroke="url(#goldGrad)" stroke-width="8" />
+    <!-- S-Curve groove of Robusta/Arabica Bean -->
+    <path d="M -56 -4 C -25 22, 25 -22, 56 4" fill="none" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round" />
+  </g>
+
+  <!-- Monogram DL in Gold & White -->
+  <text x="256" y="448" text-anchor="middle" font-family="'Segoe UI', 'Be Vietnam Pro', 'Outfit', sans-serif" font-weight="900" font-size="82" fill="url(#goldGrad)" filter="url(#glow)" letter-spacing="4">DL</text>
+</svg>

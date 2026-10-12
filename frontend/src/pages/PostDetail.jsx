@@ -289,10 +289,10 @@ export const PostDetail = () => {
     }],
     "publisher": {
       "@type": "Organization",
-      "name": "Tạp chí Doanh Nghiệp Việt Nam",
+      "name": "DakLak.today",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://doanhnghiepvn.today/logo_doanhnghiepvn.png"
+        "url": "https://daklak.today/logo_icon.png"
       }
     },
     "description": metaDescription

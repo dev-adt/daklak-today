@@ -9,7 +9,7 @@
 export const brandConfig = {
   // Thông tin định danh thương hiệu
   brandName: 'DakLak.today',         // Tên thương hiệu hiển thị chính
-  brandShortName: 'DakLak Today',    // Tên viết tắt ngắn gọn
+  brandShortName: 'DakLak',          // Tên viết tắt ngắn gọn (tránh trùng .today)
   platformName: 'DakLak.today Digital Platform',
   companyLegalName: 'Cổng thông tin, Dữ liệu & Xúc tiến Đầu tư Đắk Lắk',
   partnerLegalName: 'Công ty Cổ phần ADT Quốc tế',
@@ -28,11 +28,11 @@ export const brandConfig = {
 
   // Nhận diện hình ảnh & Logo
   logo: {
-    primary: '/logo_doanhnghiepvn.png',
-    dark: '/logo_doanhnghiepvn_dark.png',
-    icon: '/logo_icon.png',
+    primary: '/logo_daklak.png',
+    dark: '/logo_daklak_dark.png',
+    icon: '/logo_icon.svg',
     alt: 'DakLak.today Logo',
-    favicon: '/favicon.png',
+    favicon: '/favicon.svg',
     defaultThumbnail: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
     fallbackCompanyLogo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80'
   },
@@ -77,7 +77,6 @@ export const brandConfig = {
   // Thông tin liên hệ & Văn phòng
   contact: {
     hotline: '0262 3888 999',
-    phone: '0912 480 246',
     techHotline: '0986 354 152',
     email: 'contact@daklak.today',
     supportEmail: 'support@daklak.today',

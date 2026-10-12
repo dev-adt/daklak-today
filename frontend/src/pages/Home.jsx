@@ -6,7 +6,6 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import FloatingAIBot from '../components/FloatingAIBot';
 import SEOHead from '../components/SEOHead';
-import SpotlightBanner from '../components/SpotlightBanner';
 import brandConfig from '../brand.config';
 import { getCategoryLabel } from '../constants/categories';
 import { fetchJsonWithTimeout, FALLBACK_POSTS, FALLBACK_EVENTS, FALLBACK_MEMBERS } from '../utils/api';
@@ -349,7 +348,6 @@ export const Home = () => {
         title={`${brandConfig.brandName} — ${brandConfig.slogan}`}
         description={brandConfig.description}
       />
-      <SpotlightBanner />
       <Navbar />
 
       <main>
@@ -949,7 +947,7 @@ export const Home = () => {
               </p>
             </div>
 
-            <div className="posts-grid">
+            <div className={`posts-grid count-${Math.min(4, latestPosts.length || 4)}`}>
               {latestPosts.map((post) => (
                 <div key={post.id || post.slug} className="post-card">
                   <div className="post-card-img-box">
@@ -1003,7 +1001,7 @@ export const Home = () => {
               </p>
             </div>
 
-            <div className="members-grid">
+            <div className={`members-grid count-${Math.min(4, featuredMembers.length || 3)}`}>
               {featuredMembers.map((m) => (
                 <div key={m.id} className="member-card">
                   <div className="member-card-header">

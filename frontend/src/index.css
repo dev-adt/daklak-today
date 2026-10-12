@@ -2659,6 +2659,28 @@ select option {
   }
 }
 
+/* Responsive balanced 4-column grid (Max 4 cols, 2/2 on tablet, 1 on mobile) */
+.grid-4-cols,
+.daklak-grid-4 {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 24px !important;
+}
+@media (max-width: 1080px) {
+  .grid-4-cols,
+  .daklak-grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px !important;
+  }
+}
+@media (max-width: 640px) {
+  .grid-4-cols,
+  .daklak-grid-4 {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+}
+
 /* ══════════════════════════════════════════════════════════
    VTV8.VN DESIGN SYSTEM EXTENSIONS
    ══════════════════════════════════════════════════════════ */

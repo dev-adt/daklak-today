@@ -34,6 +34,7 @@ export const Footer = () => {
                   width: '42px',
                   height: '42px',
                   borderRadius: '10px',
+                  overflow: 'hidden',
                   background: 'linear-gradient(135deg, #7A3E1D 0%, #D5A33F 100%)',
                   display: 'flex',
                   alignItems: 'center',
@@ -41,9 +42,21 @@ export const Footer = () => {
                   color: '#ffffff',
                   fontWeight: '900',
                   fontSize: '16px',
-                  border: '1px solid rgba(213, 163, 63, 0.4)'
+                  border: '1px solid rgba(213, 163, 63, 0.4)',
+                  flexShrink: 0
                 }}>
-                  DL
+                  <img 
+                    src="/logo_icon.svg" 
+                    alt="DakLak.today Logo" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => { 
+                      e.target.src = '/logo_icon.png';
+                      e.target.onerror = () => {
+                        e.target.style.display = 'none';
+                        e.target.parentNode.innerText = 'DL';
+                      };
+                    }}
+                  />
                 </div>
                 <div>
                   <div style={{
@@ -164,10 +177,6 @@ export const Footer = () => {
               <span style={{ color: '#f3c562', fontWeight: '700' }}>{brandConfig.contact.hotline}</span>
             </div>
             <div>
-              <span style={{ color: '#8c7a6e' }}>{currentLang === 'en' ? 'Mobile / Zalo:' : 'Di động / Zalo:'}</span>{' '}
-              <span style={{ color: '#cbd5e1' }}>{brandConfig.contact.phone}</span>
-            </div>
-            <div>
               <span style={{ color: '#8c7a6e' }}>Email:</span>{' '}
               <a href={`mailto:${brandConfig.contact.email}`} style={{ color: '#f3c562', textDecoration: 'none' }}>{brandConfig.contact.email}</a>
             </div>
@@ -183,8 +192,8 @@ export const Footer = () => {
               <span><strong>{currentLang === 'en' ? 'Address:' : 'Địa chỉ:'}</strong> {brandConfig.contact.address}</span>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
-              <a href={`tel:${brandConfig.contact.phone.replace(/\s+/g, '')}`} style={{ color: '#f3c562', textDecoration: 'none', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <i className="ti ti-phone"></i> {brandConfig.contact.phone}
+              <a href={`tel:${brandConfig.contact.hotline.replace(/\s+/g, '')}`} style={{ color: '#f3c562', textDecoration: 'none', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <i className="ti ti-phone"></i> {brandConfig.contact.hotline}
               </a>
               <span style={{ color: '#64544b' }}>|</span>
               <a href={`mailto:${brandConfig.contact.supportEmail}`} style={{ color: '#dedede', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>

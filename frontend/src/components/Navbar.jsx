@@ -477,16 +477,21 @@ export const Navbar = () => {
           >
             <div className="dnvn-brand-icon">
               <img 
-                src="/logo_icon.png" 
-                alt="DakLak Logo" 
+                src="/logo_icon.svg" 
+                alt="DakLak.today Logo" 
                 className="dnvn-brand-icon-img"
-                onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerText = 'DL'; }}
+                onError={(e) => { 
+                  e.target.src = '/logo_icon.png';
+                  e.target.onerror = () => {
+                    e.target.style.display = 'none';
+                    e.target.parentNode.innerText = 'DL';
+                  };
+                }}
               />
             </div>
             <div className="dnvn-brand-text-box">
               <span className="dnvn-brand-title">
-                {brandConfig.brandShortName || 'DakLak'}
-                <span style={{ color: '#D5A33F' }}>.today</span>
+                DakLak<span style={{ color: '#D5A33F' }}>.today</span>
               </span>
               <span className="dnvn-brand-subtitle">
                 {currentLang === 'en' ? 'DAK LAK INFORMATION, DATA & INVESTMENT' : 'CỔNG THÔNG TIN, DỮ LIỆU & ĐẦU TƯ ĐẮK LẮK'}

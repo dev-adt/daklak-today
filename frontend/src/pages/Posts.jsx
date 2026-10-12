@@ -5,7 +5,6 @@ import { useTranslation } from '../contexts/LanguageContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import SEOHead from '../components/SEOHead';
-import SpotlightBanner from '../components/SpotlightBanner';
 import { CATEGORIES_DATA, ALL_CATEGORIES, getSubcategoriesByCategory, getCategoryLabel, getSubCategoryLabel } from '../constants/categories';
 import { fetchJsonWithTimeout } from '../utils/api';
 
@@ -178,15 +177,6 @@ export const Posts = () => {
       />
 
       <Navbar />
-
-      {/* Top Ecosystem Spotlight Banner */}
-      <SpotlightBanner
-        badgeText={currentLang === 'en' ? 'ENTERPRISE ECOSYSTEM • AI & CAPITAL ACCESS' : 'HỆ SINH THÁI DOANH NGHIỆP • CHUYỂN ĐỔI SỐ & TÍN DỤNG'}
-        title={currentLang === 'en' ? 'Ecosystem Connecting Resources to Support Enterprises' : 'Hệ sinh thái kết nối các nguồn lực hỗ trợ doanh nghiệp'}
-        subtitle={currentLang === 'en' ? 'Supporting enterprises in applying technology, improving capital access capacity and sustainable growth.' : 'Hỗ trợ doanh nghiệp ứng dụng công nghệ, tăng khả năng tiếp cận vốn & bứt phá tăng trưởng toàn diện.'}
-        buttonText={currentLang === 'en' ? 'Explore Resources →' : 'Xem chi tiết chuyên đề →'}
-        link="https://doanhnghiepvn.vn/doanh-nghiep/ho-tro-doanh-nghiep-ung-dung-cong-nghe-tang-kha-nang-tiep-can-von/20260911105032450"
-      />
 
       {/* Decorative background gradient blobs */}
       <div style={{ position: 'fixed', top: '-20%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(79,70,229,0.06) 0%, rgba(79,70,229,0) 70%)', zIndex: -1, pointerEvents: 'none', borderRadius: '50%' }}></div>

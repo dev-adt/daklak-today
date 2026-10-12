@@ -781,11 +781,114 @@
   gap: 10px;
 }
 
-/* --- POSTS MAGAZINE GRID --- */
+/* --- DYNAMIC BALANCED RESPONSIVE GRID SYSTEM --- */
+/* Tối đa 4 item trên 1 hàng, luôn hiển thị đều (4 item -> 4 trên desktop, 2/2 tablet, 1 mobile) */
 .posts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 28px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+
+@media (max-width: 1080px) {
+  .posts-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .posts-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* 4 items balanced */
+.posts-grid.count-4,
+.projects-grid.count-4,
+.members-grid.count-4,
+.values-grid,
+.strengths-grid,
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+
+@media (max-width: 1080px) {
+  .posts-grid.count-4,
+  .projects-grid.count-4,
+  .members-grid.count-4,
+  .values-grid,
+  .strengths-grid,
+  .roadmap-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .posts-grid.count-4,
+  .projects-grid.count-4,
+  .members-grid.count-4,
+  .values-grid,
+  .strengths-grid,
+  .roadmap-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* 3 items balanced */
+.posts-grid.count-3,
+.projects-grid.count-3,
+.members-grid.count-3,
+.layers-grid,
+.itinerary-grid,
+.tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .posts-grid.count-3,
+  .projects-grid.count-3,
+  .members-grid.count-3,
+  .layers-grid,
+  .itinerary-grid,
+  .tiers-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+/* 2 items balanced */
+.posts-grid.count-2,
+.projects-grid.count-2,
+.members-grid.count-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 640px) {
+  .posts-grid.count-2,
+  .projects-grid.count-2,
+  .members-grid.count-2 {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* 1 item balanced */
+.posts-grid.count-1,
+.projects-grid.count-1,
+.members-grid.count-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: 540px;
+  margin: 0 auto;
 }
 
 .post-card {
@@ -875,8 +978,8 @@
 /* --- FEATURED MEMBERS (SHOWROOM DOANH NGHIỆP) --- */
 .members-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 26px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
 }
 
 .member-card {
