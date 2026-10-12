@@ -332,7 +332,15 @@ export const PostDetail = () => {
             
             {/* Cover Image */}
             <div style={{ width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--surface-0)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src={imgUrl} alt={post.title} style={{ width: '100%', height: 'auto', maxHeight: '720px', objectFit: 'contain', display: 'block' }} />
+              <img 
+                src={imgUrl} 
+                alt={post.title} 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = demoImages[post.id % demoImages.length];
+                }}
+                style={{ width: '100%', height: 'auto', maxHeight: '720px', objectFit: 'contain', display: 'block' }} 
+              />
             </div>
 
             {/* Title & Meta Info */}

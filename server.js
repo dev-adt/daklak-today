@@ -246,7 +246,55 @@ app.get('/robots.txt', (req, res) => {
   res.send(content);
 });
 
+// Helper lưu file upload an toàn (ghi đồng thời vào cả uploads/ và public/uploads/ để tương thích Nginx VPS lẫn Node.js)
+function saveUploadedFile(filename, buffer) {
+  const dir1 = path.join(__dirname, 'uploads');
+  const dir2 = path.join(__dirname, 'public', 'uploads');
+  if (!fs.existsSync(dir1)) fs.mkdirSync(dir1, { recursive: true });
+  if (!fs.existsSync(dir2)) fs.mkdirSync(dir2, { recursive: true });
+  fs.writeFileSync(path.join(dir1, filename), buffer);
+  fs.writeFileSync(path.join(dir2, filename), buffer);
+}
+
+// Đảm bảo đồng bộ tệp giữa 2 thư mục uploads/ nếu có
+try {
+  const dir1 = path.join(__dirname, 'uploads');
+  const dir2 = path.join(__dirname, 'public', 'uploads');
+  if (fs.existsSync(dir1) && !fs.existsSync(dir2)) fs.mkdirSync(dir2, { recursive: true });
+  if (fs.existsSync(dir2) && !fs.existsSync(dir1)) fs.mkdirSync(dir1, { recursive: true });
+  if (fs.existsSync(dir1) && fs.existsSync(dir2)) {
+    const files1 = fs.readdirSync(dir1);
+    for (const f of files1) {
+      const p1 = path.join(dir1, f);
+      const p2 = path.join(dir2, f);
+      if (fs.statSync(p1).isFile() && !fs.existsSync(p2)) {
+        try { fs.copyFileSync(p1, p2); } catch (_) {}
+      }
+    }
+    const files2 = fs.readdirSync(dir2);
+    for (const f of files2) {
+      const p1 = path.join(dir1, f);
+      const p2 = path.join(dir2, f);
+      if (fs.statSync(p2).isFile() && !fs.existsSync(p1)) {
+        try { fs.copyFileSync(p2, p1); } catch (_) {}
+      }
+    }
+  }
+} catch (e) {
+  console.warn('Lưu ý đồng bộ thư mục uploads:', e.message);
+}
+
 app.use('/img_guide', express.static(path.join(__dirname, 'img_guide')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=2592000');
+  }
+}));
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads'), {
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=2592000');
+  }
+}));
 app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html')) {
@@ -3041,21 +3089,20 @@ app.post('/api/upload', anyAuthMiddleware, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Thiếu dữ liệu tệp tin ảnh (base64).' });
     }
 
-    const uploadDir = path.join(__dirname, 'public', 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    let cleanBase64 = base64Data;
+    if (cleanBase64.includes(';base64,')) {
+      cleanBase64 = cleanBase64.split(';base64,')[1];
     }
 
-    const buffer = Buffer.from(base64Data, 'base64');
+    const buffer = Buffer.from(cleanBase64, 'base64');
     let ext = (path.extname(fileName || '') || '.jpg').toLowerCase();
     const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'];
     if (!allowedExts.includes(ext)) {
       ext = '.jpg';
     }
     const uniqueName = crypto.randomBytes(16).toString('hex') + ext;
-    const filePath = path.join(uploadDir, uniqueName);
 
-    fs.writeFileSync(filePath, buffer);
+    saveUploadedFile(uniqueName, buffer);
 
     res.json({
       success: true,
@@ -4472,19 +4519,18 @@ app.post('/api/events/registrations/:regId/payment-proof', async (req, res) => {
 
     // Nếu gửi base64 data trực tiếp từ client
     if (!proofUrl && base64Data) {
-      const uploadDir = path.join(__dirname, 'public', 'uploads');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
+      let cleanBase64 = base64Data;
+      if (cleanBase64.includes(';base64,')) {
+        cleanBase64 = cleanBase64.split(';base64,')[1];
       }
-      const buffer = Buffer.from(base64Data, 'base64');
+      const buffer = Buffer.from(cleanBase64, 'base64');
       let ext = (path.extname(fileName || '') || '.jpg').toLowerCase();
       const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
       if (!allowedExts.includes(ext)) {
         ext = '.jpg';
       }
       const uniqueName = 'proof_' + crypto.randomBytes(16).toString('hex') + ext;
-      const filePath = path.join(uploadDir, uniqueName);
-      fs.writeFileSync(filePath, buffer);
+      saveUploadedFile(uniqueName, buffer);
       proofUrl = `/uploads/${uniqueName}`;
     }
 
@@ -4827,6 +4873,14 @@ app.get('/api/debug-env', (req, res) => {
     timezone: process.env.TZ || 'N/A',
     time: new Date().toISOString()
   });
+});
+
+// Trả về 404 trực tiếp cho các file tĩnh không tồn tại (/uploads/*, /assets/*, *.jpg,...) để tránh SPA Fallback trả về HTML gây vỡ ảnh
+app.use((req, res, next) => {
+  if (req.path.startsWith('/uploads/') || req.path.startsWith('/assets/') || req.path.startsWith('/img_guide/') || req.path.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|css|js|map|woff2?)$/i)) {
+    return res.status(404).type('text/plain').send('File not found');
+  }
+  next();
 });
 
 // ════════════════════════════════════════════

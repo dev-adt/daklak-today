@@ -238,6 +238,10 @@ export const Search = () => {
                           <img 
                             src={p.image_url && p.image_url !== 'null' && p.image_url !== 'undefined' ? p.image_url : defaultPostImage} 
                             alt={p.title} 
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = defaultPostImage;
+                            }}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                           />
                           <span style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '10px', backgroundColor: 'var(--primary)', color: '#fff', padding: '3px 8px', borderRadius: '4px', border: '1px solid var(--border-strong)' }}>

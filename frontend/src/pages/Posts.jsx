@@ -472,7 +472,17 @@ export const Posts = () => {
                     
                     {/* Cover image left */}
                     <div style={{ width: '130px', height: '100px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, border: '1px solid var(--border)' }}>
-                      <img src={pImg} alt={p.title} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img 
+                        src={pImg} 
+                        alt={p.title} 
+                        loading="lazy" 
+                        decoding="async" 
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = demoImages[p.id % demoImages.length];
+                        }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
                     </div>
 
                     {/* Content center */}
