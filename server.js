@@ -4082,23 +4082,21 @@ app.post('/api/events/:id/register', async (req, res) => {
       });
     }
 
-    const { 
-      full_name, 
-      phone, 
-      email, 
-      company, 
-      quantity = 1, 
-      create_account = false, 
-      account_login, 
-      account_password, 
-      account_confirm_password, 
-      notes = '' 
-    } = req.body;
+    const full_name = (req.body.full_name || req.body.fullName || '').trim();
+    const phone = (req.body.phone || '').trim();
+    const email = (req.body.email || '').trim();
+    const company = (req.body.company || req.body.companyName || '').trim();
+    const quantity = parseInt(req.body.quantity, 10) || 1;
+    const create_account = req.body.create_account === true || req.body.createAccount === true;
+    const account_login = (req.body.account_login || req.body.accountLogin || '').trim();
+    const account_password = req.body.account_password || req.body.accountPassword || '';
+    const account_confirm_password = req.body.account_confirm_password || req.body.accountConfirmPassword || '';
+    const notes = req.body.notes || '';
 
-    if (!full_name || !full_name.trim()) {
+    if (!full_name) {
       return res.status(400).json({ success: false, error: 'Vui lòng nhập Họ và tên.' });
     }
-    if (!phone || !phone.trim()) {
+    if (!phone) {
       return res.status(400).json({ success: false, error: 'Vui lòng nhập Số điện thoại.' });
     }
 

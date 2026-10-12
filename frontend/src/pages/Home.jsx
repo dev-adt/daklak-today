@@ -12,7 +12,17 @@ import { fetchJsonWithTimeout, FALLBACK_POSTS, FALLBACK_EVENTS, FALLBACK_MEMBERS
 import './HomeDakLak.css';
 
 export const Home = () => {
-  const { role, user } = useAuth();
+  const { role, user, token } = useAuth();
+  let storedMemberUser = null;
+  try {
+    const raw = localStorage.getItem('doson_member_user');
+    if (raw) storedMemberUser = JSON.parse(raw);
+  } catch (e) {}
+  const memberToken = localStorage.getItem('doson_member_token') || (role === 'member' ? token : null);
+  const effectiveUser = (role === 'member' ? user : null) || storedMemberUser || user;
+  const isActuallyLoggedIn = Boolean(effectiveUser && (role === 'member' || !!memberToken || (user && role !== 'guest')));
+  const isLoggedIn = isActuallyLoggedIn;
+
   const { currentLang, t } = useTranslation();
   const navigate = useNavigate();
 
@@ -42,15 +52,29 @@ export const Home = () => {
 
   // Quick Event Registration Modal State
   const [registerModalEvent, setRegisterModalEvent] = useState(null);
-  const [regFormData, setRegFormData] = useState({
+  const [regForm, setRegForm] = useState({
     fullName: '',
     phone: '',
     email: '',
     company: '',
-    quantity: 1
+    quantity: 1,
+    createAccount: false,
+    accountLogin: '',
+    accountPassword: '',
+    accountConfirmPassword: ''
   });
-  const [regLoading, setRegLoading] = useState(false);
-  const [regSuccess, setRegSuccess] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [accountNotice, setAccountNotice] = useState('');
+  const [accountWarning, setAccountWarning] = useState('');
+  const [checkingAccount, setCheckingAccount] = useState(false);
+  const [submittingReg, setSubmittingReg] = useState(false);
+  const [regSuccessData, setRegSuccessData] = useState(null);
+  const [paidFlowStep, setPaidFlowStep] = useState('transfer'); // 'transfer' | 'pending_approval'
+  const [proofFile, setProofFile] = useState(null);
+  const [proofPreview, setProofPreview] = useState('');
+  const [uploadingProof, setUploadingProof] = useState(false);
+  const [copiedNote, setCopiedNote] = useState(false);
+  const [copiedBank, setCopiedBank] = useState(false);
 
   // Dynamic Live Posts (khởi tạo từ cache)
   const [latestPosts, setLatestPosts] = useState(() => {
@@ -225,38 +249,235 @@ export const Home = () => {
     }
   };
 
-  // Đăng ký vé sự kiện nhanh (gọi /api/events/:id/register)
+  // Xử lý mở Modal đăng ký vé (tự động điền nếu đã đăng nhập)
+  const handleOpenRegisterModal = (evt) => {
+    if (!evt) return;
+    setRegisterModalEvent(evt);
+    setRegSuccessData(null);
+    setPaidFlowStep('transfer');
+    setProofFile(null);
+    setProofPreview('');
+    setAccountNotice('');
+    setAccountWarning('');
+    if (isActuallyLoggedIn && effectiveUser) {
+      setRegForm({
+        fullName: effectiveUser.contact_name || effectiveUser.name || '',
+        phone: effectiveUser.phone || '',
+        email: effectiveUser.email || '',
+        company: effectiveUser.name || '',
+        quantity: 1,
+        createAccount: false,
+        accountLogin: '',
+        accountPassword: '',
+        accountConfirmPassword: ''
+      });
+    } else {
+      setRegForm({
+        fullName: '',
+        phone: '',
+        email: '',
+        company: '',
+        quantity: 1,
+        createAccount: false,
+        accountLogin: '',
+        accountPassword: '',
+        accountConfirmPassword: ''
+      });
+    }
+  };
+
+  // Đóng modal và reset trạng thái tạm
+  const handleCloseModal = () => {
+    setRegisterModalEvent(null);
+    setRegSuccessData(null);
+    setPaidFlowStep('transfer');
+    setProofFile(null);
+    setProofPreview('');
+    setAccountNotice('');
+    setAccountWarning('');
+  };
+
+  // Kiểm tra tài khoản đã tồn tại hay chưa khi chưa đăng nhập
+  const verifyAccountNotExists = async (phoneToCheck, emailToCheck, loginToCheck) => {
+    if (isActuallyLoggedIn) {
+      setAccountWarning('');
+      return true;
+    }
+    const p = (phoneToCheck !== undefined ? phoneToCheck : regForm.phone).trim();
+    const e = (emailToCheck !== undefined ? emailToCheck : regForm.email).trim();
+    const u = (loginToCheck !== undefined ? loginToCheck : regForm.accountLogin).trim();
+
+    if (!p && !e && !u) {
+      setAccountWarning('');
+      return true;
+    }
+
+    try {
+      setCheckingAccount(true);
+      const res = await fetch('/api/events/check-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: p, email: e, username: u })
+      });
+      const data = await res.json();
+      if (data.exists) {
+        setAccountWarning(data.message || 'Email hoặc Số điện thoại này đã được đăng ký tài khoản trong hệ thống. Vui lòng kiểm tra lại hoặc đăng nhập trước khi mua vé.');
+        return false;
+      } else {
+        setAccountWarning('');
+        return true;
+      }
+    } catch {
+      return true;
+    } finally {
+      setCheckingAccount(false);
+    }
+  };
+
+  // Sao chép số tài khoản / nội dung chuyển khoản
+  const copyToClipboard = (text, type) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    if (type === 'bank') {
+      setCopiedBank(true);
+      setTimeout(() => setCopiedBank(false), 2000);
+    } else {
+      setCopiedNote(true);
+      setTimeout(() => setCopiedNote(false), 2000);
+    }
+  };
+
+  // Xử lý chọn ảnh chứng từ chuyển khoản
+  const handleProofChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) {
+      alert('Dung lượng ảnh vượt quá 20MB. Vui lòng chọn ảnh nhỏ hơn.');
+      return;
+    }
+    setProofFile(file);
+    setProofPreview(URL.createObjectURL(file));
+  };
+
+  // Gửi ảnh chụp giao dịch chuyển khoản cho vé có phí
+  const handleSubmitPaymentProof = async () => {
+    if (!proofFile || !regSuccessData?.id) {
+      alert('Vui lòng tải lên ảnh chụp màn hình giao dịch chuyển khoản thành công.');
+      return;
+    }
+    setUploadingProof(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          const base64Data = reader.result.split(',')[1];
+          const res = await fetch(`/api/events/registrations/${regSuccessData.id}/payment-proof`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileName: proofFile.name,
+              base64Data,
+              ticket_code: regSuccessData.ticket_code
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            setPaidFlowStep('pending_approval');
+          } else {
+            alert(data.error || 'Không thể gửi ảnh chuyển khoản.');
+          }
+        } catch (err) {
+          alert('Lỗi gửi ảnh chuyển khoản: ' + err.message);
+        } finally {
+          setUploadingProof(false);
+        }
+      };
+      reader.readAsDataURL(proofFile);
+    } catch (err) {
+      setUploadingProof(false);
+      alert('Lỗi đọc tệp ảnh: ' + err.message);
+    }
+  };
+
+  // Đăng ký vé sự kiện (hỗ trợ cả đã đăng nhập và tạo tài khoản mới)
   const handleQuickRegisterSubmit = async (e) => {
     e.preventDefault();
     if (!registerModalEvent) return;
-    if (!regFormData.fullName || !regFormData.phone) {
-      alert(currentLang === 'en' ? 'Please fill in Full Name and Phone' : 'Vui lòng nhập Họ tên và Số điện thoại');
+
+    if (!regForm.fullName.trim() || !regForm.phone.trim()) {
+      alert('Vui lòng điền Họ và tên và Số điện thoại liên hệ.');
       return;
     }
-    setRegLoading(true);
+
+    // Nếu chưa đăng nhập: Kiểm tra xem SĐT hoặc Email đã có tài khoản chưa
+    if (!isActuallyLoggedIn) {
+      const isAvailable = await verifyAccountNotExists(regForm.phone, regForm.email, regForm.createAccount ? regForm.accountLogin : '');
+      if (!isAvailable) {
+        alert(accountWarning || 'Email hoặc Số điện thoại này đã được đăng ký tài khoản trong hệ thống. Vui lòng kiểm tra lại thông tin, đăng nhập tài khoản trước khi mua vé, hoặc sử dụng Email/Số điện thoại khác hợp lệ.');
+        return;
+      }
+    }
+
+    if (!isActuallyLoggedIn && regForm.createAccount) {
+      const login = regForm.accountLogin.trim() || regForm.phone.trim() || regForm.email.trim();
+      if (!login) {
+        alert('Vui lòng nhập Tài khoản (Email hoặc Số điện thoại) để tạo tài khoản theo dõi vé.');
+        return;
+      }
+      if (!regForm.accountPassword) {
+        alert('Vui lòng nhập mật khẩu cho tài khoản theo dõi vé.');
+        return;
+      }
+      if (regForm.accountPassword.length < 6) {
+        alert('Mật khẩu phải có ít nhất 6 ký tự.');
+        return;
+      }
+      if (regForm.accountPassword !== regForm.accountConfirmPassword) {
+        alert('Mật khẩu xác nhận không khớp. Vui lòng nhập lại chính xác.');
+        return;
+      }
+    }
+
+    setSubmittingReg(true);
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      const authToken = memberToken || token;
+      if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+
       const res = await fetch(`/api/events/${registerModalEvent.id}/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
-          fullName: regFormData.fullName,
-          phone: regFormData.phone,
-          email: regFormData.email,
-          company: regFormData.company,
-          quantity: regFormData.quantity || 1
+          full_name: regForm.fullName.trim(),
+          phone: regForm.phone.trim(),
+          email: regForm.email.trim() || null,
+          company: regForm.company.trim() || null,
+          quantity: parseInt(regForm.quantity, 10) || 1,
+          member_id: effectiveUser?.id || user?.id || null,
+          create_account: isActuallyLoggedIn ? false : regForm.createAccount,
+          account_login: regForm.accountLogin.trim() || regForm.phone.trim() || regForm.email.trim(),
+          account_password: regForm.accountPassword,
+          account_confirm_password: regForm.accountConfirmPassword
         })
       });
+
       const data = await res.json();
       if (res.ok && data.success) {
-        setRegSuccess(data);
+        setRegSuccessData(data.registration);
+        setPaidFlowStep('transfer');
+        setProofFile(null);
+        setProofPreview('');
+        if (data.account_message) {
+          setAccountNotice(data.account_message);
+        }
       } else {
         alert(data.error || 'Đăng ký vé chưa thành công');
       }
     } catch (err) {
       console.error('Register ticket error:', err);
-      alert('Có lỗi kết nối khi đăng ký vé.');
+      alert('Có lỗi kết nối khi đăng ký vé: ' + err.message);
     } finally {
-      setRegLoading(false);
+      setSubmittingReg(false);
     }
   };
 
@@ -1081,10 +1302,7 @@ export const Home = () => {
 
                   <div style={{ marginTop: '24px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
                     <button 
-                      onClick={() => {
-                        setRegisterModalEvent(eventsList[0]);
-                        setRegSuccess(null);
-                      }}
+                      onClick={() => handleOpenRegisterModal(eventsList[0])}
                       className="btn-daklak-gold"
                     >
                       <i className="ti ti-ticket" />
@@ -1647,109 +1865,726 @@ export const Home = () => {
 
       {/* QUICK EVENT REGISTRATION MODAL */}
       {registerModalEvent && (
-        <div className="daklak-modal-overlay" onClick={() => setRegisterModalEvent(null)}>
-          <div className="daklak-modal-box" onClick={(e) => e.stopPropagation()}>
-            <button className="daklak-modal-close" onClick={() => setRegisterModalEvent(null)}>✕</button>
+        <div className="daklak-modal-overlay" onClick={handleCloseModal}>
+          <div
+            className="daklak-modal-box"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '560px',
+              width: '100%',
+              padding: 0,
+              borderRadius: '20px',
+              overflow: 'hidden',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.45)',
+              backgroundColor: '#ffffff',
+              position: 'relative'
+            }}
+          >
+            <button
+              type="button"
+              className="daklak-modal-close"
+              onClick={handleCloseModal}
+              style={{
+                position: 'absolute',
+                top: '14px',
+                right: '16px',
+                background: 'rgba(255, 255, 255, 0.25)',
+                border: 'none',
+                color: '#ffffff',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '18px',
+                cursor: 'pointer',
+                zIndex: 10,
+                transition: 'background 0.2s'
+              }}
+              title="Đóng"
+            >
+              ✕
+            </button>
 
-            {regSuccess ? (
-              <div style={{ textAlign: 'center', padding: '10px' }}>
-                <div style={{ fontSize: '3rem', color: 'var(--forest-green)', marginBottom: '10px' }}>🎉</div>
-                <h3 style={{ fontSize: '1.4rem', color: 'var(--primary-coffee)', marginBottom: '8px' }}>
-                  Đăng Ký Vé Thành Công!
-                </h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>
-                  Mã vé tham dự của quý vị:
-                </p>
-                <div style={{
-                  background: 'var(--light-cream)',
-                  border: '2px dashed var(--gong-gold)',
-                  padding: '16px',
-                  borderRadius: '12px',
-                  fontFamily: 'monospace',
-                  fontSize: '1.4rem',
-                  fontWeight: '800',
-                  color: 'var(--bazan-red)',
-                  marginBottom: '18px'
-                }}>
-                  {regSuccess.ticketCode || 'DLK-TICKET-2026'}
-                </div>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
-                  Vui lòng lưu lại mã vé hoặc xuất trình tại bàn đón tiếp để check-in camera tự động.
-                </p>
-                <button 
-                  onClick={() => setRegisterModalEvent(null)}
-                  className="btn-daklak-primary"
-                  style={{ width: '100%', justifyContent: 'center' }}
-                >
-                  Hoàn tất
-                </button>
-              </div>
+            {/* TRƯỜNG HỢP: ĐÃ ĐĂNG KÝ THÀNH CÔNG (HIỂN THỊ VÉ / THANH TOÁN) */}
+            {regSuccessData ? (
+              Number(regSuccessData.total_amount) > 0 ? (
+                paidFlowStep === 'transfer' ? (
+                  // BƯỚC 1 CỦA SỰ KIỆN CÓ PHÍ: THÔNG TIN CHUYỂN KHOẢN & BẮT BUỘC TẢI ẢNH BILL
+                  <>
+                    <div style={{ background: 'linear-gradient(135deg, #1C0F08 0%, #3B2011 100%)', color: '#ffffff', padding: '1.4rem 1.5rem', textAlign: 'center' }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(213, 163, 63, 0.25)',
+                        color: 'var(--gong-gold)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 8px',
+                        fontSize: '24px'
+                      }}>
+                        <i className="ti ti-credit-card"></i>
+                      </div>
+                      <h3 style={{ fontSize: '18px', fontWeight: '800', margin: '0 0 4px 0', color: '#FFFFFF' }}>
+                        Thanh Toán & Kích Hoạt Vé
+                      </h3>
+                      <p style={{ fontSize: '12px', opacity: 0.9, margin: 0, color: '#E0D4CA' }}>
+                        {regSuccessData.event_title}
+                      </p>
+                    </div>
+
+                    <div style={{ padding: '1.25rem 1.5rem', maxHeight: '72vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ fontSize: '12.5px', color: '#334155', backgroundColor: '#F8FAFC', padding: '10px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '3px', border: '1px solid #E2E8F0' }}>
+                        <div><strong>Khách tham dự:</strong> {regSuccessData.full_name} ({regSuccessData.phone})</div>
+                        <div><strong>Số lượng vé:</strong> {regSuccessData.quantity} vé · <strong>Mã đăng ký:</strong> <code style={{ fontWeight: '700', color: '#A84524' }}>{regSuccessData.ticket_code}</code></div>
+                      </div>
+
+                      {/* Khối thanh toán Chuyển khoản VietQR */}
+                      <div style={{ border: '1px solid #FCD34D', backgroundColor: '#FFFBEB', borderRadius: '12px', padding: '1.25rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#B45309', fontWeight: '800', fontSize: '14px', marginBottom: '8px' }}>
+                          <i className="ti ti-building-bank"></i>
+                          <span>Thông tin thanh toán chuyển khoản</span>
+                        </div>
+
+                        <div style={{ fontSize: '13px', color: '#78350F', marginBottom: '10px' }}>
+                          Tổng số tiền cần thanh toán:{' '}
+                          <strong style={{ fontSize: '17px', color: '#B45309' }}>
+                            {Number(regSuccessData.total_amount).toLocaleString('vi-VN')} VNĐ
+                          </strong>
+                        </div>
+
+                        {regSuccessData.vietqr_url && (
+                          <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                            <img
+                              src={regSuccessData.vietqr_url}
+                              alt="VietQR Chuyển khoản"
+                              style={{ maxWidth: '240px', width: '100%', borderRadius: '8px', border: '1px solid #FDE68A', boxShadow: '0 2px 6px rgba(0,0,0,0.05)' }}
+                            />
+                            <div style={{ fontSize: '11px', color: '#78350F', marginTop: '4px' }}>
+                              Quét mã VietQR bằng ứng dụng ngân hàng bất kỳ để chuyển khoản tự động
+                            </div>
+                          </div>
+                        )}
+
+                        <div style={{ fontSize: '12px', color: '#451A03', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <div><strong>Ngân hàng:</strong> {regSuccessData.bank_info?.bank_name} ({regSuccessData.bank_info?.bank_branch})</div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FEF3C7', padding: '6px 8px', borderRadius: '6px' }}>
+                            <span><strong>Số tài khoản:</strong> <code style={{ fontSize: '13px', fontWeight: '800' }}>{regSuccessData.bank_info?.account_number}</code></span>
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(regSuccessData.bank_info?.account_number, 'bank')}
+                              style={{ padding: '3px 8px', fontSize: '11px', backgroundColor: '#D97706', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600' }}
+                            >
+                              {copiedBank ? 'Đã chép!' : 'Sao chép'}
+                            </button>
+                          </div>
+                          <div><strong>Chủ tài khoản:</strong> {regSuccessData.bank_info?.account_holder}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FEF3C7', padding: '6px 8px', borderRadius: '6px' }}>
+                            <span><strong>Nội dung CK:</strong> <code style={{ fontSize: '12px', fontWeight: '800', color: '#B45309' }}>{regSuccessData.payment_note}</code></span>
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(regSuccessData.payment_note, 'note')}
+                              style={{ padding: '3px 8px', fontSize: '11px', backgroundColor: '#D97706', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600' }}
+                            >
+                              {copiedNote ? 'Đã chép!' : 'Sao chép'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* BẮT BUỘC TẢI ẢNH CHUYỂN KHOẢN */}
+                      <div style={{
+                        border: '2px dashed #A84524',
+                        backgroundColor: '#FDF7F4',
+                        borderRadius: '12px',
+                        padding: '1.25rem',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#A84524', marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                          <i className="ti ti-upload"></i>
+                          <span>Tải ảnh chuyển khoản thành công (Bắt buộc) *</span>
+                        </div>
+                        <p style={{ fontSize: '11.5px', color: '#73311A', margin: '0 0 12px', lineHeight: 1.4 }}>
+                          Sau khi chuyển khoản qua ngân hàng, quý khách vui lòng tải ảnh biên lai giao dịch thành công để Ban tổ chức kiểm duyệt và kích hoạt vé.
+                        </p>
+
+                        {proofPreview ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ maxHeight: '180px', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid #E2E8F0', backgroundColor: '#ffffff' }}>
+                              <img src={proofPreview} alt="Ảnh chuyển khoản" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain' }} />
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <span style={{ fontSize: '11px', color: '#A84524', fontWeight: '600' }}>✓ Đã chọn ảnh: {proofFile?.name}</span>
+                              <label style={{ fontSize: '11px', color: '#2563EB', cursor: 'pointer', textDecoration: 'underline', fontWeight: '600' }}>
+                                Đổi ảnh khác
+                                <input type="file" accept="image/*" onChange={handleProofChange} style={{ display: 'none' }} />
+                              </label>
+                            </div>
+                          </div>
+                        ) : (
+                          <label style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '1.5rem',
+                            border: '1px dashed #A84524',
+                            borderRadius: '8px',
+                            backgroundColor: '#ffffff',
+                            cursor: 'pointer',
+                            gap: '6px'
+                          }}>
+                            <i className="ti ti-photo-plus" style={{ fontSize: '30px', color: '#A84524' }}></i>
+                            <span style={{ fontSize: '12.5px', fontWeight: '700', color: '#A84524' }}>Nhấn vào đây để tải ảnh bill chuyển khoản</span>
+                            <span style={{ fontSize: '11px', color: '#64748B' }}>Hỗ trợ định dạng JPG, PNG, WEBP (Tối đa 20MB)</span>
+                            <input type="file" accept="image/*" onChange={handleProofChange} style={{ display: 'none' }} />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC' }}>
+                      <button
+                        type="button"
+                        onClick={handleCloseModal}
+                        style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#ffffff', color: '#64748B', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        Đóng
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSubmitPaymentProof}
+                        disabled={!proofFile || uploadingProof}
+                        style={{
+                          padding: '9px 22px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: proofFile ? 'linear-gradient(135deg, #A84524 0%, #7E2D13 100%)' : '#94A3B8',
+                          color: '#ffffff',
+                          fontSize: '13px',
+                          fontWeight: '700',
+                          cursor: proofFile && !uploadingProof ? 'pointer' : 'not-allowed',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        {uploadingProof ? (<><i className="ti ti-loader animate-spin"></i> Đang gửi ảnh...</>) : (<><i className="ti ti-send"></i> Gửi ảnh xác nhận thanh toán</>)}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  // BƯỚC 2: CHỜ DUYỆT
+                  <>
+                    <div style={{ background: 'linear-gradient(135deg, #1C0F08 0%, #3B2011 100%)', color: '#ffffff', padding: '1.5rem 1.25rem', textAlign: 'center' }}>
+                      <div style={{ width: '52px', height: '52px', borderRadius: '50%', backgroundColor: 'rgba(213, 163, 63, 0.25)', color: 'var(--gong-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: '26px' }}>
+                        <i className="ti ti-clock"></i>
+                      </div>
+                      <h3 style={{ fontSize: '18px', fontWeight: '800', margin: '0 0 4px 0', color: '#FFFFFF' }}>Đã Gửi Thông Tin Thanh Toán!</h3>
+                      <p style={{ fontSize: '12.5px', opacity: 0.9, margin: 0, color: '#E0D4CA' }}>{regSuccessData.event_title}</p>
+                    </div>
+                    <div style={{ padding: '1.5rem', maxHeight: '72vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ backgroundColor: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: '12px', padding: '1.25rem', textAlign: 'center' }}>
+                        <span style={{ display: 'inline-block', backgroundColor: '#F59E0B', color: '#ffffff', fontSize: '11.5px', fontWeight: '800', padding: '3px 12px', borderRadius: '12px', textTransform: 'uppercase', marginBottom: '8px' }}>
+                          Trạng thái: Chờ duyệt thanh toán
+                        </span>
+                        <div style={{ fontSize: '14px', fontWeight: '800', color: '#92400E', marginBottom: '6px' }}>
+                          Ban tổ chức đang kiểm tra và đối soát chuyển khoản
+                        </div>
+                        <p style={{ fontSize: '12.5px', color: '#78350F', margin: 0, lineHeight: 1.5 }}>
+                          Chứng từ chuyển khoản của bạn đã được tiếp nhận thành công. Sau khi xác nhận hợp lệ, Ban tổ chức sẽ kích hoạt vé tham dự chính thức.
+                        </p>
+                      </div>
+                      <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px 14px', fontSize: '12.5px', color: '#334155', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div><strong>Mã đăng ký:</strong> <code style={{ fontWeight: '700', color: '#0F172A' }}>{regSuccessData.ticket_code}</code></div>
+                        <div><strong>Khách tham dự:</strong> {regSuccessData.full_name}</div>
+                        <div><strong>Số lượng:</strong> {regSuccessData.quantity} vé · <strong>Tổng tiền:</strong> {Number(regSuccessData.total_amount).toLocaleString('vi-VN')} VNĐ</div>
+                      </div>
+                      {accountNotice && (
+                        <div style={{ backgroundColor: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1E40AF', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', lineHeight: 1.45 }}>
+                          <strong>Tài khoản theo dõi:</strong> {accountNotice}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', backgroundColor: '#F8FAFC' }}>
+                      {isLoggedIn ? (
+                        <Link to="/member-dashboard" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', backgroundColor: '#A84524', color: '#ffffff', borderRadius: '8px', fontSize: '12.5px', fontWeight: '700', textDecoration: 'none' }}>
+                          <i className="ti ti-ticket"></i> Vào Dashboard theo dõi
+                        </Link>
+                      ) : (
+                        <Link to="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', backgroundColor: '#A84524', color: '#ffffff', borderRadius: '8px', fontSize: '12.5px', fontWeight: '700', textDecoration: 'none' }}>
+                          <i className="ti ti-login"></i> Đăng nhập Dashboard
+                        </Link>
+                      )}
+                      <button type="button" onClick={handleCloseModal} style={{ padding: '8px 24px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #1C0F08 0%, #3B2011 100%)', color: '#ffffff', fontSize: '12.5px', fontWeight: '700', cursor: 'pointer' }}>
+                        Hoàn tất
+                      </button>
+                    </div>
+                  </>
+                )
+              ) : (
+                // SỰ KIỆN MIỄN PHÍ: HIỂN THỊ MÃ VÉ VÀ QR CODE
+                <>
+                  <div style={{ background: 'linear-gradient(135deg, #1C0F08 0%, #3B2011 100%)', color: '#ffffff', padding: '1.4rem 1.5rem', textAlign: 'center' }}>
+                    <div style={{ width: '46px', height: '46px', borderRadius: '50%', backgroundColor: 'rgba(213, 163, 63, 0.25)', color: 'var(--gong-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px', fontSize: '24px' }}>
+                      <i className="ti ti-check"></i>
+                    </div>
+                    <h3 style={{ fontSize: '18px', fontWeight: '800', margin: '0 0 4px 0', color: '#FFFFFF' }}>Đăng Ký Tham Gia Thành Công!</h3>
+                    <p style={{ fontSize: '12px', opacity: 0.9, margin: 0, color: '#E0D4CA' }}>{regSuccessData.event_title}</p>
+                  </div>
+
+                  <div style={{ padding: '1.5rem', maxHeight: '75vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {/* Thẻ Vé Điện Tử */}
+                    <div style={{ border: '2px dashed #A84524', borderRadius: '12px', padding: '1.25rem', backgroundColor: '#FDF7F4', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', textTransform: 'uppercase', color: '#A84524', fontWeight: '700', letterSpacing: '0.6px' }}>
+                        MÃ VÉ THAM DỰ CHÍNH THỨC
+                      </div>
+                      <div style={{ fontSize: '22px', fontWeight: '900', color: '#1C0F08', letterSpacing: '1px', margin: '4px 0 10px' }}>
+                        {regSuccessData.ticket_code}
+                      </div>
+
+                      {regSuccessData.qr_image ? (
+                        <div style={{ width: '180px', height: '180px', margin: '0 auto', backgroundColor: '#ffffff', padding: '8px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                          <img src={regSuccessData.qr_image} alt="Mã QR Check-in" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        </div>
+                      ) : (
+                        <div style={{ width: '180px', height: '180px', margin: '0 auto', backgroundColor: '#ffffff', padding: '8px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                          <img src={`/api/events/qr/${encodeURIComponent(regSuccessData.ticket_code)}`} alt="Mã QR Check-in" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        </div>
+                      )}
+                      <div style={{ fontSize: '11px', color: '#64748B', marginTop: '8px' }}>
+                        Vui lòng xuất trình mã QR này tại quầy lễ tân để check-in vào sự kiện.
+                      </div>
+                    </div>
+
+                    {/* Thông tin người tham dự */}
+                    <div style={{ fontSize: '12.5px', color: '#334155', backgroundColor: '#F8FAFC', padding: '10px 14px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '4px', border: '1px solid #E2E8F0' }}>
+                      <div><strong>Người tham dự:</strong> {regSuccessData.full_name}</div>
+                      <div><strong>Số điện thoại:</strong> {regSuccessData.phone}</div>
+                      <div><strong>Số lượng:</strong> {regSuccessData.quantity} vé (Miễn phí)</div>
+                      {regSuccessData.company && <div><strong>Đơn vị:</strong> {regSuccessData.company}</div>}
+                    </div>
+
+                    {accountNotice && (
+                      <div style={{ backgroundColor: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1E40AF', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', lineHeight: 1.45, display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                        <i className="ti ti-check-circle" style={{ fontSize: '18px', color: '#1E63E9', flexShrink: 0, marginTop: '2px' }}></i>
+                        <div>
+                          <strong>Tài khoản theo dõi vé:</strong> {accountNotice} Sau khi Ban quản trị duyệt hồ sơ, bạn có thể đăng nhập bằng tài khoản này để xem và quản lý vé trong Dashboard thành viên.
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', backgroundColor: '#F8FAFC' }}>
+                    <button
+                      type="button"
+                      onClick={() => window.print()}
+                      style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#ffffff', color: '#334155', fontSize: '12.5px', fontWeight: '600', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                    >
+                      <i className="ti ti-printer"></i> In vé
+                    </button>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      {isLoggedIn ? (
+                        <Link to="/member-dashboard" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', backgroundColor: '#A84524', color: '#ffffff', borderRadius: '8px', fontSize: '12.5px', fontWeight: '700', textDecoration: 'none' }}>
+                          <i className="ti ti-ticket"></i> Vào Dashboard
+                        </Link>
+                      ) : (
+                        <Link to="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', backgroundColor: '#A84524', color: '#ffffff', borderRadius: '8px', fontSize: '12.5px', fontWeight: '700', textDecoration: 'none' }}>
+                          <i className="ti ti-login"></i> Đăng nhập
+                        </Link>
+                      )}
+                      <button type="button" onClick={handleCloseModal} style={{ padding: '8px 24px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #1C0F08 0%, #3B2011 100%)', color: '#ffffff', fontSize: '12.5px', fontWeight: '700', cursor: 'pointer' }}>
+                        Hoàn tất
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )
             ) : (
-              <div>
-                <span style={{ fontSize: '0.8rem', color: 'var(--bazan-red)', fontWeight: '800', textTransform: 'uppercase' }}>
-                  ĐĂNG KÝ VÉ NHANH
-                </span>
-                <h3 style={{ fontSize: '1.3rem', color: 'var(--primary-coffee)', margin: '6px 0 14px', lineHeight: '1.3' }}>
-                  {registerModalEvent.title}
-                </h3>
-                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '18px' }}>
-                  Vé tham gia: <strong>Miễn phí (Free Pass)</strong> • Nhận mã QR tức thời.
-                </p>
+              // FORM ĐĂNG KÝ VÉ (CHƯA ĐĂNG KÝ)
+              <>
+                <div style={{ background: 'linear-gradient(135deg, #1C0F08 0%, #3B2011 100%)', color: '#ffffff', padding: '1.4rem 1.5rem', textAlign: 'left' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--gong-gold)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                    ĐĂNG KÝ VÉ NHANH
+                  </span>
+                  <h3 style={{ fontSize: '18px', color: '#FFFFFF', margin: '4px 0 6px', fontWeight: '800', lineHeight: 1.3 }}>
+                    {registerModalEvent.title}
+                  </h3>
+                  <p style={{ fontSize: '12px', color: '#E0D4CA', margin: 0 }}>
+                    {Number(registerModalEvent.is_paid) === 1 && Number(registerModalEvent.price) > 0
+                      ? `Giá vé: ${Number(registerModalEvent.price).toLocaleString('vi-VN')} VNĐ / vé • Chuyển khoản VietQR tiện lợi`
+                      : 'Vé tham gia: Miễn phí (Free Pass) • Nhận mã QR tức thời.'}
+                  </p>
+                </div>
 
-                <form onSubmit={handleQuickRegisterSubmit}>
-                  <div className="daklak-form-group">
-                    <label>Họ và tên (*)</label>
-                    <input 
-                      type="text" 
-                      className="daklak-form-input" 
-                      required
-                      placeholder="Nguyễn Văn An"
-                      value={regFormData.fullName}
-                      onChange={(e) => setRegFormData({ ...regFormData, fullName: e.target.value })}
-                    />
-                  </div>
-                  <div className="daklak-form-group">
-                    <label>Số điện thoại (*)</label>
-                    <input 
-                      type="tel" 
-                      className="daklak-form-input" 
-                      required
-                      placeholder="0912 345 678"
-                      value={regFormData.phone}
-                      onChange={(e) => setRegFormData({ ...regFormData, phone: e.target.value })}
-                    />
-                  </div>
-                  <div className="daklak-form-group">
-                    <label>Email</label>
-                    <input 
-                      type="email" 
-                      className="daklak-form-input" 
-                      placeholder="email@example.com"
-                      value={regFormData.email}
-                      onChange={(e) => setRegFormData({ ...regFormData, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="daklak-form-group">
-                    <label>Tên đơn vị / Công ty</label>
-                    <input 
-                      type="text" 
-                      className="daklak-form-input" 
-                      placeholder="Công ty TNHH ABC"
-                      value={regFormData.company}
-                      onChange={(e) => setRegFormData({ ...regFormData, company: e.target.value })}
-                    />
-                  </div>
+                <div style={{ padding: '1.25rem 1.5rem', maxHeight: '72vh', overflowY: 'auto' }}>
+                  <form onSubmit={handleQuickRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    
+                    {/* Họ và tên */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                        Họ và tên (*)
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Nguyễn Văn An"
+                        value={regForm.fullName}
+                        onChange={(e) => setRegForm(prev => ({ ...prev, fullName: e.target.value }))}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '13px',
+                          outline: 'none',
+                          backgroundColor: '#F8FAFC'
+                        }}
+                      />
+                    </div>
 
-                  <button 
-                    type="submit" 
-                    className="btn-daklak-gold"
-                    disabled={regLoading}
-                    style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: '10px' }}
-                  >
-                    {regLoading ? 'Đang cấp vé...' : 'Xác Nhận & Lấy Mã Vé QR'}
-                  </button>
-                </form>
-              </div>
+                    {/* Số điện thoại */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                        Số điện thoại (*)
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="0912 345 678"
+                        value={regForm.phone}
+                        onChange={(e) => {
+                          setRegForm(prev => ({ ...prev, phone: e.target.value }));
+                          if (accountWarning) setAccountWarning('');
+                        }}
+                        onBlur={() => {
+                          if (!isActuallyLoggedIn) {
+                            verifyAccountNotExists(regForm.phone, regForm.email, regForm.createAccount ? regForm.accountLogin : '');
+                          }
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '13px',
+                          outline: 'none',
+                          backgroundColor: '#F8FAFC'
+                        }}
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                        Email (để nhận vé điện tử)
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="email@example.com"
+                        value={regForm.email}
+                        onChange={(e) => {
+                          setRegForm(prev => ({ ...prev, email: e.target.value }));
+                          if (accountWarning) setAccountWarning('');
+                        }}
+                        onBlur={() => {
+                          if (!isActuallyLoggedIn) {
+                            verifyAccountNotExists(regForm.phone, regForm.email, regForm.createAccount ? regForm.accountLogin : '');
+                          }
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '13px',
+                          outline: 'none',
+                          backgroundColor: '#F8FAFC'
+                        }}
+                      />
+                    </div>
+
+                    {/* Tên đơn vị / Doanh nghiệp */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                        Tên đơn vị / Doanh nghiệp
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Công ty Cổ phần / Hợp tác xã..."
+                        value={regForm.company}
+                        onChange={(e) => setRegForm(prev => ({ ...prev, company: e.target.value }))}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '13px',
+                          outline: 'none',
+                          backgroundColor: '#F8FAFC'
+                        }}
+                      />
+                    </div>
+
+                    {/* Số lượng vé */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                        Số lượng vé tham gia
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={regForm.quantity}
+                        onChange={(e) => setRegForm(prev => ({ ...prev, quantity: Math.max(1, parseInt(e.target.value, 10) || 1) }))}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '13px',
+                          outline: 'none',
+                          backgroundColor: '#F8FAFC'
+                        }}
+                      />
+                    </div>
+
+                    {/* Checkbox tạo tài khoản HOẶC Thông báo đã đăng nhập */}
+                    {isActuallyLoggedIn ? (
+                      <div style={{
+                        padding: '10px 14px',
+                        backgroundColor: '#EFF6FF',
+                        border: '1px solid #BFDBFE',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        marginTop: '4px'
+                      }}>
+                        <div style={{
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '50%',
+                          backgroundColor: '#DBEAFE',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#1E40AF',
+                          flexShrink: 0
+                        }}>
+                          <i className="ti ti-user-check" style={{ fontSize: '16px' }}></i>
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#1E40AF', lineHeight: 1.4 }}>
+                          Tài khoản: <strong>{effectiveUser?.name || effectiveUser?.username || effectiveUser?.email}</strong>
+                          <div style={{ fontSize: '11px', color: '#1E3A8A' }}>Vé đăng ký sẽ tự động gán vào tài khoản này để theo dõi.</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Checkbox: Tạo tài khoản để theo dõi vé */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                          <input
+                            type="checkbox"
+                            id="chkHomeCreateAcc"
+                            checked={regForm.createAccount}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setRegForm(prev => ({
+                                ...prev,
+                                createAccount: checked,
+                                accountLogin: checked && !prev.accountLogin ? (prev.email || prev.phone) : prev.accountLogin
+                              }));
+                              if (checked) {
+                                verifyAccountNotExists(regForm.phone, regForm.email, regForm.email || regForm.phone);
+                              }
+                            }}
+                            style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#A84524' }}
+                          />
+                          <label htmlFor="chkHomeCreateAcc" style={{ fontSize: '12.5px', fontWeight: '600', color: '#334155', cursor: 'pointer' }}>
+                            Tạo tài khoản để theo dõi vé
+                          </label>
+                        </div>
+
+                        {/* Hiển thị 3 ô khi tích chọn tạo tài khoản */}
+                        {regForm.createAccount && (
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                            padding: '10px 12px',
+                            backgroundColor: '#EFF6FF',
+                            border: '1px solid #BFDBFE',
+                            borderRadius: '8px',
+                            marginTop: '2px'
+                          }}>
+                            <div style={{ fontSize: '11px', color: '#1E40AF', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <i className="ti ti-user-plus"></i>
+                              <span>Thiết lập tài khoản thành viên:</span>
+                            </div>
+
+                            {/* Ô 1: Tài khoản (Email hoặc Số điện thoại) */}
+                            <div>
+                              <input
+                                type="text"
+                                required={regForm.createAccount}
+                                placeholder="Tài khoản (Email hoặc Số điện thoại) *"
+                                value={regForm.accountLogin}
+                                onChange={(e) => {
+                                  setRegForm(prev => ({ ...prev, accountLogin: e.target.value }));
+                                  if (accountWarning) setAccountWarning('');
+                                }}
+                                onBlur={() => {
+                                  if (!isActuallyLoggedIn) {
+                                    verifyAccountNotExists(regForm.phone, regForm.email, regForm.accountLogin);
+                                  }
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #93C5FD',
+                                  fontSize: '12.5px',
+                                  outline: 'none',
+                                  backgroundColor: '#ffffff'
+                                }}
+                              />
+                            </div>
+
+                            {/* Ô 2: Mật khẩu */}
+                            <div style={{ position: 'relative' }}>
+                              <input
+                                type={showPassword ? 'text' : 'password'}
+                                required={regForm.createAccount}
+                                placeholder="Mật khẩu (tối thiểu 6 ký tự) *"
+                                value={regForm.accountPassword}
+                                onChange={(e) => setRegForm(prev => ({ ...prev, accountPassword: e.target.value }))}
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 32px 8px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #93C5FD',
+                                  fontSize: '12.5px',
+                                  outline: 'none',
+                                  backgroundColor: '#ffffff'
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(p => !p)}
+                                style={{
+                                  position: 'absolute',
+                                  right: '8px',
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#64748B',
+                                  cursor: 'pointer',
+                                  padding: '2px',
+                                  fontSize: '14px'
+                                }}
+                                title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                              >
+                                <i className={showPassword ? "ti ti-eye-off" : "ti ti-eye"}></i>
+                              </button>
+                            </div>
+
+                            {/* Ô 3: Xác nhận mật khẩu */}
+                            <div>
+                              <input
+                                type={showPassword ? 'text' : 'password'}
+                                required={regForm.createAccount}
+                                placeholder="Xác nhận mật khẩu *"
+                                value={regForm.accountConfirmPassword}
+                                onChange={(e) => setRegForm(prev => ({ ...prev, accountConfirmPassword: e.target.value }))}
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #93C5FD',
+                                  fontSize: '12.5px',
+                                  outline: 'none',
+                                  backgroundColor: '#ffffff'
+                                }}
+                              />
+                            </div>
+
+                            <div style={{ fontSize: '10.5px', color: '#1E40AF', lineHeight: 1.35 }}>
+                              * Hệ thống sẽ tự động tạo tài khoản như đăng ký thành viên (các trường bắt buộc khác sẽ để mặc định là "Cần bổ sung"). Sau khi admin duyệt, bạn có thể đăng nhập vào để cập nhật thông tin.
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* Cảnh báo nếu Email hoặc SĐT đã có tài khoản trên hệ thống */}
+                    {accountWarning && (
+                      <div style={{
+                        backgroundColor: '#FEF2F2',
+                        border: '1px solid #FECACA',
+                        color: '#991B1B',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        lineHeight: 1.45,
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '8px',
+                        marginTop: '4px'
+                      }}>
+                        <i className="ti ti-alert-triangle" style={{ fontSize: '16px', color: '#DC2626', flexShrink: 0, marginTop: '2px' }}></i>
+                        <div>
+                          <div style={{ fontWeight: '600' }}>{accountWarning}</div>
+                          <div style={{ marginTop: '4px', fontSize: '11.5px', color: '#B91C1C' }}>
+                            👉 <Link to="/login" style={{ color: '#DC2626', fontWeight: '700', textDecoration: 'underline' }}>Đăng nhập tài khoản tại đây</Link> hoặc nhập Email / SĐT khác hợp lệ.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Nút Đăng ký ngay */}
+                    <button
+                      type="submit"
+                      disabled={submittingReg || checkingAccount}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: 'linear-gradient(135deg, #A84524 0%, #7E2D13 100%)',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '700',
+                        cursor: submittingReg || checkingAccount ? 'not-allowed' : 'pointer',
+                        marginTop: '8px',
+                        boxShadow: '0 4px 12px rgba(168, 69, 36, 0.35)',
+                        transition: 'transform 0.15s ease, opacity 0.15s'
+                      }}
+                    >
+                      {submittingReg ? 'Đang cấp vé...' : checkingAccount ? 'Đang kiểm tra tài khoản...' : (Number(registerModalEvent?.is_paid) === 1 && Number(registerModalEvent?.price) > 0 ? 'Tiếp tục thanh toán & Đăng ký' : 'Xác nhận & Cấp vé ngay')}
+                    </button>
+
+                    {/* Subtext chú thích */}
+                    <div style={{ fontSize: '11px', color: '#64748B', textAlign: 'center', marginTop: '4px', lineHeight: 1.4 }}>
+                      {Number(registerModalEvent?.is_paid) === 1 && Number(registerModalEvent?.price) > 0
+                        ? 'Sự kiện có phí: Vui lòng chuyển khoản và tải ảnh xác nhận để kích hoạt vé.'
+                        : 'Bạn sẽ nhận được mã QR ngay sau khi hoàn tất đăng ký.'}
+                      {!isLoggedIn && (
+                        <div style={{ marginTop: '2px' }}>
+                          Đã có tài khoản?{' '}
+                          <Link to="/login" style={{ color: '#D97706', textDecoration: 'none', fontWeight: '600' }}>
+                            Tra cứu tại đây
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+
+                  </form>
+                </div>
+              </>
             )}
           </div>
         </div>
