@@ -1329,7 +1329,7 @@ export const Home = () => {
               </div>
             </div>
 
-            <div className="projects-grid">
+            <div className={`projects-grid count-${Math.min(4, filteredProjects.length || 4)}`}>
               {filteredProjects.map((project) => (
                 <div key={project.id} className="project-card">
                   <div>
@@ -1417,7 +1417,7 @@ export const Home = () => {
                     <h3 className="post-card-title">{post.title}</h3>
                     <p className="post-card-summary">{post.summary || post.short_desc || 'Bấm để đọc toàn bộ bài viết và khám phá cơ hội giao thương...'}</p>
                     <Link to={`/posts/${post.slug || post.id}`} className="quick-access-link" style={{ marginTop: 'auto' }}>
-                      {currentLang === 'en' ? 'Read full article →' : 'Đọc toàn văn →'}
+                      {currentLang === 'en' ? 'View details →' : 'Xem chi tiết →'}
                     </Link>
                   </div>
                 </div>

@@ -703,14 +703,28 @@
 /* --- INVESTMENT PROJECTS (CƠ HỘI ĐANG MỞ) --- */
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 26px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1180px) {
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }
 
 .project-card {
   background: var(--white);
   border-radius: 16px;
-  padding: 28px;
+  padding: 22px 20px;
   box-shadow: var(--shadow-sm);
   border-left: 5px solid var(--forest-green);
   transition: var(--transition);
@@ -751,19 +765,19 @@
 }
 
 .project-card h3 {
-  font-size: 1.25rem;
+  font-size: 1.12rem;
   font-weight: 800;
   color: var(--primary-coffee);
-  margin-bottom: 14px;
-  line-height: 1.35;
+  margin-bottom: 12px;
+  line-height: 1.38;
 }
 
 .project-meta-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 22px;
-  font-size: 0.92rem;
+  margin-bottom: 18px;
+  font-size: 0.88rem;
   color: var(--text-muted);
 }
 
@@ -780,7 +794,7 @@
 
 .project-btn-row {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* --- DYNAMIC BALANCED RESPONSIVE GRID SYSTEM --- */
@@ -814,10 +828,10 @@
 .roadmap-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
+  gap: 20px;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1180px) {
   .posts-grid.count-4,
   .projects-grid.count-4,
   .members-grid.count-4,
