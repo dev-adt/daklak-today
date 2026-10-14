@@ -10,8 +10,7 @@
 
 html, body {
   width: 100%;
-  max-width: 100vw;
-  overflow-x: clip;
+  max-width: 100%;
   position: relative;
   -webkit-overflow-scrolling: touch;
 }
@@ -151,8 +150,6 @@ body {
   background-color: var(--bg-base);
   color: var(--text-secondary);
   min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: auto;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -1096,7 +1093,6 @@ textarea {
 /* PUBLIC STYLES */
 body.public-body {
   height: auto;
-  overflow: auto;
   background-color: var(--bg-base);
   color: var(--text-secondary);
 }

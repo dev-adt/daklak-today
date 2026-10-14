@@ -155,9 +155,12 @@ export const Navbar = () => {
       <style>{`
         /* Reset and enforce immunity from any external styles */
         .dnvn-navbar-header {
+          position: -webkit-sticky !important;
           position: sticky !important;
           top: 0 !important;
-          z-index: 9999 !important;
+          left: 0 !important;
+          right: 0 !important;
+          z-index: 99999 !important;
           background: #26160E !important;
           background-image: linear-gradient(90deg, #1C0F08 0%, #3B2417 50%, #1C0F08 100%) !important;
           border-bottom: 1px solid rgba(213, 163, 63, 0.28) !important;
@@ -206,7 +209,6 @@ export const Navbar = () => {
           .dnvn-navbar-header {
             width: 100% !important;
             max-width: 100vw !important;
-            overflow-x: clip !important;
           }
           .dnvn-navbar-container {
             justify-content: space-between !important;

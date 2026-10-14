@@ -116,6 +116,18 @@ export const Home = () => {
   // Live countdown timer cho sự kiện nổi bật nhất
   const [timeLeft, setTimeLeft] = useState({ days: 18, hours: 8, minutes: 30, seconds: 0 });
 
+  // Dữ liệu và ảnh bìa trực tiếp của 3 bài viết chuyên đề AI
+  const [aiTopicPosts, setAiTopicPosts] = useState(() => {
+    try {
+      const cached = localStorage.getItem('dnvn_cached_ai_topic_posts');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === 'object') return parsed;
+      }
+    } catch (e) {}
+    return { wardAi: null, orion: null, edunow: null };
+  });
+
   // Tải dữ liệu song song từ API (Promise.allSettled) có Timeout 8s
   useEffect(() => {
     let isMounted = true;
@@ -147,6 +159,34 @@ export const Home = () => {
             } catch (e) {}
           }
         }
+
+        // Tải đồng thời 3 bài viết chuyên đề AI để lấy ảnh bìa và dữ liệu chính thức
+        const aiTargets = [
+          { key: 'wardAi', slug: 'tro-ly-ai-phuong-xa' },
+          { key: 'orion', slug: 'orion-chat-loc-tinh-hoa-cua-erp-multimodel-ai-va-nen-tang-xay-dung-ai-agent-de-tao-thanh-mot-he-dieu-hanh-quan-tri-thong-minh-danh-cho-doanh-nghiep' },
+          { key: 'edunow', slug: 'edunowai-giai-phap-tro-ly-ai-tuyen-sinh-thong-minh-danh-cho-cac-co-so-giao-duc' }
+        ];
+        Promise.allSettled(
+          aiTargets.map(t => fetchJsonWithTimeout(`/api/posts/${encodeURIComponent(t.slug)}`, {}, 6000))
+        ).then(aiResults => {
+          if (!isMounted) return;
+          const aiMap = {};
+          aiTargets.forEach((t, i) => {
+            const res = aiResults[i];
+            if (res.status === 'fulfilled' && res.value?.success && res.value?.data) {
+              aiMap[t.key] = res.value.data;
+            }
+          });
+          if (Object.keys(aiMap).length > 0) {
+            setAiTopicPosts(prev => {
+              const merged = { ...prev, ...aiMap };
+              try {
+                localStorage.setItem('dnvn_cached_ai_topic_posts', JSON.stringify(merged));
+              } catch (e) {}
+              return merged;
+            });
+          }
+        }).catch(() => {});
       } catch (err) {
         console.warn('Lỗi tải dữ liệu động trang chủ:', err);
       }
@@ -764,110 +804,149 @@ export const Home = () => {
             </div>
 
             {/* 3 AI Cards Grid */}
-            <div className="daklak-ai-cards-grid">
-              {/* Card 1: AI phường xã */}
-              <div className="daklak-ai-card">
-                <div className="daklak-ai-card-img-wrap">
-                  <span className="daklak-ai-card-pill daklak-ai-pill-cyan">
-                    <i className="ti ti-robot" /> {currentLang === 'en' ? 'Ward AI Assistant' : 'AI phường xã'}
-                  </span>
-                  <div className="daklak-ai-img-container">
-                    <img src="/images/adt_logo.svg" alt="Trợ lý AI phường xã" className="daklak-ai-card-img" />
-                  </div>
-                </div>
-                <div className="daklak-ai-card-body">
-                  <div className="daklak-ai-card-category daklak-ai-cat-cyan">
-                    <i className="ti ti-bolt" /> {currentLang === 'en' ? 'Foundation AI Technology' : 'Công nghệ AI cơ sở'}
-                  </div>
-                  <h3 className="daklak-ai-card-title">
-                    <Link to="/posts/tro-ly-ai-phuong-xa">
-                      {currentLang === 'en' ? 'Ward & Commune AI Assistant' : 'Trợ lý AI phường xã'}
-                    </Link>
-                  </h3>
-                  <p className="daklak-ai-card-summary">
-                    {currentLang === 'en'
-                      ? 'Local-level AI application supporting administration, citizen inquiries 24/7, and speeding up digital governance.'
-                      : 'Trợ lý AI phường xã phục vụ công tác điều hành, hỗ trợ cán bộ và người dân tra cứu thủ tục, tiếp nhận phản ánh và số hóa dịch vụ công cơ sở 24/7.'}
-                  </p>
-                  <div className="daklak-ai-card-footer">
-                    <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
-                    <Link to="/posts/tro-ly-ai-phuong-xa" className="daklak-ai-card-link">
-                      {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
+            {(() => {
+              const wardAiPost = aiTopicPosts?.wardAi || latestPosts.find(p => p.slug === 'tro-ly-ai-phuong-xa');
+              const orionPost = aiTopicPosts?.orion || latestPosts.find(p => p.slug && p.slug.includes('orion-chat-loc'));
+              const edunowPost = aiTopicPosts?.edunow || latestPosts.find(p => p.slug && p.slug.includes('edunowai'));
 
-              {/* Card 2: Orion */}
-              <div className="daklak-ai-card">
-                <div className="daklak-ai-card-img-wrap">
-                  <span className="daklak-ai-card-pill daklak-ai-pill-gold">
-                    <i className="ti ti-sparkles" /> Orion
-                  </span>
-                  <div className="daklak-ai-img-container">
-                    <img src="/images/adt_logo.svg" alt="Hệ sinh thái Orion" className="daklak-ai-card-img" />
-                  </div>
-                </div>
-                <div className="daklak-ai-card-body">
-                  <div className="daklak-ai-card-category daklak-ai-cat-gold">
-                    <i className="ti ti-cpu" /> {currentLang === 'en' ? 'Intelligent AI Platform' : 'Nền tảng AI thông minh'}
-                  </div>
-                  <h3 className="daklak-ai-card-title">
-                    <Link to="/posts/orion-chat-loc-tinh-hoa-cua-erp-multimodel-ai-va-nen-tang-xay-dung-ai-agent-de-tao-thanh-mot-he-dieu-hanh-quan-tri-thong-minh-danh-cho-doanh-nghiep">
-                      {currentLang === 'en'
-                        ? 'Orion: Distilling ERP, Multi-Model AI & AI Agent Platform into an Intelligent Operating System for Enterprises'
-                        : 'Orion chắt lọc tinh hoa của ERP, Multi-Model AI và nền tảng xây dựng AI Agent để tạo thành một hệ điều hành quản trị thông minh dành cho doanh nghiệp'}
-                    </Link>
-                  </h3>
-                  <p className="daklak-ai-card-summary">
-                    {currentLang === 'en'
-                      ? 'Unified intelligent enterprise operating system combining ERP and multi-model AI to automate business workflows.'
-                      : 'Orion chắt lọc tinh hoa của ERP, Multi-Model AI và nền tảng xây dựng AI Agent để tạo thành một hệ điều hành quản trị thông minh dành cho doanh nghiệp.'}
-                  </p>
-                  <div className="daklak-ai-card-footer">
-                    <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
-                    <Link to="/posts/orion-chat-loc-tinh-hoa-cua-erp-multimodel-ai-va-nen-tang-xay-dung-ai-agent-de-tao-thanh-mot-he-dieu-hanh-quan-tri-thong-minh-danh-cho-doanh-nghiep" className="daklak-ai-card-link">
-                      {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
+              const wardAiImg = wardAiPost?.image_url || wardAiPost?.cover_image || wardAiPost?.thumbnail;
+              const orionImg = orionPost?.image_url || orionPost?.cover_image || orionPost?.thumbnail;
+              const edunowImg = edunowPost?.image_url || edunowPost?.cover_image || edunowPost?.thumbnail;
 
-              {/* Card 3: Edunow.today */}
-              <div className="daklak-ai-card">
-                <div className="daklak-ai-card-img-wrap">
-                  <span className="daklak-ai-card-pill daklak-ai-pill-green">
-                    <i className="ti ti-school" /> Edunow.today
-                  </span>
-                  <div className="daklak-ai-img-container">
-                    <img src="/images/adt_logo.svg" alt="EDUNOW.AI" className="daklak-ai-card-img" />
+              return (
+                <div className="daklak-ai-cards-grid">
+                  {/* Card 1: AI phường xã */}
+                  <div className="daklak-ai-card">
+                    <div className="daklak-ai-card-img-wrap">
+                      <span className="daklak-ai-card-pill daklak-ai-pill-cyan">
+                        <i className="ti ti-robot" /> {currentLang === 'en' ? 'Ward AI Assistant' : 'AI phường xã'}
+                      </span>
+                      <div className="daklak-ai-img-container">
+                        <img 
+                          src={wardAiImg || "/images/adt_logo.svg"} 
+                          alt={wardAiPost?.title || "Trợ lý AI phường xã"} 
+                          className={`daklak-ai-card-img ${!wardAiImg ? 'daklak-ai-card-fallback-logo' : ''}`}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/images/adt_logo.svg";
+                            e.target.classList.add('daklak-ai-card-fallback-logo');
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="daklak-ai-card-body">
+                      <div className="daklak-ai-card-category daklak-ai-cat-cyan">
+                        <i className="ti ti-bolt" /> {currentLang === 'en' ? 'Foundation AI Technology' : 'Công nghệ AI cơ sở'}
+                      </div>
+                      <h3 className="daklak-ai-card-title">
+                        <Link to="/posts/tro-ly-ai-phuong-xa">
+                          {currentLang === 'en' ? 'Ward & Commune AI Assistant' : 'Trợ lý AI phường xã'}
+                        </Link>
+                      </h3>
+                      <p className="daklak-ai-card-summary">
+                        {currentLang === 'en'
+                          ? 'Local-level AI application supporting administration, citizen inquiries 24/7, and speeding up digital governance.'
+                          : 'Trợ lý AI phường xã phục vụ công tác điều hành, hỗ trợ cán bộ và người dân tra cứu thủ tục, tiếp nhận phản ánh và số hóa dịch vụ công cơ sở 24/7.'}
+                      </p>
+                      <div className="daklak-ai-card-footer">
+                        <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
+                        <Link to="/posts/tro-ly-ai-phuong-xa" className="daklak-ai-card-link">
+                          {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 2: Orion */}
+                  <div className="daklak-ai-card">
+                    <div className="daklak-ai-card-img-wrap">
+                      <span className="daklak-ai-card-pill daklak-ai-pill-gold">
+                        <i className="ti ti-sparkles" /> Orion
+                      </span>
+                      <div className="daklak-ai-img-container">
+                        <img 
+                          src={orionImg || "/images/adt_logo.svg"} 
+                          alt={orionPost?.title || "Hệ sinh thái Orion"} 
+                          className={`daklak-ai-card-img ${!orionImg ? 'daklak-ai-card-fallback-logo' : ''}`}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/images/adt_logo.svg";
+                            e.target.classList.add('daklak-ai-card-fallback-logo');
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="daklak-ai-card-body">
+                      <div className="daklak-ai-card-category daklak-ai-cat-gold">
+                        <i className="ti ti-cpu" /> {currentLang === 'en' ? 'Intelligent AI Platform' : 'Nền tảng AI thông minh'}
+                      </div>
+                      <h3 className="daklak-ai-card-title">
+                        <Link to="/posts/orion-chat-loc-tinh-hoa-cua-erp-multimodel-ai-va-nen-tang-xay-dung-ai-agent-de-tao-thanh-mot-he-dieu-hanh-quan-tri-thong-minh-danh-cho-doanh-nghiep">
+                          {currentLang === 'en'
+                            ? 'Orion: Distilling ERP, Multi-Model AI & AI Agent Platform into an Intelligent Operating System for Enterprises'
+                            : 'Orion chắt lọc tinh hoa của ERP, Multi-Model AI và nền tảng xây dựng AI Agent để tạo thành một hệ điều hành quản trị thông minh dành cho doanh nghiệp'}
+                        </Link>
+                      </h3>
+                      <p className="daklak-ai-card-summary">
+                        {currentLang === 'en'
+                          ? 'Unified intelligent enterprise operating system combining ERP and multi-model AI to automate business workflows.'
+                          : 'Orion chắt lọc tinh hoa của ERP, Multi-Model AI và nền tảng xây dựng AI Agent để tạo thành một hệ điều hành quản trị thông minh dành cho doanh nghiệp.'}
+                      </p>
+                      <div className="daklak-ai-card-footer">
+                        <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
+                        <Link to="/posts/orion-chat-loc-tinh-hoa-cua-erp-multimodel-ai-va-nen-tang-xay-dung-ai-agent-de-tao-thanh-mot-he-dieu-hanh-quan-tri-thong-minh-danh-cho-doanh-nghiep" className="daklak-ai-card-link">
+                          {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 3: Edunow.today */}
+                  <div className="daklak-ai-card">
+                    <div className="daklak-ai-card-img-wrap">
+                      <span className="daklak-ai-card-pill daklak-ai-pill-green">
+                        <i className="ti ti-school" /> Edunow.today
+                      </span>
+                      <div className="daklak-ai-img-container">
+                        <img 
+                          src={edunowImg || "/images/adt_logo.svg"} 
+                          alt={edunowPost?.title || "EDUNOW.AI"} 
+                          className={`daklak-ai-card-img ${!edunowImg ? 'daklak-ai-card-fallback-logo' : ''}`}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/images/adt_logo.svg";
+                            e.target.classList.add('daklak-ai-card-fallback-logo');
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="daklak-ai-card-body">
+                      <div className="daklak-ai-card-category daklak-ai-cat-green">
+                        <i className="ti ti-certificate" /> {currentLang === 'en' ? 'Training & Digital Skills' : 'Đào tạo & Kỹ năng số'}
+                      </div>
+                      <h3 className="daklak-ai-card-title">
+                        <Link to="/posts/edunowai-giai-phap-tro-ly-ai-tuyen-sinh-thong-minh-danh-cho-cac-co-so-giao-duc">
+                          {currentLang === 'en'
+                            ? 'EDUNOW.AI: Smart Admissions AI Assistant Solution for Educational Institutions'
+                            : 'EDUNOW.AI Giải pháp Trợ lý AI tuyển sinh thông minh dành cho các cơ sở giáo dục'}
+                        </Link>
+                      </h3>
+                      <p className="daklak-ai-card-summary">
+                        {currentLang === 'en'
+                          ? 'Smart admissions consulting AI assistant and comprehensive digital skills training platform.'
+                          : 'EDUNOW.AI Giải pháp Trợ lý AI tuyển sinh thông minh dành cho các cơ sở giáo dục, tư vấn tuyển sinh 24/7 và chuyển đổi số đào tạo.'}
+                      </p>
+                      <div className="daklak-ai-card-footer">
+                        <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
+                        <Link to="/posts/edunowai-giai-phap-tro-ly-ai-tuyen-sinh-thong-minh-danh-cho-cac-co-so-giao-duc" className="daklak-ai-card-link">
+                          {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="daklak-ai-card-body">
-                  <div className="daklak-ai-card-category daklak-ai-cat-green">
-                    <i className="ti ti-certificate" /> {currentLang === 'en' ? 'Training & Digital Skills' : 'Đào tạo & Kỹ năng số'}
-                  </div>
-                  <h3 className="daklak-ai-card-title">
-                    <Link to="/posts/edunowai-giai-phap-tro-ly-ai-tuyen-sinh-thong-minh-danh-cho-cac-co-so-giao-duc">
-                      {currentLang === 'en'
-                        ? 'EDUNOW.AI: Smart Admissions AI Assistant Solution for Educational Institutions'
-                        : 'EDUNOW.AI Giải pháp Trợ lý AI tuyển sinh thông minh dành cho các cơ sở giáo dục'}
-                    </Link>
-                  </h3>
-                  <p className="daklak-ai-card-summary">
-                    {currentLang === 'en'
-                      ? 'Smart admissions consulting AI assistant and comprehensive digital skills training platform.'
-                      : 'EDUNOW.AI Giải pháp Trợ lý AI tuyển sinh thông minh dành cho các cơ sở giáo dục, tư vấn tuyển sinh 24/7 và chuyển đổi số đào tạo.'}
-                  </p>
-                  <div className="daklak-ai-card-footer">
-                    <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
-                    <Link to="/posts/edunowai-giai-phap-tro-ly-ai-tuyen-sinh-thong-minh-danh-cho-cac-co-so-giao-duc" className="daklak-ai-card-link">
-                      {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Bottom Actions */}
             <div className="daklak-ai-actions">
