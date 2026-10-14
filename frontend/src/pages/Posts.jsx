@@ -199,7 +199,7 @@ export const Posts = () => {
       <div style={{ position: 'fixed', top: '-20%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(79,70,229,0.06) 0%, rgba(79,70,229,0) 70%)', zIndex: -1, pointerEvents: 'none', borderRadius: '50%' }}></div>
       <div style={{ position: 'fixed', bottom: '-20%', right: '-10%', width: '60vw', height: '60vw', background: 'radial-gradient(circle, rgba(16,185,129,0.04) 0%, rgba(16,185,129,0) 70%)', zIndex: -1, pointerEvents: 'none', borderRadius: '50%' }}></div>
 
-      <div className="public-container" style={{ minHeight: '80vh', paddingBottom: '5rem', paddingTop: '2.5rem' }}>
+      <main id="main-content" className="public-container" style={{ minHeight: '80vh', paddingBottom: '5rem', paddingTop: '2.5rem' }}>
         
         {/* Title Header */}
         <div style={{ textAlign: 'left', marginBottom: '2rem' }}>
@@ -301,6 +301,7 @@ export const Posts = () => {
               <i className="ti ti-search" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '13px', color: 'var(--text-muted)' }}></i>
               <input 
                 type="text" 
+                aria-label={currentLang === 'en' ? "Search posts by keyword" : "Tìm kiếm bài viết theo từ khóa"}
                 placeholder={t('search_posts_placeholder')} 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -310,6 +311,7 @@ export const Posts = () => {
 
             {/* Filter by Category (Chuyên mục) */}
             <select
+              aria-label={currentLang === 'en' ? "Filter posts by category" : "Lọc bài viết theo chuyên mục"}
               value={selectedCategory}
               onChange={(e) => {
                 const cat = e.target.value;
@@ -331,6 +333,7 @@ export const Posts = () => {
 
             {/* Filter by SubCategory (Lĩnh vực) */}
             <select
+              aria-label={currentLang === 'en' ? "Filter posts by subcategory" : "Lọc bài viết theo lĩnh vực"}
               value={selectedSubCategory}
               onChange={(e) => setSelectedSubCategory(e.target.value)}
               style={{ padding: '7px 10px', width: '100%', borderRadius: '8px', border: '1px solid var(--border-strong)', fontSize: '12.5px', outline: 'none', backgroundColor: 'var(--surface-2)', color: 'var(--text-primary)', cursor: 'pointer', boxSizing: 'border-box' }}
@@ -357,6 +360,7 @@ export const Posts = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               {/* Filter by Tier */}
               <select
+                aria-label={currentLang === 'en' ? "Filter by member tier" : "Lọc theo thứ hạng hội viên"}
                 value={selectedTier}
                 onChange={(e) => setSelectedTier(e.target.value)}
                 style={{ padding: '5px 8px', borderRadius: '6px', border: '1px solid var(--border-strong)', fontSize: '12px', outline: 'none', backgroundColor: 'var(--surface-2)', color: 'var(--text-primary)', cursor: 'pointer', maxWidth: '150px' }}
@@ -369,6 +373,7 @@ export const Posts = () => {
 
               {/* Filter by Type */}
               <select
+                aria-label={currentLang === 'en' ? "Filter by post type" : "Lọc theo loại tin đăng"}
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
                 style={{ padding: '5px 8px', borderRadius: '6px', border: '1px solid var(--border-strong)', fontSize: '12px', outline: 'none', backgroundColor: 'var(--surface-2)', color: 'var(--text-primary)', cursor: 'pointer', maxWidth: '150px' }}
@@ -415,6 +420,7 @@ export const Posts = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span>{t('label_show')}:</span>
                 <select
+                  aria-label={currentLang === 'en' ? "Number of posts per page" : "Số bài viết hiển thị mỗi trang"}
                   value={postsPerPage}
                   onChange={(e) => {
                     setPostsPerPage(Number(e.target.value));
@@ -604,7 +610,7 @@ export const Posts = () => {
           </div>
         )}
 
-      </div>
+      </main>
 
       <Footer />
     </div>

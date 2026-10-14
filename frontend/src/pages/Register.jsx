@@ -175,12 +175,12 @@ export const Register = () => {
         </div>
 
         {/* Right Side Form Wizard Panel */}
-        <div className="register-form-panel" style={{ textAlign: 'left' }}>
+        <main id="main-content" className="register-form-panel" style={{ textAlign: 'left' }}>
           
           {!success ? (
             <>
               <div className="reg-wizard-header">
-                <div style={{ fontFamily: 'var(--font-title)', fontSize: '22px', fontWeight: 700, color: '#0F172A' }}>{t('register_card_title')}</div>
+                <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '22px', fontWeight: 700, color: '#0F172A', margin: 0 }}>{t('register_card_title')}</h1>
                 
                 <div style={{ display: 'flex', gap: '16px' }}>
                   <div className={`reg-step-item ${step === 1 ? 'active' : step > 1 ? 'completed' : ''}`}>
@@ -667,7 +667,7 @@ export const Register = () => {
             </div>
           )}
 
-        </div>
+        </main>
 
       </div>
 

@@ -26,8 +26,28 @@ export const Navbar = () => {
   const [mobileExpandedCatId, setMobileExpandedCatId] = useState(null);
   const dropdownTimeoutRef = useRef(null);
   const navRef = useRef(null);
+  const mobileToggleRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Đóng mobile menu hoặc dropdown khi nhấn phím Escape và trả focus về trigger (F-02)
+  useEffect(() => {
+    const handleEscapeKey = (e) => {
+      if (e.key === 'Escape') {
+        if (mobileMenuOpen) {
+          setMobileMenuOpen(false);
+          if (mobileToggleRef.current) {
+            mobileToggleRef.current.focus();
+          }
+        }
+        if (activeDropdownId) {
+          setActiveDropdownId(null);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleEscapeKey);
+    return () => window.removeEventListener('keydown', handleEscapeKey);
+  }, [mobileMenuOpen, activeDropdownId]);
 
   // Đồng bộ động Chuyên mục & Lĩnh vực từ Backend / Database ngầm trong nền (SWR Pattern)
   useEffect(() => {
@@ -511,6 +531,11 @@ export const Navbar = () => {
         }
       `}</style>
 
+      {/* Skip Link phục vụ người dùng phím / Screen Reader (F-08) */}
+      <a href="#main-content" className="skip-link">
+        {currentLang === 'en' ? "Skip to main content" : "Chuyển đến nội dung chính"}
+      </a>
+
       <header className="dnvn-navbar-header">
         <div className="dnvn-navbar-container">
           
@@ -865,8 +890,9 @@ export const Navbar = () => {
               </div>
             )}
 
-            {/* Nút Toggle Mobile Drawer (chỉ hiện trên màn hình <= 1080px) */}
+            {/* Nút Toggle Mobile Drawer (chỉ hiện trên màn hình <= 1080px) (F-02) */}
             <button
+              ref={mobileToggleRef}
               className="dnvn-mobile-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               style={{
@@ -879,25 +905,33 @@ export const Navbar = () => {
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
-              aria-label="Mở menu di động"
+              title={mobileMenuOpen ? (currentLang === 'en' ? "Close mobile menu" : "Đóng menu di động") : (currentLang === 'en' ? "Open mobile menu" : "Mở menu di động")}
+              aria-label={mobileMenuOpen ? (currentLang === 'en' ? "Close mobile menu" : "Đóng menu di động") : (currentLang === 'en' ? "Open mobile menu" : "Mở menu di động")}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="dnvn-mobile-drawer"
             >
               <i className={mobileMenuOpen ? "ti ti-x" : "ti ti-menu-2"}></i>
             </button>
           </div>
         </div>
 
-        {/* MOBILE DRAWER: DÙNG CHUNG CÙNG NGUỒN DỮ LIỆU ĐỘNG TỪ ADMIN */}
+        {/* MOBILE DRAWER: DÙNG CHUNG CÙNG NGUỒN DỮ LIỆU ĐỘNG TỪ ADMIN (F-02) */}
         {mobileMenuOpen && (
-          <div style={{
-            backgroundColor: '#26160E',
-            borderTop: '1px solid rgba(213, 163, 63, 0.2)',
-            padding: '1rem 1.25rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-            maxHeight: '80vh',
-            overflowY: 'auto'
-          }}>
+          <div 
+            id="dnvn-mobile-drawer"
+            role="region"
+            aria-label={currentLang === 'en' ? "Mobile navigation menu" : "Menu điều hướng di động"}
+            style={{
+              backgroundColor: '#26160E',
+              borderTop: '1px solid rgba(213, 163, 63, 0.2)',
+              padding: '1rem 1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              maxHeight: '80vh',
+              overflowY: 'auto'
+            }}
+          >
             {/* Chuyển ngôn ngữ & Trạng thái trong Drawer */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               <div style={{ fontSize: '12px', color: '#BFAEA2' }}>{currentLang === 'en' ? 'Language / Ngôn ngữ:' : 'Ngôn ngữ / Language:'}</div>

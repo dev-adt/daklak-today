@@ -436,9 +436,9 @@ export const AIChat = () => {
         {/* Center: Message Viewport */}
         <div className="chat-main">
           <div style={{ backgroundColor: 'var(--surface-2)', borderBottom: '1px solid var(--border)', padding: '0 1.25rem', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-            <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h1 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
               <i className="ti ti-robot" style={{ color: 'var(--primary)', fontSize: '18px' }}></i> {t('ai_assistant_title')}
-            </div>
+            </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#10B981', background: 'rgba(16,185,129,0.08)', border: '0.5px solid rgba(16,185,129,0.2)', padding: '4px 12px', borderRadius: '99px' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulse 2s infinite' }}></span>
               <span>

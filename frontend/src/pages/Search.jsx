@@ -63,9 +63,25 @@ export const Search = () => {
     handleSearch(queryParam);
   }, [queryParam, token]);
 
+  const formatEventDate = (ev) => {
+    const dateVal = ev?.event_date || ev?.date || ev?.start_date || ev?.created_at;
+    if (!dateVal) return 'Đang cập nhật';
+    try {
+      const d = new Date(dateVal);
+      if (isNaN(d.getTime())) return 'Đang cập nhật';
+      return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch (e) {
+      return 'Đang cập nhật';
+    }
+  };
+
   const handleSubmit = (e) => {
-    e.preventDefault();
-    setSearchParams({ q: query });
+    if (e) e.preventDefault();
+    const trimmed = query.trim();
+    if (trimmed) {
+      setSearchParams({ q: trimmed });
+      handleSearch(trimmed);
+    }
   };
 
   const totalResultsCount = results.posts.length + results.members.length + results.events.length;
@@ -77,7 +93,7 @@ export const Search = () => {
       <div style={{ position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(79,70,229,0.05) 0%, rgba(79,70,229,0) 70%)', zIndex: -1, pointerEvents: 'none', borderRadius: '50%' }}></div>
       <div style={{ position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(16,185,129,0.03) 0%, rgba(16,185,129,0) 70%)', zIndex: -1, pointerEvents: 'none', borderRadius: '50%' }}></div>
 
-      <div className="public-container" style={{ minHeight: '80vh', paddingBottom: '5rem', paddingTop: '2.5rem' }}>
+      <main id="main-content" className="public-container" style={{ minHeight: '80vh', paddingBottom: '5rem', paddingTop: '2.5rem' }}>
         
         {/* Title Header */}
         <div style={{ textAlign: 'left', marginBottom: '2rem' }}>
@@ -89,7 +105,7 @@ export const Search = () => {
           </p>
         </div>
 
-        {/* Search Input Bar */}
+        {/* Search Input Bar (F-03: Enter submit & form handling) */}
         <form onSubmit={handleSubmit} style={{ marginBottom: '2.5rem' }}>
           <div className="glass-card" style={{ padding: '1rem', display: 'flex', gap: '12px', alignItems: 'center' }}>
             <div style={{ position: 'relative', flex: 1 }}>
@@ -98,6 +114,11 @@ export const Search = () => {
                 type="text" 
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmit(e);
+                  }
+                }}
                 placeholder="Nhập từ khóa tìm kiếm trên toàn website (ví dụ: công nghệ, nông sản, xúc tiến...)"
                 style={{ width: '100%', padding: '12px 16px 12px 42px', borderRadius: '8px', border: '1px solid var(--border-strong)', background: 'var(--surface-2)', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                 autoFocus
@@ -292,19 +313,19 @@ export const Search = () => {
                         </div>
                         <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
                           <div style={{ fontSize: '11px', color: 'var(--emerald-dark)', marginBottom: '6px', fontWeight: 600 }}>
-                            <i className="ti ti-calendar"></i> {new Date(ev.date).toLocaleDateString('vi-VN')}
+                            <i className="ti ti-calendar"></i> {formatEventDate(ev)}
                           </div>
                           <h3 style={{ fontSize: '15px', color: 'var(--text-primary)', fontWeight: 700, margin: '0 0 8px', lineHeight: 1.4 }}>
                             {ev.title}
                           </h3>
                           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                            Tổ chức: <strong>{ev.organizer}</strong>
+                            Tổ chức: <strong>{ev.organizer || 'DakLak.today'}</strong>
                           </div>
                           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <i className="ti ti-map-pin"></i> {ev.location}
                           </div>
                           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '10px', marginTop: 'auto', display: 'flex', justifyContent: 'flex-end' }}>
-                            <Link to="/events" className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', textDecoration: 'none', borderRadius: '6px', backgroundColor: 'rgba(12,35,64,0.06)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)' }}>
+                            <Link to={ev.id ? `/events/${ev.id}` : "/events"} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', textDecoration: 'none', borderRadius: '6px', backgroundColor: 'rgba(12,35,64,0.06)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)' }}>
                               Chi tiết sự kiện
                             </Link>
                           </div>
@@ -317,7 +338,7 @@ export const Search = () => {
             )}
           </div>
         )}
-      </div>
+      </main>
 
       <Footer />
     </div>

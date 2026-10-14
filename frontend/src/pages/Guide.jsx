@@ -137,7 +137,52 @@ export const Guide = () => {
       />
       <Navbar />
 
-      <div className="public-container" style={{ paddingBottom: '5rem', paddingTop: '2rem', minHeight: '85vh' }}>
+      <main id="main-content" className="public-container" style={{ paddingBottom: '5rem', paddingTop: '2rem', minHeight: '85vh' }}>
+        <style>{`
+          .guide-layout {
+            display: grid;
+            grid-template-columns: minmax(250px, 280px) 1fr;
+            gap: 2rem;
+            align-items: start;
+            width: 100%;
+            box-sizing: border-box;
+          }
+          .guide-sidebar {
+            position: sticky;
+            top: 90px;
+            padding: 1.25rem 1rem;
+            border-radius: 16px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border-strong);
+            z-index: 10;
+            box-sizing: border-box;
+            max-width: 100%;
+          }
+          .guide-content-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+          }
+          .guide-content-col .guide-section {
+            box-sizing: border-box;
+            max-width: 100%;
+            overflow-wrap: break-word;
+          }
+          @media (max-width: 900px) {
+            .guide-layout {
+              grid-template-columns: 1fr;
+              gap: 1.5rem;
+            }
+            .guide-sidebar {
+              position: static;
+              top: auto;
+              margin-bottom: 0.5rem;
+            }
+          }
+        `}</style>
         
         {/* Banner tiêu đề trang */}
         <div className="glass-card" style={{ padding: '2.25rem 2rem', textAlign: 'center', marginBottom: '2rem', borderRadius: '20px', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.9) 100%)', border: '1px solid var(--border-strong)' }}>
@@ -212,10 +257,10 @@ export const Guide = () => {
         </div>
 
         {/* Khung nội dung chính: Sidebar Menu Trái + Nội dung Hướng dẫn Phải */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 280px) 1fr', gap: '2rem', alignItems: 'start' }}>
+        <div className="guide-layout">
           
           {/* MENU BÊN TRÁI (Sticky Sidebar Table of Contents) */}
-          <div className="glass-card" style={{ position: 'sticky', top: '90px', padding: '1.25rem 1rem', borderRadius: '16px', background: 'rgba(15, 23, 42, 0.85)', border: '1px solid var(--border-strong)', zIndex: 10 }}>
+          <div className="glass-card guide-sidebar">
             <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px', paddingLeft: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <i className="ti ti-list" style={{ color: 'var(--neon-cyan)' }}></i> {isEn ? "Navigation Menu" : "Danh mục Hướng dẫn"}
             </div>
@@ -262,7 +307,7 @@ export const Guide = () => {
           </div>
 
           {/* NỘI DUNG HƯỚNG DẪN BÊN PHẢI */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div className="guide-content-col">
             
             {/* ════════════════════════════════════════════════════════════════ */}
             {/* TAB 1: HƯỚNG DẪN DÀNH CHO HỘI VIÊN DOANH NGHIỆP (MEMBER GUIDE) */}
@@ -301,11 +346,11 @@ export const Guide = () => {
                     )}
                   </p>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.25rem', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
                     <div style={{ padding: '1.25rem', background: 'var(--surface-1)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <h4 style={{ color: 'var(--neon-cyan)', margin: '0 0 8px 0', fontSize: '15px' }}>
+                      <h3 style={{ color: 'var(--neon-cyan)', margin: '0 0 8px 0', fontSize: '15px' }}>
                         {isEn ? "Step 1: Business Information" : "Bước 1: Thông tin Doanh nghiệp"}
-                      </h4>
+                      </h3>
                       <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                         {isEn ? (
                           <>
@@ -324,9 +369,9 @@ export const Guide = () => {
                     </div>
 
                     <div style={{ padding: '1.25rem', background: 'var(--surface-1)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <h4 style={{ color: 'var(--neon-cyan)', margin: '0 0 8px 0', fontSize: '15px' }}>
+                      <h3 style={{ color: 'var(--neon-cyan)', margin: '0 0 8px 0', fontSize: '15px' }}>
                         {isEn ? "Step 2: Representative Info" : "Bước 2: Người Đại diện"}
-                      </h4>
+                      </h3>
                       <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                         {isEn ? (
                           <>
@@ -345,9 +390,9 @@ export const Guide = () => {
                     </div>
 
                     <div style={{ padding: '1.25rem', background: 'var(--surface-1)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <h4 style={{ color: 'var(--neon-cyan)', margin: '0 0 8px 0', fontSize: '15px' }}>
+                      <h3 style={{ color: 'var(--neon-cyan)', margin: '0 0 8px 0', fontSize: '15px' }}>
                         {isEn ? "Step 3: Password & Subscription" : "Bước 3: Mật khẩu & Chọn Gói"}
-                      </h4>
+                      </h3>
                       <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                         {isEn ? (
                           <>
@@ -366,9 +411,9 @@ export const Guide = () => {
                     </div>
 
                     <div style={{ padding: '1.25rem', background: 'var(--surface-1)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <h4 style={{ color: 'var(--amber)', margin: '0 0 8px 0', fontSize: '15px' }}>
+                      <h3 style={{ color: 'var(--amber)', margin: '0 0 8px 0', fontSize: '15px' }}>
                         {isEn ? "Step 4: Application Review" : "Bước 4: Xét duyệt Hồ sơ"}
-                      </h4>
+                      </h3>
                       <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                         {isEn ? (
                           <>
@@ -705,27 +750,27 @@ export const Guide = () => {
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
                     <div style={{ padding: '1.25rem', background: 'var(--surface-1)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <h4 style={{ color: 'var(--neon-cyan)', margin: '0 0 8px 0', fontSize: '15px' }}>
+                      <h3 style={{ color: 'var(--neon-cyan)', margin: '0 0 8px 0', fontSize: '15px' }}>
                         {isEn ? "1. Select Ticket & Quantities" : "1. Chọn loại vé & Số lượng"}
-                      </h4>
+                      </h3>
                       <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                         {isEn ? "Choose appropriate ticket tier (Free or Paid VIP/Standard) and select ticket quantity for your delegates." : "Lựa chọn hạng vé phù hợp (Vé miễn phí hoặc Vé có phí VIP/Tiêu chuẩn) và số lượng người tham dự."}
                       </p>
                     </div>
 
                     <div style={{ padding: '1.25rem', background: 'var(--surface-1)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <h4 style={{ color: 'var(--neon-cyan)', margin: '0 0 8px 0', fontSize: '15px' }}>
+                      <h3 style={{ color: 'var(--neon-cyan)', margin: '0 0 8px 0', fontSize: '15px' }}>
                         {isEn ? "2. Contact & Attendee Details" : "2. Thông tin Người tham dự"}
-                      </h4>
+                      </h3>
                       <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                         {isEn ? "Fill in Full Name, Phone, Email, Company Name, and Position to receive digital registration confirmations." : "Điền họ tên, số điện thoại, email, đơn vị công tác và chức vụ để hệ thống gửi vé điện tử xác nhận."}
                       </p>
                     </div>
 
                     <div style={{ padding: '1.25rem', background: 'var(--surface-1)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                      <h4 style={{ color: '#10b981', margin: '0 0 8px 0', fontSize: '15px' }}>
+                      <h3 style={{ color: '#10b981', margin: '0 0 8px 0', fontSize: '15px' }}>
                         {isEn ? "3. Instant E-Ticket & QR Code" : "3. Vé điện tử & Mã QR Check-in"}
-                      </h4>
+                      </h3>
                       <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                         {isEn ? "Receive a unique ticket code with encrypted QR Code. Present it at the entrance on event day for 1-second check-in." : "Hệ thống cấp ngay mã vé kèm mã QR độc nhất. Xuất trình mã trên điện thoại tại quầy lễ tân để soát vé trong 1 giây."}
                       </p>
@@ -945,9 +990,9 @@ export const Guide = () => {
                     boxShadow: activeSectionId === 'sec-other-login' ? '0 0 25px rgba(56, 189, 248, 0.25)' : 'none'
                   }}
                 >
-                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>
+                  <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>
                     {isEn ? "4. Unified Portal Authentication for All Roles" : "4. Cổng Đăng Nhập Hợp Nhất Dành Cho Mọi Vai Trò"}
-                  </h3>
+                  </h2>
                   <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
                     {isEn ? (
                       <>Content Creators, Event Organizers, and Ticket Inspectors all authenticate through the single {renderLinkPill("Login Portal", "/login")}. The system identifies account privileges and redirects you to the proper workspace automatically.</>
@@ -1005,9 +1050,9 @@ export const Guide = () => {
                     boxShadow: activeSectionId === 'sec-admin-login' ? '0 0 25px rgba(245, 158, 11, 0.25)' : 'none'
                   }}
                 >
-                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>
+                  <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>
                     {isEn ? "2. Authentication & Admin Dashboard Overview" : "2. Đăng nhập & Admin Dashboard Tổng quan"}
-                  </h3>
+                  </h2>
                   <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
                     {isEn ? (
                       <>Log in via the main {renderLinkPill("Login Portal", "/login")} to view instant statistics on Members, Posts, and Events.</>
@@ -1015,7 +1060,7 @@ export const Guide = () => {
                       <>Admin thực hiện {renderLinkPill("Đăng nhập Admin", "/login")} qua Form chung ➔ Được điều hướng đến {renderLinkPill("Admin Dashboard", "/admin-dashboard")} tổng quan thống kê tức thì số lượng Hội viên, Bài viết và Sự kiện.</>
                     )}
                   </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
                     <div style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border)' }}>
                       <img src="/img_guide/Admin/login.png" alt="Đăng nhập Admin" style={{ width: '100%', height: 'auto', display: 'block' }} />
                     </div>
@@ -1038,9 +1083,9 @@ export const Guide = () => {
                     boxShadow: activeSectionId === 'sec-admin-members' ? '0 0 25px rgba(245, 158, 11, 0.25)' : 'none'
                   }}
                 >
-                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>
+                  <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>
                     {isEn ? "3. Member Approval & Tier Management" : "3. Quản lý & Xét Duyệt Hồ Sơ Hội Viên Doanh Nghiệp"}
-                  </h3>
+                  </h2>
                   <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
                     {isEn ? (
                       <>Access {renderLinkPill("Manage Members", "/admin-dashboard")} tab in Admin Dashboard:</>
@@ -1083,9 +1128,9 @@ export const Guide = () => {
                     boxShadow: activeSectionId === 'sec-admin-posts' ? '0 0 25px rgba(245, 158, 11, 0.25)' : 'none'
                   }}
                 >
-                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>
+                  <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>
                     {isEn ? "4. Post Moderation & Homepage Featured Pinning" : "4. Quản lý Bài Viết & Ghim Nổi Bật Trang Chủ"}
-                  </h3>
+                  </h2>
                   <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
                     {isEn ? (
                       <>Review posts submitted by Members & Creators at {renderLinkPill("Manage Posts", "/admin-dashboard")}. For Platinum members requesting featured pinning, Admins can toggle 'Featured Pin' to place posts in the top 3 homepage spotlight positions.</>
@@ -1111,15 +1156,15 @@ export const Guide = () => {
                     boxShadow: activeSectionId === 'sec-admin-events-cats' ? '0 0 25px rgba(245, 158, 11, 0.25)' : 'none'
                   }}
                 >
-                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>
+                  <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>
                     {isEn ? "5. Events, Taxonomy, Organizers & Staff" : "5. Quản lý Sự Kiện, Chuyên Mục, Ban Tổ Chức & Nhân Sự"}
-                  </h3>
+                  </h2>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     <div>
-                      <h4 style={{ color: 'var(--neon-cyan)', marginBottom: '8px' }}>
+                      <h3 style={{ color: 'var(--neon-cyan)', marginBottom: '8px' }}>
                         {isEn ? "a. B2B Event Management" : "a. Quản lý Sự kiện B2B"}
-                      </h4>
+                      </h3>
                       <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '10px' }}>
                         {isEn ? (
                           <>Create new events, set dates, capacity, location, and update event status at {renderLinkPill("Manage Events", "/admin-dashboard")}.</>
@@ -1133,9 +1178,9 @@ export const Guide = () => {
                     </div>
 
                     <div>
-                      <h4 style={{ color: 'var(--neon-cyan)', marginBottom: '8px' }}>
+                      <h3 style={{ color: 'var(--neon-cyan)', marginBottom: '8px' }}>
                         {isEn ? "b. Category & Sub-Category Taxonomy" : "b. Quản lý Chuyên mục & Lĩnh vực"}
-                      </h4>
+                      </h3>
                       <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '10px' }}>
                         {isEn ? (
                           <>Add and edit main categories & sub-categories, manage English translations, and adjust display ordering at {renderLinkPill("Manage Categories", "/admin-dashboard")}.</>
@@ -1149,9 +1194,9 @@ export const Guide = () => {
                     </div>
 
                     <div>
-                      <h4 style={{ color: 'var(--amber)', marginBottom: '8px' }}>
+                      <h3 style={{ color: 'var(--amber)', marginBottom: '8px' }}>
                         {isEn ? "c. Creator Management & Auto-Approve Toggle" : "c. Quản lý Biên tập viên & Cấu hình Quyền Duyệt tự động"}
-                      </h4>
+                      </h3>
                       <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '10px' }}>
                         {isEn ? (
                           <>Create Content Creator accounts, reset passwords, and toggle 'Enable Auto-Approve' at {renderLinkPill("Manage Creators", "/admin-dashboard")}.</>
@@ -1165,9 +1210,9 @@ export const Guide = () => {
                     </div>
 
                     <div>
-                      <h4 style={{ color: 'var(--neon-cyan)', marginBottom: '8px' }}>
+                      <h3 style={{ color: 'var(--neon-cyan)', marginBottom: '8px' }}>
                         {isEn ? "d. Event Organizers & Ticket Inspectors Management" : "d. Quản lý Ban tổ chức & Nhân viên Soát vé Sự kiện"}
-                      </h4>
+                      </h3>
                       <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '10px' }}>
                         {isEn ? (
                           <>Create and assign dedicated accounts for Event Organizers and Ticket Inspectors at {renderLinkPill("Manage Organizers", "/admin-dashboard")}. Set granular permissions: Full event administration vs Gate QR scanning only.</>
@@ -1195,9 +1240,9 @@ export const Guide = () => {
                     boxShadow: activeSectionId === 'sec-admin-contacts' ? '0 0 25px rgba(245, 158, 11, 0.25)' : 'none'
                   }}
                 >
-                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>
+                  <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>
                     {isEn ? "6. Leads & Homepage Registration Management" : "6. Quản Lý Tiếp Nhận Liên Hệ / Đăng Ký Từ Trang Chủ"}
-                  </h3>
+                  </h2>
                   <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
                     {isEn ? (
                       <>Every time a prospective enterprise or traveler submits the "Join the Ecosystem" form on the Homepage, their data is instantly logged into {renderLinkPill("Leads & Contacts", "/admin-dashboard")}. Admin can track status, update contact logs, and add internal notes.</>
@@ -1232,7 +1277,7 @@ export const Guide = () => {
 
         </div>
 
-      </div>
+      </main>
 
       <Footer />
     </div>
