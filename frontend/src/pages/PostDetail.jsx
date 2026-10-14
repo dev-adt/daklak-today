@@ -255,7 +255,6 @@ export const PostDetail = () => {
   const dateStr = post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : '11/06/2026';
   const hasValidImg = post.image_url && post.image_url !== 'null' && post.image_url !== 'undefined' && post.image_url.trim() !== '';
   const imgUrl = hasValidImg ? post.image_url : demoImages[post.id % demoImages.length];
-  const isGuest = role === 'guest';
   const isPlatinum = post.company_tier === 'Platinum';
   const isGold = post.company_tier === 'Gold';
 
@@ -433,80 +432,28 @@ export const PostDetail = () => {
                 </div>
               )}
 
-              {/* Kiểm tra phân quyền: Khách chưa đăng nhập bị khoá chi tiết nội dung */}
-              {isGuest ? (
-                <div style={{
-                  position: 'relative',
-                  padding: '3rem 2rem',
-                  background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(2, 132, 199, 0.08) 100%)',
-                  borderRadius: '16px',
-                  border: '1.5px dashed rgba(2, 132, 199, 0.4)',
-                  textAlign: 'center',
-                  marginTop: '1rem'
-                }}>
-                  <div style={{
-                    width: '64px',
-                    height: '64px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #0F52BA, #00A699)',
-                    color: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 16px',
-                    fontSize: '28px',
-                    boxShadow: '0 8px 24px rgba(15, 82, 186, 0.3)'
-                  }}>
-                    <i className="ti ti-lock"></i>
-                  </div>
-                  <h3 style={{ fontSize: '19px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>
-                    {currentLang === 'en' ? 'Full Article & Contact Info Locked' : 'Nội dung chi tiết chỉ dành riêng cho Hội viên'}
-                  </h3>
-                  <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', maxWidth: '520px', margin: '0 auto 24px', lineHeight: 1.6 }}>
-                    {currentLang === 'en'
-                      ? 'Please log in or register for a free Silver Membership (instant approval) to read full articles, view partner attachments, and connect directly.'
-                      : 'Để xem toàn bộ nội dung bài viết, hồ sơ doanh nghiệp chi tiết và liên hệ hợp tác trực tiếp, vui lòng Đăng nhập hoặc Đăng ký thành viên Bạc (hoàn toàn miễn phí, tự động kích hoạt ngay lập tức).'}
-                  </p>
-                  <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <Link 
-                      to={`/login?redirect=/posts/${post.slug || post.id}`} 
-                      className="btn btn-primary" 
-                      style={{ padding: '10px 24px', fontSize: '13px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                    >
-                      <i className="ti ti-login"></i> {t('login_now')}
-                    </Link>
-                    <Link 
-                      to="/register" 
-                      className="btn" 
-                      style={{ padding: '10px 24px', fontSize: '13px', fontWeight: 700, backgroundColor: 'rgba(2, 132, 199, 0.1)', borderColor: 'var(--border-strong)', color: 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                    >
-                      <i className="ti ti-user-plus"></i> {currentLang === 'en' ? 'Register Free Silver' : 'Đăng ký thành viên Bạc (Miễn phí)'}
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div 
-                  className="post-html-body"
-                  dangerouslySetInnerHTML={{ 
-                    __html: (() => {
-                      let raw = isTranslated ? translatedBody : post.body;
-                      if (!raw) return '';
-                      if (raw.includes('&lt;iframe') || raw.includes('&lt;div')) {
-                        const txt = document.createElement('textarea');
-                        txt.innerHTML = raw;
-                        raw = txt.value;
-                      }
-                      return raw;
-                    })()
-                  }}
-                  style={{
-                    fontSize: '16px',
-                    color: 'var(--text-secondary)',
-                    lineHeight: '1.8',
-                    textAlign: 'left',
-                  }}
-                />
-              )}
+              {/* Nội dung chi tiết bài viết: mở công khai cho tất cả người đọc */}
+              <div 
+                className="post-html-body"
+                dangerouslySetInnerHTML={{ 
+                  __html: (() => {
+                    let raw = isTranslated ? translatedBody : post.body;
+                    if (!raw) return '';
+                    if (raw.includes('&lt;iframe') || raw.includes('&lt;div')) {
+                      const txt = document.createElement('textarea');
+                      txt.innerHTML = raw;
+                      raw = txt.value;
+                    }
+                    return raw;
+                  })()
+                }}
+                style={{
+                  fontSize: '16px',
+                  color: 'var(--text-secondary)',
+                  lineHeight: '1.8',
+                  textAlign: 'left',
+                }}
+              />
               <style>{`
                 .post-html-body iframe {
                   width: 100% !important;
@@ -635,22 +582,10 @@ export const PostDetail = () => {
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                     {t('contact_info_label')}
                   </div>
-                  {isGuest ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
-                        <i className="ti ti-lock" style={{ color: 'var(--primary)', marginRight: '4px' }}></i>
-                        {t('login_required_desc')}
-                      </span>
-                      <Link to="/login" className="btn btn-primary" style={{ padding: '4px 12px', fontSize: '11.5px', textDecoration: 'none' }}>
-                        {t('login_now')}
-                      </Link>
-                    </div>
-                  ) : (
-                    <div style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <i className="ti ti-info-square" style={{ color: 'var(--primary-dark)' }}></i>
-                      {post.contact_info || t('contact_info_label')}
-                    </div>
-                  )}
+                  <div style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <i className="ti ti-info-square" style={{ color: 'var(--primary-dark)' }}></i>
+                    {post.contact_info || (currentLang === 'en' ? 'Contact publisher / editorial board' : 'Liên hệ tác giả / ban biên tập')}
+                  </div>
                 </div>
 
                 {/* Right: Back Button */}
@@ -794,34 +729,24 @@ export const PostDetail = () => {
                 <div style={{ height: '1px', background: 'var(--border)', marginBottom: '15px' }} />
                 
                 <h3 style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600, margin: '0 0 10px' }}>{t('contact_info_label')}</h3>
-                {isGuest ? (
-                  <div style={{ padding: '15px', background: 'var(--surface-0)', border: '1px dashed var(--border-strong)', borderRadius: '8px', textAlign: 'center' }}>
-                    <i className="ti ti-lock" style={{ fontSize: '18px', color: 'var(--primary)', marginBottom: '6px', display: 'block' }}></i>
-                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 10px', lineHeight: '1.4' }}>
-                      {t('login_required_desc')}
-                    </p>
-                    <Link to="/login" className="btn btn-primary" style={{ padding: '4px 15px', fontSize: '11px' }}>{t('login_now')}</Link>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{currentLang === 'en' ? 'Contact Person' : 'Người liên hệ'}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>{memberDetails.contact_name || (currentLang === 'en' ? 'Not specified' : 'Chưa cập nhật')}</div>
                   </div>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                    <div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{currentLang === 'en' ? 'Contact Person' : 'Người liên hệ'}</div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>{memberDetails.contact_name || (currentLang === 'en' ? 'Not specified' : 'Chưa cập nhật')}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{currentLang === 'en' ? 'Position' : 'Chức vụ'}</div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>{memberDetails.contact_pos || (currentLang === 'en' ? 'Not specified' : 'Chưa cập nhật')}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Email</div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>{memberDetails.email || (currentLang === 'en' ? 'Not specified' : 'Chưa cập nhật')}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{currentLang === 'en' ? 'Phone Number' : 'Số điện thoại'}</div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>{memberDetails.phone || (currentLang === 'en' ? 'Not specified' : 'Chưa cập nhật')}</div>
-                    </div>
+                  <div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{currentLang === 'en' ? 'Position' : 'Chức vụ'}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>{memberDetails.contact_pos || (currentLang === 'en' ? 'Not specified' : 'Chưa cập nhật')}</div>
                   </div>
-                )}
+                  <div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Email</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>{memberDetails.email || (currentLang === 'en' ? 'Not specified' : 'Chưa cập nhật')}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{currentLang === 'en' ? 'Phone Number' : 'Số điện thoại'}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>{memberDetails.phone || (currentLang === 'en' ? 'Not specified' : 'Chưa cập nhật')}</div>
+                  </div>
+                </div>
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-secondary)' }}>
