@@ -14,6 +14,7 @@ import Posts from './pages/Posts';
 import PostDetail from './pages/PostDetail';
 import Events from './pages/Events';
 import Members from './pages/Members';
+import NotFound from './pages/NotFound';
 
 // Code-split Pages (Lazy loaded on demand to reduce initial JS payload by >60%)
 const Login = React.lazy(() => import('./pages/Login'));
@@ -229,6 +230,9 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+
+            {/* 404 Route bắt toàn bộ đường dẫn không tồn tại */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
               </React.Suspense>
         </Router>

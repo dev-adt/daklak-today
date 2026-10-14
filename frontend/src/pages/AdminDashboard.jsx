@@ -20,8 +20,9 @@ export const AdminDashboard = () => {
 
   const loadStats = async () => {
     try {
-      const res = await fetch('/api/stats', {
-        headers: getAuthHeaders()
+      const res = await fetch(`/api/stats?_t=${Date.now()}`, {
+        headers: getAuthHeaders(),
+        cache: 'no-store'
       });
       if (res.ok) {
         const data = await res.json();
@@ -37,8 +38,9 @@ export const AdminDashboard = () => {
   const loadPendingApprovals = async () => {
     try {
       // 1. Tải thành viên chờ duyệt
-      const membersRes = await fetch('/api/members?status=pending', {
-        headers: getAuthHeaders()
+      const membersRes = await fetch(`/api/members?status=pending&_t=${Date.now()}`, {
+        headers: getAuthHeaders(),
+        cache: 'no-store'
       });
       if (membersRes.ok) {
         const data = await membersRes.json();
@@ -46,8 +48,9 @@ export const AdminDashboard = () => {
       }
 
       // 2. Tải bài viết chờ duyệt
-      const postsRes = await fetch('/api/posts?status=pending', {
-        headers: getAuthHeaders()
+      const postsRes = await fetch(`/api/posts?status=pending&_t=${Date.now()}`, {
+        headers: getAuthHeaders(),
+        cache: 'no-store'
       });
       if (postsRes.ok) {
         const data = await postsRes.json();
@@ -60,8 +63,9 @@ export const AdminDashboard = () => {
 
   const loadActivities = async () => {
     try {
-      const res = await fetch('/api/admin/recent-activity', {
-        headers: getAuthHeaders()
+      const res = await fetch(`/api/admin/recent-activity?_t=${Date.now()}`, {
+        headers: getAuthHeaders(),
+        cache: 'no-store'
       });
       if (res.ok) {
         const data = await res.json();
@@ -74,10 +78,14 @@ export const AdminDashboard = () => {
     }
   };
 
+  const reloadAll = async () => {
+    await Promise.all([loadStats(), loadPendingApprovals(), loadActivities()]);
+  };
+
   useEffect(() => {
     const initData = async () => {
       setLoading(true);
-      await Promise.all([loadStats(), loadPendingApprovals(), loadActivities()]);
+      await reloadAll();
       setLoading(false);
     };
     initData();
@@ -92,10 +100,9 @@ export const AdminDashboard = () => {
         headers: getAuthHeaders()
       });
       if (res.ok) {
+        setPendingMembers(prev => prev.filter(m => m.id !== id));
         alert(`Đã phê duyệt thành viên ${name}`);
-        loadStats();
-        loadPendingApprovals();
-        loadActivities();
+        await reloadAll();
       } else {
         const err = await res.json();
         alert(err.error || 'Duyệt thành viên thất bại.');
@@ -116,10 +123,9 @@ export const AdminDashboard = () => {
         body: JSON.stringify({ reason })
       });
       if (res.ok) {
+        setPendingMembers(prev => prev.filter(m => m.id !== id));
         alert(`Đã từ chối thành viên ${name}`);
-        loadStats();
-        loadPendingApprovals();
-        loadActivities();
+        await reloadAll();
       } else {
         const err = await res.json();
         alert(err.error || 'Từ chối thành viên thất bại.');
@@ -138,10 +144,9 @@ export const AdminDashboard = () => {
         headers: getAuthHeaders()
       });
       if (res.ok) {
+        setPendingPosts(prev => prev.filter(p => p.id !== id));
         alert(`Đã duyệt đăng tin bài`);
-        loadStats();
-        loadPendingApprovals();
-        loadActivities();
+        await reloadAll();
       } else {
         const err = await res.json();
         alert(err.error || 'Duyệt bài đăng thất bại.');
@@ -162,10 +167,9 @@ export const AdminDashboard = () => {
         body: JSON.stringify({ reason })
       });
       if (res.ok) {
+        setPendingPosts(prev => prev.filter(p => p.id !== id));
         alert(`Đã từ chối đăng tin bài`);
-        loadStats();
-        loadPendingApprovals();
-        loadActivities();
+        await reloadAll();
       } else {
         const err = await res.json();
         alert(err.error || 'Từ chối bài đăng thất bại.');

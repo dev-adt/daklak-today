@@ -83,7 +83,7 @@ export const Login = () => {
 
       <div style={{ width: '100%', maxWidth: '420px', padding: '1.5rem', zIndex: 10 }}>
         <div className="glass-card" style={{ padding: '2.5rem 2.25rem', borderRadius: '16px', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '1.75rem', textAlign: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', textAlign: 'center' }}>
             <Link to="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
               <img 
                 src="/logo_daklak_dark.png" 
@@ -92,6 +92,9 @@ export const Login = () => {
                 style={{ height: '62px', width: 'auto', maxWidth: '100%', objectFit: 'contain', borderRadius: '10px', filter: 'drop-shadow(0 4px 16px rgba(213, 163, 63, 0.3))' }} 
               />
             </Link>
+            <h1 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', margin: '8px 0 0', letterSpacing: '-0.02em' }}>
+              Đăng nhập DakLak.today
+            </h1>
           </div>
 
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '1.5rem' }}>
@@ -140,10 +143,11 @@ export const Login = () => {
                 <i className="ti ti-lock" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '15px', color: '#475569' }}></i>
                 <button 
                   type="button" 
+                  aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                   onClick={() => setShowPassword(!showPassword)} 
-                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', outline: 'none', color: '#475569', display: 'flex', alignItems: 'center' }}
+                  style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', background: 'none', border: 'none', borderRadius: '6px', cursor: 'pointer', outline: 'none', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  <i className={showPassword ? "ti ti-eye-off" : "ti ti-eye"} style={{ fontSize: '15px' }}></i>
+                  <i className={showPassword ? "ti ti-eye-off" : "ti ti-eye"} style={{ fontSize: '16px' }}></i>
                 </button>
               </div>
             </div>

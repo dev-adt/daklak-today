@@ -54,8 +54,9 @@ export const AdminEvents = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/events?all=true', {
-        headers: getAuthHeaders()
+      const res = await fetch(`/api/events?all=true&_t=${Date.now()}`, {
+        headers: getAuthHeaders(),
+        cache: 'no-store'
       });
       if (!res.ok) throw new Error('Không thể tải danh sách sự kiện.');
       const data = await res.json();
@@ -74,9 +75,19 @@ export const AdminEvents = () => {
 
   const formatDateTimeLocal = (dateStr) => {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const pad = (n) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    try {
+      const str = String(dateStr).trim();
+      // Nếu chuỗi có dạng YYYY-MM-DD HH:mm(:ss)? hoặc YYYY-MM-DDTHH:mm(:ss)?
+      if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}/.test(str)) {
+        return str.replace(' ', 'T').substring(0, 16);
+      }
+      const d = new Date(str);
+      if (isNaN(d.getTime())) return '';
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    } catch (e) {
+      return '';
+    }
   };
 
   const handleOpenAddModal = () => {
@@ -155,7 +166,7 @@ export const AdminEvents = () => {
       if (res.ok && data.success) {
         alert(editingEventId ? 'Cập nhật sự kiện thành công!' : 'Tạo sự kiện mới thành công!');
         setModalOpen(false);
-        loadEvents();
+        await loadEvents();
       } else {
         alert(data.error || 'Thao tác thất bại.');
       }
@@ -174,7 +185,7 @@ export const AdminEvents = () => {
       });
       if (res.ok) {
         alert('Đã xóa sự kiện thành công!');
-        loadEvents();
+        await loadEvents();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');

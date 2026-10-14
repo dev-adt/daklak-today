@@ -38,17 +38,34 @@ export const Posts = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTier, setSelectedTier] = useState('');
   const [selectedType, setSelectedType] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
-  const [selectedSubCategory, setSelectedSubCategory] = useState(searchParams.get('sub_category') || '');
+  const [selectedCategory, setSelectedCategory] = useState(() => {
+    let cat = searchParams.get('category') || '';
+    if (cat) {
+      const match = CATEGORIES_DATA.find(c => c.name === cat || c.id === cat || c.name.toLowerCase().startsWith(cat.trim().toLowerCase()));
+      if (match) return match.name;
+    }
+    return cat;
+  });
+  const [selectedSubCategory, setSelectedSubCategory] = useState(
+    searchParams.get('sub_category') || searchParams.get('subCategory') || ''
+  );
   const [categoriesList, setCategoriesList] = useState(CATEGORIES_DATA);
 
-  // Lắng nghe sự thay đổi query params từ URL
+  // Lắng nghe sự thay đổi query params từ URL (hỗ trợ cả category name, slug và trường hợp dấu & chưa encode)
   useEffect(() => {
-    const cat = searchParams.get('category') || '';
-    const subCat = searchParams.get('sub_category') || '';
+    let cat = searchParams.get('category') || '';
+    if (cat) {
+      const match = categoriesList.find(c => {
+        const name = typeof c === 'object' ? c.name : c;
+        const id = typeof c === 'object' ? c.id : '';
+        return name === cat || id === cat || name.toLowerCase().startsWith(cat.trim().toLowerCase());
+      });
+      if (match) cat = typeof match === 'object' ? match.name : match;
+    }
+    const subCat = searchParams.get('sub_category') || searchParams.get('subCategory') || '';
     setSelectedCategory(cat);
     setSelectedSubCategory(subCat);
-  }, [searchParams]);
+  }, [searchParams, categoriesList]);
 
   useEffect(() => {
     const fetchCategories = async () => {

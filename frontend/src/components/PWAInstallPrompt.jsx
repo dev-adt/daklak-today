@@ -56,10 +56,11 @@ export const PWAInstallPrompt = () => {
         @media (max-width: 640px) {
           .dnvn-pwa-banner {
             bottom: 12px;
-            right: 16px;
-            left: 16px;
+            right: 12px;
+            left: 12px;
             width: auto;
-            max-width: 100%;
+            max-width: calc(100vw - 24px);
+            box-sizing: border-box;
           }
         }
 

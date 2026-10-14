@@ -36,6 +36,21 @@ const formatVietnamDateTime = (d) => {
   }
 };
 
+// Helper chuyển đổi định dạng ngày giờ an toàn tuyệt đối cho MySQL (hỗ trợ datetime-local ISO có T, khoảng trắng, hoặc Date object)
+function toSqlDateTime(val) {
+  if (!val) return null;
+  let str = String(val).trim();
+  if (!str || str === 'null' || str === 'undefined') return null;
+  // Xử lý chuỗi YYYY-MM-DD[T ]HH:mm(:ss)?
+  if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(str)) {
+    str = str.replace('T', ' ');
+    if (str.length === 16) str += ':00'; // Thêm giây nếu chỉ có giờ phút
+    return str.substring(0, 19);
+  }
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleString('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh' }).replace('T', ' ');
+}
 
 // Cấu hình SMTP gửi Mail
 let transporter = null;
@@ -2094,7 +2109,14 @@ app.get('/api/members', async (req, res) => {
       return { ...safe, email: '***@***.***', phone: '09** *** ***', contact_name: '***', contact_pos: '***' };
     });
 
-    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+    // Nếu là admin, lọc theo trạng thái hoặc tìm kiếm thì không cache để UI cập nhật ngay tức thì
+    if (isAuthenticated || status || search || req.query._t) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+    }
     res.json({ success: true, data: safeRows, total: safeRows.length });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -2508,7 +2530,14 @@ app.get('/api/posts', async (req, res) => {
       contact_info: p.contact_info ? 'Đăng nhập hội viên để xem thông tin liên hệ' : ''
     }));
 
-    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+    // Nếu là admin, lọc theo trạng thái hoặc tìm kiếm thì không cache để UI cập nhật ngay tức thì
+    if (isAuthenticated || status || search || req.query._t) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+    }
     res.json({ success: true, count: safeRows.length, data: safeRows, total: safeRows.length });
   } catch (err) {
     console.error('Lỗi tải bài viết GET /api/posts:', err.message);
@@ -4000,7 +4029,14 @@ app.get('/api/events', async (req, res) => {
     }
 
     const [rows] = await db.query(sql, params);
-    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+    // Nếu là admin, lấy tất cả hoặc tìm kiếm thì không cache để UI cập nhật ngay tức thì
+    if (isAdmin || all === 'true' || search || req.query._t) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+    }
     res.json({ success: true, data: rows });
   } catch (err) {
     console.error('Lỗi GET /api/events:', err.message);
@@ -4670,6 +4706,12 @@ app.post('/api/admin/events', eventManagerAuthMiddleware, async (req, res) => {
     const finalIsPaid = is_paid === true || is_paid === 1 || is_paid === '1' ? 1 : 0;
     const finalPrice = finalIsPaid ? (parseFloat(price) || 0) : 0;
     const finalIsPublished = is_published === false || is_published === 0 || is_published === '0' ? 0 : 1;
+    const finalEventDate = toSqlDateTime(event_date);
+    const finalEndDate = toSqlDateTime(end_date);
+
+    if (!finalEventDate) {
+      return res.status(400).json({ success: false, error: 'Định dạng thời gian bắt đầu không hợp lệ.' });
+    }
 
     const [result] = await db.query(
       `INSERT INTO events 
@@ -4681,8 +4723,8 @@ app.post('/api/admin/events', eventManagerAuthMiddleware, async (req, res) => {
         short_desc || null,
         description || short_desc || null,
         content || null,
-        event_date,
-        end_date || null,
+        finalEventDate,
+        finalEndDate,
         location || null,
         organizer || 'Tạp chí Doanh Nghiệp Việt Nam',
         finalCapacity,
@@ -4739,6 +4781,12 @@ app.put('/api/admin/events/:id', eventManagerAuthMiddleware, async (req, res) =>
     const finalIsPaid = is_paid === true || is_paid === 1 || is_paid === '1' ? 1 : 0;
     const finalPrice = finalIsPaid ? (parseFloat(price) || 0) : 0;
     const finalIsPublished = is_published === false || is_published === 0 || is_published === '0' ? 0 : 1;
+    const finalEventDate = toSqlDateTime(event_date);
+    const finalEndDate = toSqlDateTime(end_date);
+
+    if (!finalEventDate) {
+      return res.status(400).json({ success: false, error: 'Định dạng thời gian bắt đầu không hợp lệ.' });
+    }
 
     await db.query(
       `UPDATE events 
@@ -4751,8 +4799,8 @@ app.put('/api/admin/events/:id', eventManagerAuthMiddleware, async (req, res) =>
         short_desc || null,
         description || short_desc || null,
         content || null,
-        event_date,
-        end_date || null,
+        finalEventDate,
+        finalEndDate,
         location || null,
         organizer || 'Tạp chí Doanh Nghiệp Việt Nam',
         finalCapacity,

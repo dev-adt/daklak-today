@@ -696,10 +696,15 @@ export const Events = () => {
                     
                     {/* Họ và tên * */}
                     <div>
+                      <label htmlFor="reg-fullName" style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: '#475569', marginBottom: '3px' }}>
+                        Họ và tên <span style={{ color: '#EF4444' }}>*</span>
+                      </label>
                       <input
+                        id="reg-fullName"
                         type="text"
                         required
-                        placeholder="Họ và tên *"
+                        aria-required="true"
+                        placeholder="Nguyễn Văn A..."
                         value={regForm.fullName}
                         onChange={(e) => setRegForm(prev => ({ ...prev, fullName: e.target.value }))}
                         style={{
@@ -716,10 +721,15 @@ export const Events = () => {
 
                     {/* Số điện thoại * */}
                     <div>
+                      <label htmlFor="reg-phone" style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: '#475569', marginBottom: '3px' }}>
+                        Số điện thoại <span style={{ color: '#EF4444' }}>*</span>
+                      </label>
                       <input
+                        id="reg-phone"
                         type="tel"
                         required
-                        placeholder="Số điện thoại *"
+                        aria-required="true"
+                        placeholder="0912345678..."
                         value={regForm.phone}
                         onChange={(e) => {
                           setRegForm(prev => ({ ...prev, phone: e.target.value }));
@@ -744,9 +754,13 @@ export const Events = () => {
 
                     {/* Email (không bắt buộc) */}
                     <div>
+                      <label htmlFor="reg-email" style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: '#475569', marginBottom: '3px' }}>
+                        Email (không bắt buộc)
+                      </label>
                       <input
+                        id="reg-email"
                         type="email"
-                        placeholder="Email (không bắt buộc)"
+                        placeholder="email@example.com..."
                         value={regForm.email}
                         onChange={(e) => {
                           setRegForm(prev => ({ ...prev, email: e.target.value }));
@@ -771,9 +785,13 @@ export const Events = () => {
 
                     {/* Đơn vị / Công ty (không bắt buộc) */}
                     <div>
+                      <label htmlFor="reg-company" style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: '#475569', marginBottom: '3px' }}>
+                        Đơn vị / Doanh nghiệp (tùy chọn)
+                      </label>
                       <input
+                        id="reg-company"
                         type="text"
-                        placeholder="Đơn vị / Công ty (không bắt buộc)"
+                        placeholder="Tên cơ quan, công ty..."
                         value={regForm.company}
                         onChange={(e) => setRegForm(prev => ({ ...prev, company: e.target.value }))}
                         style={{
@@ -790,10 +808,11 @@ export const Events = () => {
 
                     {/* Số lượng vé */}
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#64748B', marginBottom: '3px' }}>
+                      <label htmlFor="reg-quantity" style={{ display: 'block', fontSize: '11.5px', fontWeight: '600', color: '#64748B', marginBottom: '3px' }}>
                         Số lượng vé
                       </label>
                       <input
+                        id="reg-quantity"
                         type="number"
                         min="1"
                         max="10"
@@ -886,10 +905,15 @@ export const Events = () => {
 
                             {/* Ô 1: Tài khoản (Email hoặc Số điện thoại) */}
                             <div>
+                              <label htmlFor="reg-accountLogin" style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#1E40AF', marginBottom: '2px' }}>
+                                Tài khoản (Email hoặc Số điện thoại) *
+                              </label>
                               <input
+                                id="reg-accountLogin"
                                 type="text"
                                 required={regForm.createAccount}
-                                placeholder="Tài khoản (Email hoặc Số điện thoại) *"
+                                aria-required={regForm.createAccount ? "true" : undefined}
+                                placeholder="email@company.vn hoặc 0912..."
                                 value={regForm.accountLogin}
                                 onChange={(e) => {
                                   setRegForm(prev => ({ ...prev, accountLogin: e.target.value }));
@@ -914,49 +938,70 @@ export const Events = () => {
 
                             {/* Ô 2: Mật khẩu */}
                             <div style={{ position: 'relative' }}>
-                              <input
-                                type={showPassword ? 'text' : 'password'}
-                                required={regForm.createAccount}
-                                placeholder="Mật khẩu (tối thiểu 6 ký tự) *"
-                                value={regForm.accountPassword}
-                                onChange={(e) => setRegForm(prev => ({ ...prev, accountPassword: e.target.value }))}
-                                style={{
-                                  width: '100%',
-                                  padding: '8px 32px 8px 10px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #93C5FD',
-                                  fontSize: '12.5px',
-                                  outline: 'none',
-                                  backgroundColor: '#ffffff'
-                                }}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(p => !p)}
-                                style={{
-                                  position: 'absolute',
-                                  right: '8px',
-                                  top: '50%',
-                                  transform: 'translateY(-50%)',
-                                  background: 'none',
-                                  border: 'none',
-                                  color: '#64748B',
-                                  cursor: 'pointer',
-                                  padding: '2px',
-                                  fontSize: '14px'
-                                }}
-                                title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                              >
-                                <i className={showPassword ? "ti ti-eye-off" : "ti ti-eye"}></i>
-                              </button>
+                              <label htmlFor="reg-accountPassword" style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#1E40AF', marginBottom: '2px' }}>
+                                Mật khẩu *
+                              </label>
+                              <div style={{ position: 'relative' }}>
+                                <input
+                                  id="reg-accountPassword"
+                                  type={showPassword ? 'text' : 'password'}
+                                  required={regForm.createAccount}
+                                  aria-required={regForm.createAccount ? "true" : undefined}
+                                  placeholder="Mật khẩu (tối thiểu 6 ký tự) *"
+                                  value={regForm.accountPassword}
+                                  onChange={(e) => setRegForm(prev => ({ ...prev, accountPassword: e.target.value }))}
+                                  style={{
+                                    width: '100%',
+                                    padding: '8px 36px 8px 10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #93C5FD',
+                                    fontSize: '12.5px',
+                                    outline: 'none',
+                                    backgroundColor: '#ffffff'
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                                  onClick={() => setShowPassword(p => !p)}
+                                  style={{
+                                    position: 'absolute',
+                                    right: '6px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    width: '28px',
+                                    height: '28px',
+                                    minWidth: '28px',
+                                    minHeight: '28px',
+                                    background: 'none',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    color: '#64748B',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                                >
+                                  <i className={showPassword ? "ti ti-eye-off" : "ti ti-eye"}></i>
+                                </button>
+                              </div>
                             </div>
 
                             {/* Ô 3: Xác nhận mật khẩu */}
                             <div>
+                              <label htmlFor="reg-accountConfirmPassword" style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#1E40AF', marginBottom: '2px' }}>
+                                Xác nhận mật khẩu *
+                              </label>
                               <input
+                                id="reg-accountConfirmPassword"
                                 type={showPassword ? 'text' : 'password'}
                                 required={regForm.createAccount}
-                                placeholder="Xác nhận mật khẩu *"
+                                aria-required={regForm.createAccount ? "true" : undefined}
+                                placeholder="Nhập lại mật khẩu *"
                                 value={regForm.accountConfirmPassword}
                                 onChange={(e) => setRegForm(prev => ({ ...prev, accountConfirmPassword: e.target.value }))}
                                 style={{

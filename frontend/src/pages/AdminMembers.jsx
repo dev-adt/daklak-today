@@ -26,8 +26,9 @@ export const AdminMembers = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/members`, {
-        headers: getAuthHeaders()
+      const res = await fetch(`/api/members?_t=${Date.now()}`, {
+        headers: getAuthHeaders(),
+        cache: 'no-store'
       });
       if (!res.ok) throw new Error('Không thể tải danh sách hội viên');
       const data = await res.json();
@@ -57,8 +58,9 @@ export const AdminMembers = () => {
         headers: getAuthHeaders()
       });
       if (res.ok) {
+        setMembers(prev => prev.map(m => m.id === id ? { ...m, status: 'approved' } : m));
         alert('Đã phê duyệt hội viên thành công!');
-        loadMembers();
+        await loadMembers();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');
@@ -79,8 +81,9 @@ export const AdminMembers = () => {
         body: JSON.stringify({ reason })
       });
       if (res.ok) {
+        setMembers(prev => prev.map(m => m.id === id ? { ...m, status: 'rejected' } : m));
         alert('Đã từ chối hội viên.');
-        loadMembers();
+        await loadMembers();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');
@@ -98,8 +101,9 @@ export const AdminMembers = () => {
         headers: getAuthHeaders()
       });
       if (res.ok) {
+        setMembers(prev => prev.map(m => m.id === id ? { ...m, status: 'rejected' } : m));
         alert('Đã tạm khóa tài khoản thành công!');
-        loadMembers();
+        await loadMembers();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');
@@ -117,8 +121,9 @@ export const AdminMembers = () => {
         headers: getAuthHeaders()
       });
       if (res.ok) {
+        setMembers(prev => prev.map(m => m.id === id ? { ...m, status: 'approved' } : m));
         alert('Đã mở khóa tài khoản thành công!');
-        loadMembers();
+        await loadMembers();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');
@@ -136,8 +141,9 @@ export const AdminMembers = () => {
         headers: getAuthHeaders()
       });
       if (res.ok) {
+        setMembers(prev => prev.filter(m => m.id !== id));
         alert('Đã xóa vĩnh viễn hội viên thành công!');
-        loadMembers();
+        await loadMembers();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');
@@ -160,8 +166,9 @@ export const AdminMembers = () => {
         alert(data.error || 'Thao tác không thành công.');
         return;
       }
+      setMembers(prev => prev.map(m => m.id === id ? { ...m, is_featured: targetState } : m));
       alert(targetState ? `Đã ghim hội viên "${name}" nổi bật.` : `Đã bỏ ghim hội viên "${name}".`);
-      loadMembers();
+      await loadMembers();
     } catch (err) {
       alert('Có lỗi xảy ra: ' + err.message);
     }
@@ -191,7 +198,7 @@ export const AdminMembers = () => {
       if (res.ok) {
         alert('Cập nhật hạng thành viên thành công!');
         setEditTierModalOpen(false);
-        loadMembers();
+        await loadMembers();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');

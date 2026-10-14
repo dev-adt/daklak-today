@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="adtRed" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E11D2A" />
+      <stop offset="100%" stop-color="#BE1222" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="#FFFFFF" />
+  
+  <!-- Stylized ADT Letters in Red -->
+  <g transform="skewX(-14) translate(40, 15)">
+    <!-- Letter A -->
+    <path d="M 35 90 L 58 20 L 78 20 L 102 90 L 80 90 L 73 70 L 50 70 L 43 90 Z M 55 54 L 68 54 L 62 35 Z" fill="url(#adtRed)" />
+    <!-- Letter D -->
+    <path d="M 115 20 L 155 20 C 180 20, 195 35, 195 55 C 195 75, 180 90, 155 90 L 115 90 Z M 138 38 L 138 72 L 152 72 C 166 72, 172 65, 172 55 C 172 45, 166 38, 152 38 Z" fill="url(#adtRed)" />
+    <!-- Letter T -->
+    <path d="M 198 20 L 268 20 L 268 38 L 244 38 L 244 90 L 222 90 L 222 38 L 198 38 Z" fill="url(#adtRed)" />
+    <!-- Dynamic horizontal swoosh across A -->
+    <polygon points="15,62 85,62 80,68 10,68" fill="#E11D2A" />
+  </g>
+
+  <!-- Tagline: ADVANCED TECHNOLOGY INTERNATIONAL JSC -->
+  <text x="200" y="128" 
+        font-family="'Arial', 'Helvetica', 'Be Vietnam Pro', sans-serif" 
+        font-size="11.5" 
+        font-weight="800" 
+        letter-spacing="2.2" 
+        fill="#1E293B" 
+        text-anchor="middle">
+    ADVANCED TECHNOLOGY INTERNATIONAL JSC
+  </text>
+</svg>

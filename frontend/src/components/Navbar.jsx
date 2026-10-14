@@ -183,10 +183,17 @@ export const Navbar = () => {
 
         /* Responsive Breakpoints: Switches cleanly to mobile drawer under 1080px */
         @media (max-width: 1080px) {
+          .dnvn-navbar-header {
+            width: 100% !important;
+            max-width: 100vw !important;
+            overflow-x: clip !important;
+          }
           .dnvn-navbar-container {
             justify-content: space-between !important;
             padding: 0 12px !important;
-            min-height: 58px !important;
+            min-height: 56px !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
           }
           .dnvn-nav-center {
             display: none !important;
@@ -194,9 +201,53 @@ export const Navbar = () => {
           .dnvn-mobile-toggle {
             display: flex !important;
           }
+          .dnvn-btn-join-desktop {
+            display: none !important;
+          }
           .dnvn-nav-right {
             margin-left: auto !important;
             gap: 6px !important;
+            flex-shrink: 0 !important;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .dnvn-navbar-container {
+            padding: 0 8px !important;
+            min-height: 52px !important;
+          }
+          .dnvn-brand-subtitle {
+            display: none !important;
+          }
+          .dnvn-brand-title {
+            font-size: 15px !important;
+          }
+          .dnvn-brand-icon {
+            width: 28px !important;
+            height: 28px !important;
+          }
+          .dnvn-btn-pwa-install {
+            display: none !important;
+          }
+          .dnvn-btn-join-desktop {
+            display: none !important;
+          }
+          .dnvn-login-btn {
+            display: none !important;
+          }
+          .dnvn-ai-nav-btn span {
+            display: none !important;
+          }
+          .dnvn-ai-nav-btn {
+            padding: 4px 6px !important;
+            min-height: 28px !important;
+          }
+          .dnvn-nav-right {
+            gap: 4px !important;
+          }
+          .dnvn-mobile-toggle {
+            padding: 4px !important;
+            font-size: 22px !important;
           }
         }
 

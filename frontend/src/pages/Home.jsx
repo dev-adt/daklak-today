@@ -595,11 +595,11 @@ export const Home = () => {
 
             {/* Trending Tags */}
             <div className="daklak-hero-tags">
-              <span className="daklak-hero-tag" onClick={() => navigate('/posts?category=Cà%20phê%20Đắk%20Lắk')}>☕ #ThuPhuCaPhe</span>
-              <span className="daklak-hero-tag" onClick={() => navigate('/posts?category=Khám%20phá%20Đắk%20Lắk')}>🌄 #BazanDo</span>
-              <span className="daklak-hero-tag" onClick={() => navigate('/posts?category=Du%20lịch%20&%20Trải%20nghiệm')}>🥁 #VanHoaCongChieng</span>
-              <span className="daklak-hero-tag" onClick={() => navigate('/posts?category=Đầu%20tư%20&%20Dự%20án')}>💰 #KetNoiDauTu</span>
-              <span className="daklak-hero-tag" onClick={() => navigate('/posts?category=Doanh%20nghiệp%20&%20Sản%20phẩm')}>🚀 #DoanhNghiepDakLak</span>
+              <span className="daklak-hero-tag" onClick={() => navigate(`/posts?category=${encodeURIComponent('Cà phê Đắk Lắk')}`)}>☕ #ThuPhuCaPhe</span>
+              <span className="daklak-hero-tag" onClick={() => navigate(`/posts?category=${encodeURIComponent('Khám phá Đắk Lắk')}`)}>🌄 #BazanDo</span>
+              <span className="daklak-hero-tag" onClick={() => navigate(`/posts?category=${encodeURIComponent('Du lịch & Trải nghiệm')}`)}>🥁 #VanHoaCongChieng</span>
+              <span className="daklak-hero-tag" onClick={() => navigate(`/posts?category=${encodeURIComponent('Đầu tư & Dự án')}`)}>💰 #KetNoiDauTu</span>
+              <span className="daklak-hero-tag" onClick={() => navigate(`/posts?category=${encodeURIComponent('Doanh nghiệp & Sản phẩm')}`)}>🚀 #DoanhNghiepDakLak</span>
               <span className="daklak-hero-tag" onClick={() => navigate('/ai-chat')}>🤖 #AIMatching</span>
             </div>
 
@@ -739,6 +739,154 @@ export const Home = () => {
         </section>
 
         {/* ========================================================
+            SECTION 3.5: LÀM CHỦ AI - BỨT PHÁ TƯƠNG LAI (SPECIAL AI TOPIC)
+            ======================================================== */}
+        <section className="daklak-section daklak-ai-showcase-section" id="lam-chu-ai">
+          <div className="daklak-container">
+            {/* Header Chuyên đề */}
+            <div className="daklak-ai-section-header">
+              <div className="daklak-ai-badge-wrapper">
+                <span className="daklak-ai-special-badge">
+                  <i className="ti ti-sparkles" /> {currentLang === 'en' ? 'SPECIAL TOPIC • MASTERING AI FOR THE FUTURE' : '« CHUYÊN ĐỀ ĐẶC BIỆT • LÀM CHỦ AI BỨT PHÁ TƯƠNG LAI »'}
+                </span>
+              </div>
+              <h2 className="daklak-ai-section-title">
+                {currentLang === 'en' ? 'Mastering AI – ' : 'Làm Chủ AI – '}
+                <span className="daklak-ai-title-gradient">
+                  {currentLang === 'en' ? 'Unlocking the Future' : 'Bứt Phá Tương Lai'}
+                </span>
+              </h2>
+              <p className="daklak-ai-section-desc">
+                {currentLang === 'en'
+                  ? 'Knowledge space, digital transformation solutions, and AI technology built on 3 core pillars: Ward AI, Orion Ecosystem, and Edunow.today Digital Training.'
+                  : 'Không gian tri thức, giải pháp chuyển đổi số và công nghệ trí tuệ nhân tạo với 3 trụ cột: AI phường xã, Hệ sinh thái Orion và Đào tạo số Edunow.today.'}
+              </p>
+            </div>
+
+            {/* 3 AI Cards Grid */}
+            <div className="daklak-ai-cards-grid">
+              {/* Card 1: AI phường xã */}
+              <div className="daklak-ai-card">
+                <div className="daklak-ai-card-img-wrap">
+                  <span className="daklak-ai-card-pill daklak-ai-pill-cyan">
+                    <i className="ti ti-robot" /> {currentLang === 'en' ? 'Ward AI Assistant' : 'AI phường xã'}
+                  </span>
+                  <div className="daklak-ai-img-container">
+                    <img src="/images/adt_logo.svg" alt="Trợ lý AI phường xã" className="daklak-ai-card-img" />
+                  </div>
+                </div>
+                <div className="daklak-ai-card-body">
+                  <div className="daklak-ai-card-category daklak-ai-cat-cyan">
+                    <i className="ti ti-bolt" /> {currentLang === 'en' ? 'Foundation AI Technology' : 'Công nghệ AI cơ sở'}
+                  </div>
+                  <h3 className="daklak-ai-card-title">
+                    <Link to="/posts/tro-ly-ai-phuong-xa">
+                      {currentLang === 'en' ? 'Ward & Commune AI Assistant' : 'Trợ lý AI phường xã'}
+                    </Link>
+                  </h3>
+                  <p className="daklak-ai-card-summary">
+                    {currentLang === 'en'
+                      ? 'Local-level AI application supporting administration, citizen inquiries 24/7, and speeding up digital governance.'
+                      : 'Trợ lý AI phường xã phục vụ công tác điều hành, hỗ trợ cán bộ và người dân tra cứu thủ tục, tiếp nhận phản ánh và số hóa dịch vụ công cơ sở 24/7.'}
+                  </p>
+                  <div className="daklak-ai-card-footer">
+                    <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
+                    <Link to="/posts/tro-ly-ai-phuong-xa" className="daklak-ai-card-link">
+                      {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Orion */}
+              <div className="daklak-ai-card">
+                <div className="daklak-ai-card-img-wrap">
+                  <span className="daklak-ai-card-pill daklak-ai-pill-gold">
+                    <i className="ti ti-sparkles" /> Orion
+                  </span>
+                  <div className="daklak-ai-img-container">
+                    <img src="/images/adt_logo.svg" alt="Hệ sinh thái Orion" className="daklak-ai-card-img" />
+                  </div>
+                </div>
+                <div className="daklak-ai-card-body">
+                  <div className="daklak-ai-card-category daklak-ai-cat-gold">
+                    <i className="ti ti-cpu" /> {currentLang === 'en' ? 'Intelligent AI Platform' : 'Nền tảng AI thông minh'}
+                  </div>
+                  <h3 className="daklak-ai-card-title">
+                    <Link to="/posts/orion-chat-loc-tinh-hoa-cua-erp-multimodel-ai-va-nen-tang-xay-dung-ai-agent-de-tao-thanh-mot-he-dieu-hanh-quan-tri-thong-minh-danh-cho-doanh-nghiep">
+                      {currentLang === 'en'
+                        ? 'Orion: Distilling ERP, Multi-Model AI & AI Agent Platform into an Intelligent Operating System for Enterprises'
+                        : 'Orion chắt lọc tinh hoa của ERP, Multi-Model AI và nền tảng xây dựng AI Agent để tạo thành một hệ điều hành quản trị thông minh dành cho doanh nghiệp'}
+                    </Link>
+                  </h3>
+                  <p className="daklak-ai-card-summary">
+                    {currentLang === 'en'
+                      ? 'Unified intelligent enterprise operating system combining ERP and multi-model AI to automate business workflows.'
+                      : 'Orion chắt lọc tinh hoa của ERP, Multi-Model AI và nền tảng xây dựng AI Agent để tạo thành một hệ điều hành quản trị thông minh dành cho doanh nghiệp.'}
+                  </p>
+                  <div className="daklak-ai-card-footer">
+                    <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
+                    <Link to="/posts/orion-chat-loc-tinh-hoa-cua-erp-multimodel-ai-va-nen-tang-xay-dung-ai-agent-de-tao-thanh-mot-he-dieu-hanh-quan-tri-thong-minh-danh-cho-doanh-nghiep" className="daklak-ai-card-link">
+                      {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Edunow.today */}
+              <div className="daklak-ai-card">
+                <div className="daklak-ai-card-img-wrap">
+                  <span className="daklak-ai-card-pill daklak-ai-pill-green">
+                    <i className="ti ti-school" /> Edunow.today
+                  </span>
+                  <div className="daklak-ai-img-container">
+                    <img src="/images/adt_logo.svg" alt="EDUNOW.AI" className="daklak-ai-card-img" />
+                  </div>
+                </div>
+                <div className="daklak-ai-card-body">
+                  <div className="daklak-ai-card-category daklak-ai-cat-green">
+                    <i className="ti ti-certificate" /> {currentLang === 'en' ? 'Training & Digital Skills' : 'Đào tạo & Kỹ năng số'}
+                  </div>
+                  <h3 className="daklak-ai-card-title">
+                    <Link to="/posts/edunowai-giai-phap-tro-ly-ai-tuyen-sinh-thong-minh-danh-cho-cac-co-so-giao-duc">
+                      {currentLang === 'en'
+                        ? 'EDUNOW.AI: Smart Admissions AI Assistant Solution for Educational Institutions'
+                        : 'EDUNOW.AI Giải pháp Trợ lý AI tuyển sinh thông minh dành cho các cơ sở giáo dục'}
+                    </Link>
+                  </h3>
+                  <p className="daklak-ai-card-summary">
+                    {currentLang === 'en'
+                      ? 'Smart admissions consulting AI assistant and comprehensive digital skills training platform.'
+                      : 'EDUNOW.AI Giải pháp Trợ lý AI tuyển sinh thông minh dành cho các cơ sở giáo dục, tư vấn tuyển sinh 24/7 và chuyển đổi số đào tạo.'}
+                  </p>
+                  <div className="daklak-ai-card-footer">
+                    <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
+                    <Link to="/posts/edunowai-giai-phap-tro-ly-ai-tuyen-sinh-thong-minh-danh-cho-cac-co-so-giao-duc" className="daklak-ai-card-link">
+                      {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="daklak-ai-actions">
+              <Link
+                to="/posts?category=Doanh%20nghi%E1%BB%87p%20%26%20S%E1%BA%A3n%20ph%E1%BA%A9m&sub_category=Showroom%20s%E1%BB%91"
+                className="btn-daklak-ai-category"
+              >
+                <i className="ti ti-layout-grid" />
+                <span>{currentLang === 'en' ? 'View all AI Category Articles' : 'Xem toàn bộ bài viết chuyên mục AI'}</span>
+              </Link>
+              <Link to="/ai-chat" className="btn-daklak-ai-chat">
+                <i className="ti ti-messages" />
+                <span>{currentLang === 'en' ? 'Chat with AI Assistant' : 'Trò chuyện cùng Trợ lý AI'}</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
             SECTION 4: 4 THẾ MẠNH HỘI TỤ ĐẮK LẮK
             ======================================================== */}
         <section className="daklak-section" style={{ backgroundColor: 'var(--cream-alt)' }}>
@@ -765,7 +913,7 @@ export const Home = () => {
                 <div className="strength-body">
                   <h3>{currentLang === 'en' ? 'Coffee & Specialty Agro-Products' : 'Cà Phê & Nông Sản Đặc Hữu'}</h3>
                   <p>{currentLang === 'en' ? 'Over 213,000 hectares of coffee, producing 560,000+ tons annually. Alongside durian, macadamia, and black pepper reaching top global exports.' : 'Hơn 213.000 ha cà phê, sản lượng trên 560.000 tấn/năm. Cùng sầu riêng, mắc ca, hồ tiêu đạt chuẩn xuất khẩu chất lượng cao vào EU, Mỹ, Nhật.'}</p>
-                  <Link to="/posts?category=Cà%20phê%20Đắk%20Lắk" className="quick-access-link">{currentLang === 'en' ? 'Explore value chain →' : 'Khám phá chuỗi giá trị →'}</Link>
+                  <Link to={`/posts?category=${encodeURIComponent('Cà phê Đắk Lắk')}`} className="quick-access-link">{currentLang === 'en' ? 'Explore value chain →' : 'Khám phá chuỗi giá trị →'}</Link>
                 </div>
               </div>
 
@@ -778,7 +926,7 @@ export const Home = () => {
                 <div className="strength-body">
                   <h3>{currentLang === 'en' ? 'Ecotourism & Gong Culture' : 'Du Lịch Sinh Thái & Di Sản Cồng Chiêng'}</h3>
                   <p>{currentLang === 'en' ? 'UNESCO Intangible Cultural Heritage of Humanity, majestic Dray Nur waterfalls, Yok Don National Park, and serene Lake Lak.' : 'Không gian văn hóa cồng chiêng được UNESCO vinh danh, hệ thống thác nước hùng vĩ, Vườn quốc gia Yok Đôn và vẻ đẹp thơ mộng của Hồ Lắk.'}</p>
-                  <Link to="/posts?category=Du%20lịch%20&%20Trải%20nghiệm" className="quick-access-link">{currentLang === 'en' ? 'Experience culture →' : 'Trải nghiệm văn hóa →'}</Link>
+                  <Link to={`/posts?category=${encodeURIComponent('Du lịch & Trải nghiệm')}`} className="quick-access-link">{currentLang === 'en' ? 'Experience culture →' : 'Trải nghiệm văn hóa →'}</Link>
                 </div>
               </div>
 
@@ -791,7 +939,7 @@ export const Home = () => {
                 <div className="strength-body">
                   <h3>{currentLang === 'en' ? 'Renewable Energy & Infrastructure' : 'Năng Lượng Tái Tạo & Công Nghiệp'}</h3>
                   <p>{currentLang === 'en' ? 'Centrally positioned wind & solar farm hubs; developing Buon Ma Thuot - Khanh Hoa highway opening swift coastal trade access.' : 'Trung tâm điện gió, điện mặt trời quy mô lớn; tuyến cao tốc Buôn Ma Thuột — Khánh Hòa mở toang cửa ngõ giao thương hướng biển.'}</p>
-                  <Link to="/posts?category=Đầu%20tư%20&%20Dự%20án" className="quick-access-link">{currentLang === 'en' ? 'View infrastructure →' : 'Xem hạ tầng KCN →'}</Link>
+                  <Link to={`/posts?category=${encodeURIComponent('Đầu tư & Dự án')}`} className="quick-access-link">{currentLang === 'en' ? 'View infrastructure →' : 'Xem hạ tầng KCN →'}</Link>
                 </div>
               </div>
 
@@ -804,7 +952,7 @@ export const Home = () => {
                 <div className="strength-body">
                   <h3>{currentLang === 'en' ? 'Open Regional Development Space' : 'Không Gian Phát Triển Vùng Mở'}</h3>
                   <p>{currentLang === 'en' ? 'Buon Ma Thuot is oriented as the center of the Central Highlands region, featuring dynamic innovation, healthcare, and education.' : 'Buôn Ma Thuột định hướng trở thành đô thị trung tâm vùng Tây Nguyên, hạt nhân đổi mới sáng tạo, tài chính, giáo dục và y tế chuyên sâu.'}</p>
-                  <Link to="/posts?category=Dữ%20liệu%20&%20Báo%20cáo" className="quick-access-link">{currentLang === 'en' ? 'Economic data →' : 'Báo cáo kinh tế →'}</Link>
+                  <Link to={`/posts?category=${encodeURIComponent('Dữ liệu & Báo cáo')}`} className="quick-access-link">{currentLang === 'en' ? 'Economic data →' : 'Báo cáo kinh tế →'}</Link>
                 </div>
               </div>
             </div>
@@ -1138,7 +1286,7 @@ export const Home = () => {
                       Gửi Yêu Cầu Kết Nối
                     </button>
                     <Link
-                      to={`/posts?category=Đầu%20tư%20&%20Dự%20án`}
+                      to={`/posts?category=${encodeURIComponent('Đầu tư & Dự án')}`}
                       className="btn-daklak-outline"
                       style={{ padding: '10px 16px', fontSize: '0.88rem', color: 'var(--primary-coffee)', borderColor: 'var(--border-strong)' }}
                     >
@@ -1378,7 +1526,7 @@ export const Home = () => {
                   <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5', flexGrow: 1 }}>
                     Khám phá ly cà phê nồng nàn tại thủ phủ, thưởng lãm kiến trúc Bảo tàng Thế giới Cà phê và đón hoàng hôn bên cụm thác Dray Nur - Dray Sáp huyền thoại.
                   </p>
-                  <Link to="/posts?category=Du%20lịch%20&%20Trải%20nghiệm" className="quick-access-link" style={{ marginTop: '14px' }}>
+                  <Link to={`/posts?category=${encodeURIComponent('Du lịch & Trải nghiệm')}`} className="quick-access-link" style={{ marginTop: '14px' }}>
                     Xem lịch trình chi tiết →
                   </Link>
                 </div>
@@ -1396,7 +1544,7 @@ export const Home = () => {
                   <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5', flexGrow: 1 }}>
                     Trải nghiệm đi thuyền độc mộc trên Hồ Lắk thơ mộng, nghỉ đêm tại biệt điện Bảo Đại, nghe nghệ nhân kể Khan và thưởng thức cơm lam gà sa lửa.
                   </p>
-                  <Link to="/posts?category=Du%20lịch%20&%20Trải%20nghiệm" className="quick-access-link" style={{ marginTop: '14px' }}>
+                  <Link to={`/posts?category=${encodeURIComponent('Du lịch & Trải nghiệm')}`} className="quick-access-link" style={{ marginTop: '14px' }}>
                     Xem lịch trình chi tiết →
                   </Link>
                 </div>
@@ -1414,7 +1562,7 @@ export const Home = () => {
                   <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5', flexGrow: 1 }}>
                     Trực tiếp hái những trái cà phê chín mọng, học kỹ thuật thử nếm Cupping quốc tế và tự tay rang mẻ cà phê kỷ niệm mang về làm quà.
                   </p>
-                  <Link to="/posts?category=Du%20lịch%20&%20Trải%20nghiệm" className="quick-access-link" style={{ marginTop: '14px' }}>
+                  <Link to={`/posts?category=${encodeURIComponent('Du lịch & Trải nghiệm')}`} className="quick-access-link" style={{ marginTop: '14px' }}>
                     Xem lịch trình chi tiết →
                   </Link>
                 </div>
@@ -1522,37 +1670,37 @@ export const Home = () => {
             <div className="roadmap-grid">
               <div className="roadmap-card">
                 <div className="roadmap-stage">Giai đoạn 1 (0 – 6 tháng)</div>
-                <h4>Xây Dựng Uy Tín</h4>
+                <h3>Xây Dựng Uy Tín</h3>
                 <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Xuất bản tin tức kinh tế chất lượng, văn hóa cà phê, thu hút độc giả tự nhiên và định vị nhận diện thương hiệu số.</p>
               </div>
 
               <div className="roadmap-card" style={{ borderLeftColor: 'var(--forest-green)' }}>
                 <div className="roadmap-stage" style={{ color: 'var(--forest-green)' }}>Giai đoạn 2 (3 – 9 tháng)</div>
-                <h4>Cơ Sở Dữ Liệu Nền</h4>
+                <h3>Cơ Sở Dữ Liệu Nền</h3>
                 <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Chuẩn hóa danh mục doanh nghiệp, vùng nguyên liệu, quỹ đất và dự án kêu gọi đầu tư theo cấu trúc số hiện đại.</p>
               </div>
 
               <div className="roadmap-card" style={{ borderLeftColor: 'var(--gong-gold)' }}>
                 <div className="roadmap-stage" style={{ color: '#B3832B' }}>Giai đoạn 3 (6 – 12 tháng)</div>
-                <h4>MVP Kết Nối Đầu Tư</h4>
+                <h3>MVP Kết Nối Đầu Tư</h3>
                 <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Mở tính năng đăng dự án, gửi yêu cầu kết nối giao thương B2B, quản lý hồ sơ và đặt lịch làm việc với nhà đầu tư.</p>
               </div>
 
               <div className="roadmap-card" style={{ borderLeftColor: 'var(--bazan-brown)' }}>
                 <div className="roadmap-stage" style={{ color: 'var(--bazan-brown)' }}>Giai đoạn 4 (12 – 18 tháng)</div>
-                <h4>AI Matching Đa Nguồn</h4>
+                <h3>AI Matching Đa Nguồn</h3>
                 <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Ứng dụng AI ghép đôi nhà đầu tư với doanh nghiệp, phân tích khả năng gọi vốn và tự động gợi ý đối tác theo chuỗi giá trị.</p>
               </div>
 
               <div className="roadmap-card">
                 <div className="roadmap-stage">Giai đoạn 5 (18 – 24 tháng)</div>
-                <h4>Hệ Sinh Thái Đầu Tư</h4>
+                <h3>Hệ Sinh Thái Đầu Tư</h3>
                 <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Tích hợp mạng lưới ngân hàng, quỹ ESG, kiểm toán, luật sư tư vấn M&A và các công ty logistics hỗ trợ trọn gói.</p>
               </div>
 
               <div className="roadmap-card" style={{ borderLeftColor: 'var(--gong-gold)' }}>
                 <div className="roadmap-stage" style={{ color: '#B3832B' }}>Tầm nhìn 2 – 5 năm</div>
-                <h4>Tài Sản Dữ Liệu & AI</h4>
+                <h3>Tài Sản Dữ Liệu & AI</h3>
                 <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Phát triển chỉ số môi trường đầu tư Đắk Lắk, bản đồ dòng vốn FDI, phòng dữ liệu ảo Data Room phục vụ giao dịch lớn.</p>
               </div>
             </div>
@@ -1674,17 +1822,27 @@ export const Home = () => {
             <div className="faq-list">
               {faqs.map((faq, index) => {
                 const isOpen = activeFaq === index;
+                const questionId = `faq-q-${index}`;
+                const panelId = `faq-panel-${index}`;
                 return (
                   <div key={index} className="faq-item">
                     <button 
+                      id={questionId}
                       className="faq-question"
+                      aria-expanded={isOpen}
+                      aria-controls={panelId}
                       onClick={() => setActiveFaq(isOpen ? null : index)}
                     >
                       <span>{faq.q}</span>
                       <i className={`ti ti-chevron-${isOpen ? 'up' : 'down'}`} style={{ color: 'var(--bazan-red)' }} />
                     </button>
                     {isOpen && (
-                      <div className="faq-answer">
+                      <div 
+                        id={panelId}
+                        role="region"
+                        aria-labelledby={questionId}
+                        className="faq-answer"
+                      >
                         {faq.a}
                       </div>
                     )}
@@ -1745,34 +1903,39 @@ export const Home = () => {
                 <form onSubmit={handleConsultSubmit}>
                   <div className="form-grid-2">
                     <div className="daklak-form-group">
-                      <label>Họ và tên người liên hệ (*)</label>
+                      <label htmlFor="consult-fullName">Họ và tên người liên hệ (*)</label>
                       <input 
+                        id="consult-fullName"
                         type="text"
                         className="daklak-form-input"
                         placeholder="Ví dụ: Nguyễn Văn An"
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         required
+                        aria-required="true"
                       />
                     </div>
 
                     <div className="daklak-form-group">
-                      <label>Số điện thoại liên hệ (*)</label>
+                      <label htmlFor="consult-phone">Số điện thoại liên hệ (*)</label>
                       <input 
+                        id="consult-phone"
                         type="tel"
                         className="daklak-form-input"
                         placeholder="Ví dụ: 0912 345 678"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         required
+                        aria-required="true"
                       />
                     </div>
                   </div>
 
                   <div className="form-grid-2">
                     <div className="daklak-form-group">
-                      <label>Email làm việc</label>
+                      <label htmlFor="consult-email">Email làm việc</label>
                       <input 
+                        id="consult-email"
                         type="email"
                         className="daklak-form-input"
                         placeholder="Ví dụ: contact@doanhnghiep.vn"
@@ -1782,22 +1945,25 @@ export const Home = () => {
                     </div>
 
                     <div className="daklak-form-group">
-                      <label>Tên Doanh nghiệp / Đơn vị (*)</label>
+                      <label htmlFor="consult-companyName">Tên Doanh nghiệp / Đơn vị (*)</label>
                       <input 
+                        id="consult-companyName"
                         type="text"
                         className="daklak-form-input"
                         placeholder="Ví dụ: Công ty Cổ phần Nông sản Tây Nguyên"
                         value={formData.companyName}
                         onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                         required
+                        aria-required="true"
                       />
                     </div>
                   </div>
 
                   <div className="form-grid-2">
                     <div className="daklak-form-group">
-                      <label>Tỉnh / Thành phố hoạt động</label>
+                      <label htmlFor="consult-city">Tỉnh / Thành phố hoạt động</label>
                       <input 
+                        id="consult-city"
                         type="text"
                         className="daklak-form-input"
                         placeholder="Ví dụ: Đắk Lắk, TP.HCM, Hà Nội..."
@@ -1807,8 +1973,9 @@ export const Home = () => {
                     </div>
 
                     <div className="daklak-form-group">
-                      <label>Lĩnh vực quan tâm & nhu cầu hợp tác</label>
+                      <label htmlFor="consult-serviceNeed">Lĩnh vực quan tâm & nhu cầu hợp tác</label>
                       <select 
+                        id="consult-serviceNeed"
                         className="daklak-form-select"
                         value={formData.serviceNeed}
                         onChange={(e) => setFormData({ ...formData, serviceNeed: e.target.value })}
@@ -1825,8 +1992,9 @@ export const Home = () => {
                   </div>
 
                   <div className="daklak-form-group">
-                    <label>Chi tiết nhu cầu & nội dung cần hỗ trợ</label>
+                    <label htmlFor="consult-notes">Chi tiết nhu cầu & nội dung cần hỗ trợ</label>
                     <textarea 
+                      id="consult-notes"
                       rows="3"
                       className="daklak-form-textarea"
                       placeholder="Mô tả cụ thể về quy mô dự án, sản phẩm cần hợp tác hoặc câu hỏi dành cho ban xúc tiến..."

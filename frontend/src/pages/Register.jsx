@@ -213,22 +213,24 @@ export const Register = () => {
                     <div style={{ fontWeight: 700, fontSize: '15px', color: '#1E293B', marginBottom: '1.25rem' }}><i className="ti ti-building" style={{ color: 'var(--primary)' }}></i> {t('step_1_title')}</div>
                     
                     <div className="fg" style={{ marginBottom: '1.25rem' }}>
-                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_company_name')} <span style={{ color: 'var(--rose)' }}>*</span></label>
-                      <input type="text" id="r-name" value={formData.name} onChange={handleInputChange} placeholder={t('placeholder_company_name')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
+                      <label htmlFor="r-name" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_company_name')} <span style={{ color: 'var(--rose)' }}>*</span></label>
+                      <input type="text" id="r-name" required aria-required="true" value={formData.name} onChange={handleInputChange} placeholder={t('placeholder_company_name')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
                     </div>
                     
                     <div className="fg" style={{ marginBottom: '1.25rem' }}>
-                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_website')}</label>
+                      <label htmlFor="r-website" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_website')}</label>
                       <input type="text" id="r-website" value={formData.website} onChange={handleInputChange} placeholder={t('placeholder_website')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' }}>
                       <div className="fg">
-                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_industry')} <span style={{ color: 'var(--rose)' }}>*</span></label>
+                        <label htmlFor="r-industry" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_industry')} <span style={{ color: 'var(--rose)' }}>*</span></label>
                         <input 
                           type="text" 
                           id="r-industry" 
                           list="industries-list" 
+                          required
+                          aria-required="true"
                           value={formData.industry} 
                           onChange={handleInputChange} 
                           placeholder={t('placeholder_industry')}
@@ -252,8 +254,8 @@ export const Register = () => {
                         </datalist>
                       </div>
                       <div className="fg">
-                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_employee_scale')} <span style={{ color: 'var(--rose)' }}>*</span></label>
-                        <select id="r-size" value={formData.size} onChange={handleInputChange} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none', backgroundColor: '#fff' }}>
+                        <label htmlFor="r-size" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_employee_scale')} <span style={{ color: 'var(--rose)' }}>*</span></label>
+                        <select id="r-size" required aria-required="true" value={formData.size} onChange={handleInputChange} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none', backgroundColor: '#fff' }}>
                           <option value="">{t('placeholder_select_scale')}</option>
                           <option value="Dưới 10 người">{t('scale_under_10')}</option>
                           <option value="10 – 50 người">{t('scale_10_50')}</option>
@@ -266,19 +268,21 @@ export const Register = () => {
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' }}>
                       <div className="fg">
-                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_tax_code')} <span style={{ color: 'var(--rose)' }}>*</span></label>
-                        <input type="text" id="r-tax_code" value={formData.tax_code} onChange={handleInputChange} placeholder={t('placeholder_tax_code')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
+                        <label htmlFor="r-tax_code" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_tax_code')} <span style={{ color: 'var(--rose)' }}>*</span></label>
+                        <input type="text" id="r-tax_code" required aria-required="true" value={formData.tax_code} onChange={handleInputChange} placeholder={t('placeholder_tax_code')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
                       </div>
                       <div className="fg">
-                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_city')} <span style={{ color: 'var(--rose)' }}>*</span></label>
+                        <label htmlFor="r-city" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_city')} <span style={{ color: 'var(--rose)' }}>*</span></label>
                         <input 
                           type="text" 
                           id="r-city" 
                           list="cities-list" 
+                          required
+                          aria-required="true"
                           value={formData.city} 
                           onChange={handleInputChange} 
                           placeholder={t('search_members_placeholder')} 
-                          style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none', backgroundColor: '#fff' }}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none', backgroundColor: '#fff' }} 
                         />
                         <datalist id="cities-list">
                           <option value="Hà Nội" />
@@ -349,24 +353,24 @@ export const Register = () => {
                     </div>
 
                     <div className="fg" style={{ marginBottom: '1.25rem' }}>
-                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_address')} <span style={{ color: 'var(--rose)' }}>*</span></label>
-                      <input type="text" id="r-address" value={formData.address} onChange={handleInputChange} placeholder="Ví dụ: 45 Lý Thường Kiệt, Hoàn Kiếm, Hà Nội" style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
+                      <label htmlFor="r-address" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_address')} <span style={{ color: 'var(--rose)' }}>*</span></label>
+                      <input type="text" id="r-address" required aria-required="true" value={formData.address} onChange={handleInputChange} placeholder="Ví dụ: 45 Lý Thường Kiệt, Hoàn Kiếm, Hà Nội" style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' }}>
                       <div className="fg">
-                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('currentLang') === 'vi' ? 'Mã Bưu điện (ZIP code)' : 'ZIP / Postal Code'}</label>
+                        <label htmlFor="r-zip" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('currentLang') === 'vi' ? 'Mã Bưu điện (ZIP code)' : 'ZIP / Postal Code'}</label>
                         <input type="text" id="r-zip" value={formData.zip} onChange={handleInputChange} placeholder="Ví dụ: 100000" style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
                       </div>
                       <div className="fg">
-                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_social_media')}</label>
+                        <label htmlFor="r-social" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_social_media')}</label>
                         <input type="text" id="r-social" value={formData.social} onChange={handleInputChange} placeholder="facebook.com/company" style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
                       </div>
                     </div>
 
                     <div className="fg" style={{ marginBottom: '1.5rem' }}>
-                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_description')} <span style={{ color: 'var(--rose)' }}>*</span></label>
-                      <textarea id="r-description" rows="3" value={formData.description} onChange={handleInputChange} placeholder={t('placeholder_description')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none', resize: 'vertical' }}></textarea>
+                      <label htmlFor="r-description" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_description')} <span style={{ color: 'var(--rose)' }}>*</span></label>
+                      <textarea id="r-description" required aria-required="true" rows="3" value={formData.description} onChange={handleInputChange} placeholder={t('placeholder_description')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none', resize: 'vertical' }}></textarea>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -382,12 +386,12 @@ export const Register = () => {
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' }}>
                       <div className="fg">
-                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_contact_person')} <span style={{ color: 'var(--rose)' }}>*</span></label>
-                        <input type="text" id="r-contact_name" value={formData.contact_name} onChange={handleInputChange} placeholder={t('placeholder_rep_name')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
+                        <label htmlFor="r-contact_name" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_contact_person')} <span style={{ color: 'var(--rose)' }}>*</span></label>
+                        <input type="text" id="r-contact_name" required aria-required="true" value={formData.contact_name} onChange={handleInputChange} placeholder={t('placeholder_rep_name')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
                       </div>
                       <div className="fg">
-                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_contact_position')} <span style={{ color: 'var(--rose)' }}>*</span></label>
-                        <input type="text" id="r-contact_pos" value={formData.contact_pos} onChange={handleInputChange} placeholder={t('placeholder_rep_position')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
+                        <label htmlFor="r-contact_pos" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_contact_position')} <span style={{ color: 'var(--rose)' }}>*</span></label>
+                        <input type="text" id="r-contact_pos" required aria-required="true" value={formData.contact_pos} onChange={handleInputChange} placeholder={t('placeholder_rep_position')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
                       </div>
                     </div>
 
@@ -400,13 +404,13 @@ export const Register = () => {
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                         <div className="fg">
-                          <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>
+                          <label htmlFor="r-email" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>
                             Email đăng nhập (Mặc định ưu tiên)
                           </label>
                           <input type="email" id="r-email" value={formData.email} onChange={handleInputChange} placeholder="email@company.vn (Tùy chọn)..." style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none', backgroundColor: '#fff' }} />
                         </div>
                         <div className="fg">
-                          <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>
+                          <label htmlFor="r-phone" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>
                             Số điện thoại
                           </label>
                           <input type="tel" id="r-phone" value={formData.phone} onChange={handleInputChange} placeholder="Nhập số điện thoại di động..." style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none', backgroundColor: '#fff' }} />
@@ -448,12 +452,12 @@ export const Register = () => {
                     </div>
 
                     <div className="fg" style={{ marginBottom: '1.25rem' }}>
-                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_joining_goal')}</label>
+                      <label htmlFor="r-goal" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_joining_goal')}</label>
                       <input type="text" id="r-goal" value={formData.goal} onChange={handleInputChange} placeholder={t('placeholder_joining_goal')} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none' }} />
                     </div>
 
                     <div className="fg" style={{ marginBottom: '1.5rem' }}>
-                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_referral')}</label>
+                      <label htmlFor="r-referral" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_referral')}</label>
                       <select id="r-referral" value={formData.referral} onChange={handleInputChange} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #D8E2EF', fontSize: '13px', outline: 'none', backgroundColor: '#fff' }}>
                         <option value="">{t('placeholder_referral')}</option>
                         <option value="Mạng xã hội (Facebook, LinkedIn...)">Mạng xã hội (Facebook, LinkedIn...)</option>
@@ -528,11 +532,13 @@ export const Register = () => {
                     </div>
 
                     <div className="fg" style={{ marginBottom: '1.25rem' }}>
-                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_setup_password')} <span style={{ color: 'var(--rose)' }}>*</span></label>
+                      <label htmlFor="r-password" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>{t('label_setup_password')} <span style={{ color: 'var(--rose)' }}>*</span></label>
                       <div style={{ position: 'relative' }}>
                         <input 
                           type={showPassword ? 'text' : 'password'} 
                           id="r-password" 
+                          required
+                          aria-required="true"
                           value={formData.password} 
                           onChange={handleInputChange} 
                           placeholder={t('placeholder_setup_password')} 
@@ -540,6 +546,7 @@ export const Register = () => {
                         />
                         <button 
                           type="button" 
+                          aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                           onClick={() => setShowPassword(!showPassword)} 
                           style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', outline: 'none', display: 'flex', alignItems: 'center', color: '#64748B' }}
                         >
@@ -549,13 +556,15 @@ export const Register = () => {
                     </div>
 
                     <div className="fg" style={{ marginBottom: '1.5rem' }}>
-                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>
+                      <label htmlFor="r-confirm-password" style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px', display: 'block' }}>
                         {t('currentLang') === 'vi' ? 'Xác nhận mật khẩu' : 'Confirm Password'} <span style={{ color: 'var(--rose)' }}>*</span>
                       </label>
                       <div style={{ position: 'relative' }}>
                         <input 
                           type={showPassword ? 'text' : 'password'} 
                           id="r-confirm-password" 
+                          required
+                          aria-required="true"
                           value={confirmPassword} 
                           onChange={(e) => setConfirmPassword(e.target.value)} 
                           placeholder={t('currentLang') === 'vi' ? 'Nhập lại mật khẩu...' : 'Re-enter password...'} 

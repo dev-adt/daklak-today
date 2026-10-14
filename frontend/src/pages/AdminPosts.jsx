@@ -25,8 +25,9 @@ export const AdminPosts = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/posts?include_body=true`, {
-        headers: getAuthHeaders()
+      const res = await fetch(`/api/posts?include_body=true&status=all&_t=${Date.now()}`, {
+        headers: getAuthHeaders(),
+        cache: 'no-store'
       });
       if (!res.ok) throw new Error('Không thể tải danh sách bài viết');
       const data = await res.json();
@@ -44,7 +45,7 @@ export const AdminPosts = () => {
     setViewPostModalOpen(true);
     if (!p.body) {
       try {
-        const res = await fetch(`/api/posts/${p.id}`, { headers: getAuthHeaders() });
+        const res = await fetch(`/api/posts/${p.id}?_t=${Date.now()}`, { headers: getAuthHeaders(), cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (data.success && data.data) {
@@ -74,8 +75,9 @@ export const AdminPosts = () => {
         headers: getAuthHeaders()
       });
       if (res.ok) {
+        setPosts(prev => prev.map(p => p.id === id ? { ...p, status: 'approved' } : p));
         alert('Đã xuất bản bài viết thành công!');
-        loadPosts();
+        await loadPosts();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');
@@ -95,8 +97,9 @@ export const AdminPosts = () => {
         body: JSON.stringify({ reason })
       });
       if (res.ok) {
+        setPosts(prev => prev.map(p => p.id === id ? { ...p, status: 'rejected' } : p));
         alert('Đã từ chối bài viết.');
-        loadPosts();
+        await loadPosts();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');
@@ -114,8 +117,9 @@ export const AdminPosts = () => {
         body: JSON.stringify({ is_featured: currentFeatured ? 0 : 1 })
       });
       if (res.ok) {
+        setPosts(prev => prev.map(p => p.id === id ? { ...p, is_featured: currentFeatured ? 0 : 1 } : p));
         alert(currentFeatured ? 'Đã bỏ ghim bài viết nổi bật.' : 'Đã ghim bài viết nổi bật thành công!');
-        loadPosts();
+        await loadPosts();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');
@@ -134,8 +138,9 @@ export const AdminPosts = () => {
         body: JSON.stringify({ reason: 'Admin ẩn bài viết' })
       });
       if (res.ok) {
+        setPosts(prev => prev.map(p => p.id === id ? { ...p, status: 'rejected' } : p));
         alert('Đã ẩn bài viết thành công!');
-        loadPosts();
+        await loadPosts();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');
@@ -153,8 +158,9 @@ export const AdminPosts = () => {
         headers: getAuthHeaders()
       });
       if (res.ok) {
+        setPosts(prev => prev.filter(p => p.id !== id));
         alert('Đã xóa vĩnh viễn bài viết thành công!');
-        loadPosts();
+        await loadPosts();
       } else {
         const err = await res.json();
         alert(err.error || 'Thao tác thất bại.');
