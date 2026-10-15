@@ -3215,10 +3215,10 @@ const invalidateCategoriesCache = () => {
 // Public API: Lấy danh sách Chuyên mục & Lĩnh vực đang hoạt động (active, bộ nhớ đệm siêu tốc)
 app.get('/api/categories', async (req, res) => {
   try {
-    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     
-    // Trả về từ cache bộ nhớ đệm nếu chưa quá 3 phút (giảm tải 100% DB query cho header)
-    if (cachedCategoriesData && (Date.now() - cachedCategoriesTime < 180000)) {
+    // Trả về từ cache bộ nhớ đệm nếu chưa quá 1 phút (sẽ tự động xóa ngay khi admin sửa/xóa chuyên mục)
+    if (cachedCategoriesData && (Date.now() - cachedCategoriesTime < 60000)) {
       return res.json({ success: true, data: cachedCategoriesData, cached: true });
     }
 

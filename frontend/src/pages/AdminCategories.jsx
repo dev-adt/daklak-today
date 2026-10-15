@@ -62,6 +62,13 @@ export const AdminCategories = () => {
     setCatModalOpen(true);
   };
 
+  const notifyCategoriesChanged = () => {
+    try {
+      localStorage.removeItem('dnvn_cached_categories');
+      window.dispatchEvent(new Event('categories-updated'));
+    } catch (e) {}
+  };
+
   const handleSaveCat = async (e) => {
     e.preventDefault();
     if (!catForm.name.trim()) return alert('Vui lòng nhập tên Chuyên mục');
@@ -83,6 +90,7 @@ export const AdminCategories = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Thao tác thất bại');
 
+      notifyCategoriesChanged();
       showMsg(data.message || 'Đã lưu Chuyên mục thành công!');
       setCatModalOpen(false);
       loadCategories();
@@ -109,6 +117,7 @@ export const AdminCategories = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Thao tác thất bại');
+      notifyCategoriesChanged();
       showMsg(data.message || `Đã ${actionName} Chuyên mục`);
       loadCategories();
     } catch (err) {
@@ -126,6 +135,7 @@ export const AdminCategories = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Xóa thất bại');
+      notifyCategoriesChanged();
       showMsg('Đã xóa Chuyên mục thành công!');
       loadCategories();
     } catch (err) {
@@ -181,6 +191,7 @@ export const AdminCategories = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Thao tác thất bại');
 
+      notifyCategoriesChanged();
       showMsg(data.message || 'Đã lưu Lĩnh vực con thành công!');
       setSubModalOpen(false);
       loadCategories();
@@ -206,6 +217,7 @@ export const AdminCategories = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Thao tác thất bại');
+      notifyCategoriesChanged();
       showMsg(data.message || `Đã ${actionName} Lĩnh vực con`);
       loadCategories();
     } catch (err) {
@@ -223,6 +235,7 @@ export const AdminCategories = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Xóa thất bại');
+      notifyCategoriesChanged();
       showMsg('Đã xóa Lĩnh vực con!');
       loadCategories();
     } catch (err) {
