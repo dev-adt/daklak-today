@@ -224,11 +224,11 @@ export const Sidebar = () => {
         <i className="ti ti-logout"></i> Đăng xuất Admin
       </button>
       
-      <div className="lang-section">
-        <div className="lang-label">Ngôn ngữ</div>
-        <div className="lang-grid">
-          <button className={`lb ${currentLang === 'vi' ? 'active' : ''}`} onClick={() => changeLang('vi')}>🇻🇳 VI</button>
-          <button className={`lb ${currentLang === 'en' ? 'active' : ''}`} onClick={() => changeLang('en')}>🇺🇸 EN</button>
+      <div className="lang-section notranslate" translate="no">
+        <div className="lang-label notranslate" translate="no">Ngôn ngữ</div>
+        <div className="lang-grid notranslate" translate="no">
+          <button className={`lb notranslate ${currentLang === 'vi' ? 'active' : ''}`} translate="no" onClick={() => changeLang('vi')}>🇻🇳 VI</button>
+          <button className={`lb notranslate ${currentLang === 'en' ? 'active' : ''}`} translate="no" onClick={() => changeLang('en')}>🇬🇧 EN</button>
         </div>
       </div>
     </aside>

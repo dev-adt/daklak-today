@@ -201,12 +201,12 @@ export const Navbar = () => {
           width: 100% !important;
           max-width: 1680px !important;
           margin: 0 auto !important;
-          padding: 6px 16px !important;
-          min-height: 64px !important;
+          padding: 8px 18px !important;
+          min-height: 72px !important;
           display: flex !important;
           align-items: center !important;
           justify-content: space-between !important;
-          gap: 8px !important;
+          gap: 10px !important;
           position: relative !important;
           box-sizing: border-box !important;
         }
@@ -221,17 +221,17 @@ export const Navbar = () => {
         }
 
         .dnvn-brand-icon {
-          width: 38px !important;
-          height: 38px !important;
-          border-radius: 9px !important;
+          width: 42px !important;
+          height: 42px !important;
+          border-radius: 10px !important;
           background: linear-gradient(135deg, #7A3E1D 0%, #D5A33F 100%) !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
           color: #ffffff !important;
           font-weight: 900 !important;
-          font-size: 15px !important;
-          border: 1px solid rgba(213, 163, 63, 0.45) !important;
+          font-size: 16px !important;
+          border: 1.5px solid rgba(213, 163, 63, 0.45) !important;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
           overflow: hidden !important;
           flex-shrink: 0 !important;
@@ -252,13 +252,13 @@ export const Navbar = () => {
         .dnvn-brand-title {
           font-family: 'Be Vietnam Pro', 'Outfit', sans-serif !important;
           font-weight: 800 !important;
-          font-size: 18px !important;
+          font-size: 19px !important;
           color: #ffffff !important;
           letter-spacing: -0.3px !important;
         }
 
         .dnvn-brand-subtitle {
-          font-size: 7.5px !important;
+          font-size: 8px !important;
           font-weight: 700 !important;
           color: #D5A33F !important;
           letter-spacing: 0.5px !important;
@@ -271,9 +271,9 @@ export const Navbar = () => {
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          gap: 4px !important;
+          gap: 6px !important;
           flex: 1 1 auto !important;
-          margin: 0 4px !important;
+          margin: 0 6px !important;
           overflow: visible !important;
         }
 
@@ -288,12 +288,12 @@ export const Navbar = () => {
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
-          color: #EFE7DE !important;
+          color: #F1ECE6 !important;
           text-decoration: none !important;
-          font-weight: 600 !important;
-          font-size: 13px !important;
-          padding: 6px 8px !important;
-          border-radius: 6px !important;
+          font-weight: 650 !important;
+          font-size: 14.5px !important;
+          padding: 6px 10px !important;
+          border-radius: 7px !important;
           transition: all 0.18s ease !important;
           cursor: pointer !important;
           background: transparent !important;
@@ -304,8 +304,8 @@ export const Navbar = () => {
           word-break: normal !important;
           text-align: center !important;
           line-height: 1.25 !important;
-          max-width: 125px !important;
-          gap: 3px !important;
+          max-width: 145px !important;
+          gap: 4px !important;
         }
 
         .dnvn-nav-item-btn:hover {
@@ -362,7 +362,7 @@ export const Navbar = () => {
           display: block !important;
           padding: 8px 16px !important;
           color: #F1ECE6 !important;
-          font-size: 13px !important;
+          font-size: 13.5px !important;
           font-weight: 500 !important;
           text-decoration: none !important;
           transition: all 0.15s ease !important;
@@ -379,27 +379,57 @@ export const Navbar = () => {
         .dnvn-nav-right {
           display: flex !important;
           align-items: center !important;
-          gap: 6px !important;
+          gap: 7px !important;
           flex-shrink: 0 !important;
           overflow: visible !important;
         }
 
-        /* Laptop screens (1081px - 1366px) */
-        @media (min-width: 1081px) and (max-width: 1366px) {
+        /* Standard Laptops (1201px - 1400px) */
+        @media (min-width: 1201px) and (max-width: 1400px) {
           .dnvn-header-container {
-            padding: 4px 10px !important;
+            padding: 6px 14px !important;
+            min-height: 70px !important;
+            gap: 6px !important;
+          }
+          .dnvn-nav-categories {
+            gap: 4px !important;
+            margin: 0 4px !important;
+          }
+          .dnvn-nav-item-btn {
+            font-size: 13.5px !important;
+            padding: 5px 8px !important;
+            max-width: 125px !important;
+          }
+          .dnvn-brand-title {
+            font-size: 17px !important;
+          }
+          .dnvn-brand-icon {
+            width: 38px !important;
+            height: 38px !important;
+          }
+        }
+
+        /* Small laptops / Narrow desktop (1081px - 1200px) */
+        @media (min-width: 1081px) and (max-width: 1200px) {
+          .dnvn-header-container {
+            padding: 6px 8px !important;
+            min-height: 68px !important;
             gap: 4px !important;
           }
           .dnvn-nav-categories {
             gap: 2px !important;
+            margin: 0 2px !important;
           }
           .dnvn-nav-item-btn {
-            font-size: 12px !important;
-            padding: 4px 5px !important;
+            font-size: 12.5px !important;
+            padding: 4px 6px !important;
             max-width: 110px !important;
           }
           .dnvn-brand-title {
             font-size: 16px !important;
+          }
+          .dnvn-brand-subtitle {
+            font-size: 7px !important;
           }
           .dnvn-brand-icon {
             width: 34px !important;
@@ -413,8 +443,8 @@ export const Navbar = () => {
             display: none !important;
           }
           .dnvn-header-container {
-            padding: 0 12px !important;
-            min-height: 56px !important;
+            padding: 0 14px !important;
+            min-height: 62px !important;
           }
           .dnvn-mobile-toggle {
             display: flex !important;
@@ -435,24 +465,24 @@ export const Navbar = () => {
 
         @media (max-width: 768px) {
           .dnvn-header-container {
-            padding: 0 8px !important;
-            min-height: 52px !important;
+            padding: 0 10px !important;
+            min-height: 56px !important;
           }
           .dnvn-brand-subtitle {
             display: none !important;
           }
           .dnvn-brand-title {
-            font-size: 15px !important;
+            font-size: 16px !important;
           }
           .dnvn-brand-icon {
-            width: 30px !important;
-            height: 30px !important;
+            width: 32px !important;
+            height: 32px !important;
           }
           .dnvn-login-btn {
             display: none !important;
           }
           .dnvn-nav-right {
-            gap: 4px !important;
+            gap: 5px !important;
           }
         }
       `}</style>
@@ -468,7 +498,8 @@ export const Navbar = () => {
           {/* 1. BRAND LOGO */}
           <Link 
             to="/" 
-            className="dnvn-brand-link"
+            className="dnvn-brand-link notranslate"
+            translate="no"
             onClick={(e) => {
               if (location.pathname === '/') {
                 e.preventDefault();
@@ -477,7 +508,7 @@ export const Navbar = () => {
             }}
             title={brandConfig.brandName}
           >
-            <div className="dnvn-brand-icon">
+            <div className="dnvn-brand-icon notranslate" translate="no">
               <img 
                 src="/logo_icon.svg" 
                 alt="DakLak.today Logo" 
@@ -491,8 +522,8 @@ export const Navbar = () => {
                 }}
               />
             </div>
-            <div className="dnvn-brand-text-box">
-              <span className="dnvn-brand-title">
+            <div className="dnvn-brand-text-box notranslate" translate="no">
+              <span className="dnvn-brand-title notranslate" translate="no">
                 Daklak<span style={{ color: '#D5A33F' }}>.today</span>
               </span>
               <span className="dnvn-brand-subtitle">
@@ -621,9 +652,16 @@ export const Navbar = () => {
             </Link>
 
             {/* Bộ chuyển đổi Đa ngôn ngữ (Khung nhỏ gọn: chỉ hiển thị VI, EN, ...) */}
-            <div ref={langDropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
+            <div 
+              ref={langDropdownRef} 
+              className="notranslate"
+              translate="no"
+              style={{ position: 'relative', display: 'inline-block' }}
+            >
               <button
                 type="button"
+                className="notranslate"
+                translate="no"
                 onClick={() => setLangDropdownOpen(prev => !prev)}
                 aria-expanded={langDropdownOpen}
                 aria-haspopup="true"
@@ -631,13 +669,13 @@ export const Navbar = () => {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '3px',
+                  gap: '4px',
                   backgroundColor: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(213, 163, 63, 0.35)',
-                  borderRadius: '6px',
-                  padding: '4px 7px',
+                  borderRadius: '7px',
+                  padding: '5px 9px',
                   color: '#ffffff',
-                  fontSize: '11px',
+                  fontSize: '12px',
                   fontWeight: '800',
                   letterSpacing: '0.5px',
                   cursor: 'pointer',
@@ -653,9 +691,10 @@ export const Navbar = () => {
                   e.currentTarget.style.borderColor = 'rgba(213, 163, 63, 0.35)';
                 }}
               >
-                <span>{(currentLang || 'VI').toUpperCase()}</span>
+                <span className="notranslate" translate="no">{(currentLang || 'VI').toUpperCase()}</span>
                 <i 
-                  className="ti ti-chevron-down" 
+                  className="ti ti-chevron-down notranslate" 
+                  translate="no"
                   style={{ 
                     fontSize: '9px', 
                     color: '#D5A33F', 
@@ -667,6 +706,8 @@ export const Navbar = () => {
 
               {langDropdownOpen && (
                 <div
+                  className="notranslate"
+                  translate="no"
                   style={{
                     position: 'absolute',
                     top: 'calc(100% + 6px)',
@@ -690,6 +731,8 @@ export const Navbar = () => {
                       <button
                         key={lang.code}
                         type="button"
+                        className="notranslate"
+                        translate="no"
                         onClick={() => {
                           changeLang(lang.code);
                           setLangDropdownOpen(false);
@@ -717,11 +760,11 @@ export const Navbar = () => {
                           if (!isActive) e.currentTarget.style.background = 'transparent';
                         }}
                       >
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="notranslate" translate="no" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ fontSize: '14px' }}>{lang.flag}</span>
                           <span>{lang.name}</span>
                         </span>
-                        {isActive && <i className="ti ti-check" style={{ color: '#D5A33F', fontSize: '13px' }} />}
+                        {isActive && <i className="ti ti-check notranslate" translate="no" style={{ color: '#D5A33F', fontSize: '13px' }} />}
                       </button>
                     );
                   })}
@@ -871,23 +914,29 @@ export const Navbar = () => {
             }}
           >
             {/* Chuyển ngôn ngữ & Trạng thái trong Drawer */}
-            <div style={{ paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="notranslate" translate="no" style={{ paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               <div style={{ fontSize: '12px', color: '#BFAEA2', marginBottom: '8px' }}>{currentLang === 'en' ? 'Select Language / Chọn ngôn ngữ:' : 'Chọn ngôn ngữ / Select Language:'}</div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(5, 1fr)',
-                gap: '4px',
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                borderRadius: '8px',
-                padding: '3px',
-                border: '1px solid rgba(213, 163, 63, 0.25)'
-              }}>
+              <div 
+                className="notranslate"
+                translate="no"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(5, 1fr)',
+                  gap: '4px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '8px',
+                  padding: '3px',
+                  border: '1px solid rgba(213, 163, 63, 0.25)'
+                }}
+              >
                 {(availableLanguages || []).map((lang) => {
                   const isActive = currentLang === lang.code;
                   return (
                     <button
                       key={lang.code}
                       type="button"
+                      className="notranslate"
+                      translate="no"
                       onClick={() => changeLang(lang.code)}
                       style={{
                         background: isActive ? '#A84524' : 'transparent',
@@ -906,7 +955,7 @@ export const Navbar = () => {
                       }}
                     >
                       <span style={{ fontSize: '14px' }}>{lang.flag}</span>
-                      <span>{lang.label}</span>
+                      <span className="notranslate" translate="no">{lang.label}</span>
                     </button>
                   );
                 })}

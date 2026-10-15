@@ -35,8 +35,8 @@ export const AdminLayout = ({ children, title }) => {
             </div>
           </div>
           <div className="tb-right">
-            <div className="lang-pill">
-              <span>{currentLang === 'vi' ? '🇻🇳 VI' : '🇺🇸 EN'}</span>
+            <div className="lang-pill notranslate" translate="no">
+              <span className="notranslate" translate="no">{currentLang === 'vi' ? '🇻🇳 VI' : '🇬🇧 EN'}</span>
             </div>
             <div className="av-sm">{getInitials(user?.name || 'Admin')}</div>
           </div>

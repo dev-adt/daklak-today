@@ -2096,25 +2096,51 @@ export const applyGoogleTranslate = (lang) => {
   const targetObj = AVAILABLE_LANGUAGES.find(l => l.code === lang) || AVAILABLE_LANGUAGES[0];
   const gtCode = targetObj.gtCode;
 
-  // Cookie cho Google Translate Web Engine
   const hostname = window.location.hostname;
-  const cookieVal = lang === 'vi' ? '' : `/vi/${gtCode}`;
-  const expires = lang === 'vi' ? 'Thu, 01 Jan 1970 00:00:00 UTC' : 'Fri, 31 Dec 9999 23:59:59 GMT';
+  const expiresPast = 'Thu, 01 Jan 1970 00:00:00 UTC';
+  const expiresFuture = 'Fri, 31 Dec 9999 23:59:59 GMT';
 
-  document.cookie = `googtrans=${cookieVal}; expires=${expires}; path=/;`;
+  // Luôn xóa sạch cookie cũ trước
+  document.cookie = `googtrans=; expires=${expiresPast}; path=/;`;
   if (hostname) {
-    document.cookie = `googtrans=${cookieVal}; expires=${expires}; path=/; domain=${hostname};`;
-    document.cookie = `googtrans=${cookieVal}; expires=${expires}; path=/; domain=.${hostname};`;
+    document.cookie = `googtrans=; expires=${expiresPast}; path=/; domain=${hostname};`;
+    document.cookie = `googtrans=; expires=${expiresPast}; path=/; domain=.${hostname};`;
+  }
+
+  // Nếu chọn ngôn ngữ khác tiếng Việt, gán cookie phiên dịch
+  if (lang !== 'vi') {
+    const cookieVal = `/vi/${gtCode}`;
+    document.cookie = `googtrans=${cookieVal}; expires=${expiresFuture}; path=/;`;
+    if (hostname) {
+      document.cookie = `googtrans=${cookieVal}; expires=${expiresFuture}; path=/; domain=${hostname};`;
+      document.cookie = `googtrans=${cookieVal}; expires=${expiresFuture}; path=/; domain=.${hostname};`;
+    }
   }
 
   // Tác động trực tiếp vào select ngầm của Google Translate
   const triggerCombo = () => {
     const select = document.querySelector('.goog-te-combo');
     if (select) {
-      const targetVal = lang === 'vi' ? 'vi' : gtCode;
-      if (select.value !== targetVal) {
-        select.value = targetVal;
-        select.dispatchEvent(new Event('change'));
+      if (lang === 'vi') {
+        const hasVi = Array.from(select.options).some(o => o.value === 'vi');
+        const targetVal = hasVi ? 'vi' : '';
+        if (select.value !== targetVal) {
+          select.value = targetVal;
+          select.dispatchEvent(new Event('change'));
+        }
+        try {
+          const iframe = document.querySelector('iframe.goog-te-banner-frame');
+          if (iframe) {
+            const innerDoc = iframe.contentDocument || iframe.contentWindow?.document;
+            const restoreBtn = innerDoc?.querySelector('button');
+            if (restoreBtn) restoreBtn.click();
+          }
+        } catch (e) {}
+      } else {
+        if (select.value !== gtCode) {
+          select.value = gtCode;
+          select.dispatchEvent(new Event('change'));
+        }
       }
       return true;
     }
