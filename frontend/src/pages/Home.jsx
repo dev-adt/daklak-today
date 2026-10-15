@@ -11,6 +11,73 @@ import { getCategoryLabel } from '../constants/categories';
 import { fetchJsonWithTimeout, FALLBACK_POSTS, FALLBACK_EVENTS, FALLBACK_MEMBERS } from '../utils/api';
 import './HomeDakLak.css';
 
+// Sub-component đếm ngược sự kiện trang chủ độc lập
+// Tách biệt state để KHÔNG kích hoạt re-render toàn bộ 15 section của trang chủ mỗi giây
+const HomeEventCountdown = React.memo(({ eventDate }) => {
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (!eventDate) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    let dateStr = String(eventDate).trim();
+    if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2})?$/.test(dateStr)) {
+      dateStr = dateStr.replace(' ', 'T') + '+07:00';
+    }
+    const diff = new Date(dateStr).getTime() - Date.now();
+    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    return {
+      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      minutes: Math.floor((diff / 1000 / 60) % 60),
+      seconds: Math.floor((diff / 1000) % 60)
+    };
+  });
+
+  useEffect(() => {
+    if (!eventDate) return;
+    const timer = setInterval(() => {
+      try {
+        let dateStr = String(eventDate).trim();
+        if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2})?$/.test(dateStr)) {
+          dateStr = dateStr.replace(' ', 'T') + '+07:00';
+        }
+        const diff = new Date(dateStr).getTime() - Date.now();
+        if (diff > 0) {
+          setTimeLeft({
+            days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((diff % (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((diff / 1000 / 60) % 60),
+            seconds: Math.floor((diff / 1000) % 60)
+          });
+        } else {
+          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        }
+      } catch (e) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [eventDate]);
+
+  return (
+    <div className="countdown-timer-grid">
+      <div className="countdown-timer-unit">
+        <div className="countdown-timer-num notranslate" translate="no">{String(timeLeft.days).padStart(2, '0')}</div>
+        <div className="countdown-timer-label">Ngày</div>
+      </div>
+      <div className="countdown-timer-unit">
+        <div className="countdown-timer-num notranslate" translate="no">{String(timeLeft.hours).padStart(2, '0')}</div>
+        <div className="countdown-timer-label">Giờ</div>
+      </div>
+      <div className="countdown-timer-unit">
+        <div className="countdown-timer-num notranslate" translate="no">{String(timeLeft.minutes).padStart(2, '0')}</div>
+        <div className="countdown-timer-label">Phút</div>
+      </div>
+      <div className="countdown-timer-unit">
+        <div className="countdown-timer-num notranslate" translate="no">{String(timeLeft.seconds).padStart(2, '0')}</div>
+        <div className="countdown-timer-label">Giây</div>
+      </div>
+    </div>
+  );
+});
+
 export const Home = () => {
   const { role, user, token } = useAuth();
   let storedMemberUser = null;
@@ -113,9 +180,6 @@ export const Home = () => {
     return FALLBACK_MEMBERS;
   });
 
-  // Live countdown timer cho sự kiện nổi bật nhất
-  const [timeLeft, setTimeLeft] = useState({ days: 18, hours: 8, minutes: 30, seconds: 0 });
-
   // Dữ liệu và ảnh bìa trực tiếp của 3 bài viết chuyên đề AI
   const [aiTopicPosts, setAiTopicPosts] = useState(() => {
     try {
@@ -194,39 +258,6 @@ export const Home = () => {
     fetchHomeData();
     return () => { isMounted = false; };
   }, []);
-
-  // Tính toán Countdown thời gian thực an toàn cho Safari iOS
-  useEffect(() => {
-    const targetEvent = eventsList && eventsList.length > 0 ? eventsList[0] : null;
-    if (!targetEvent || !targetEvent.event_date) return;
-
-    const timer = setInterval(() => {
-      try {
-        let dateStr = String(targetEvent.event_date).trim();
-        if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2})?$/.test(dateStr)) {
-          dateStr = dateStr.replace(' ', 'T') + '+07:00';
-        }
-        const eventTime = new Date(dateStr).getTime();
-        const now = new Date().getTime();
-        const difference = eventTime - now;
-
-        if (difference > 0) {
-          setTimeLeft({
-            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-            hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-            minutes: Math.floor((difference / 1000 / 60) % 60),
-            seconds: Math.floor((difference / 1000) % 60)
-          });
-        } else {
-          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        }
-      } catch (e) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [eventsList]);
 
   // Xử lý Tìm kiếm
   const handleSearchSubmit = (e) => {
@@ -1547,24 +1578,7 @@ export const Home = () => {
                     ⏳ ĐẾM NGƯỢC THỜI GIAN KHAI MẠC
                   </div>
 
-                  <div className="countdown-timer-grid">
-                    <div className="countdown-timer-unit">
-                      <div className="countdown-timer-num">{String(timeLeft.days).padStart(2, '0')}</div>
-                      <div className="countdown-timer-label">Ngày</div>
-                    </div>
-                    <div className="countdown-timer-unit">
-                      <div className="countdown-timer-num">{String(timeLeft.hours).padStart(2, '0')}</div>
-                      <div className="countdown-timer-label">Giờ</div>
-                    </div>
-                    <div className="countdown-timer-unit">
-                      <div className="countdown-timer-num">{String(timeLeft.minutes).padStart(2, '0')}</div>
-                      <div className="countdown-timer-label">Phút</div>
-                    </div>
-                    <div className="countdown-timer-unit">
-                      <div className="countdown-timer-num">{String(timeLeft.seconds).padStart(2, '0')}</div>
-                      <div className="countdown-timer-label">Giây</div>
-                    </div>
-                  </div>
+                  <HomeEventCountdown eventDate={eventsList[0]?.event_date} />
 
                   <p style={{ fontSize: '0.85rem', color: '#BFAEA2' }}>
                     Hệ thống cấp vé QR tự động • Quét mã camera điểm danh trong 1 giây

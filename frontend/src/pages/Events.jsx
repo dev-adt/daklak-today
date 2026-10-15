@@ -7,6 +7,121 @@ import SEOHead from '../components/SEOHead';
 import brandConfig from '../brand.config';
 import { fetchJsonWithTimeout, FALLBACK_EVENTS } from '../utils/api';
 
+// Sub-component đếm ngược thời gian thực độc lập
+// Tách biệt state để KHÔNG kích hoạt re-render toàn bộ trang và nội dung chi tiết mỗi giây
+const EventCountdown = React.memo(({ eventDate }) => {
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (!eventDate) return { days: 0, hours: 0, minutes: 0, seconds: 0, isPassed: false };
+    const diff = new Date(eventDate).getTime() - Date.now();
+    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, isPassed: true };
+    return {
+      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+      seconds: Math.floor((diff % (1000 * 60)) / 1000),
+      isPassed: false
+    };
+  });
+
+  useEffect(() => {
+    if (!eventDate) return;
+    const calculateTime = () => {
+      const diff = new Date(eventDate).getTime() - Date.now();
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isPassed: true });
+        return;
+      }
+      setTimeLeft({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+        isPassed: false
+      });
+    };
+    calculateTime();
+    const interval = setInterval(calculateTime, 1000);
+    return () => clearInterval(interval);
+  }, [eventDate]);
+
+  if (timeLeft.isPassed) {
+    return (
+      <div style={{ padding: '8px', textAlign: 'center', backgroundColor: '#F1F5F9', borderRadius: '8px', fontSize: '13px', fontWeight: '700', color: '#64748B' }}>
+        Sự kiện đã diễn ra
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gap: '8px',
+      textAlign: 'center'
+    }}>
+      {[
+        { val: timeLeft.days, label: 'NGÀY' },
+        { val: timeLeft.hours, label: 'GIỜ' },
+        { val: timeLeft.minutes, label: 'PHÚT' },
+        { val: timeLeft.seconds, label: 'GIÂY' }
+      ].map((box, i) => (
+        <div
+          key={i}
+          style={{
+            background: 'linear-gradient(135deg, #092569 0%, #144CB8 100%)',
+            color: '#ffffff',
+            borderRadius: '8px',
+            padding: '8px 4px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            boxShadow: '0 2px 6px rgba(30, 99, 233, 0.3)'
+          }}
+        >
+          <span 
+            className="notranslate"
+            translate="no"
+            style={{ fontSize: '20px', fontWeight: '900', fontFamily: 'monospace', lineHeight: 1.1 }}
+          >
+            {String(box.val).padStart(2, '0')}
+          </span>
+          <span style={{ fontSize: '9px', fontWeight: '700', letterSpacing: '0.4px', marginTop: '3px', opacity: 0.9 }}>
+            {box.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+});
+
+// Component hiển thị nội dung chi tiết bài viết/sự kiện được bọc React.memo
+// Giúp chống giật/nháy khi công cụ Google Translate đang dịch trang
+const EventRichContent = React.memo(({ content, description }) => {
+  if (content) {
+    return (
+      <div 
+        className="event-rich-content"
+        dangerouslySetInnerHTML={{ __html: content }}
+        style={{
+          fontSize: '14.5px',
+          lineHeight: '1.75',
+          color: '#1E293B',
+          borderTop: '1px solid #E2E8F0',
+          paddingTop: '1.5rem'
+        }}
+      />
+    );
+  }
+  if (description) {
+    return (
+      <div style={{ fontSize: '14px', lineHeight: '1.7', color: '#334155', borderTop: '1px solid #E2E8F0', paddingTop: '1.5rem' }}>
+        {description}
+      </div>
+    );
+  }
+  return null;
+}, (prev, next) => prev.content === next.content && prev.description === next.description);
+
 export const Events = () => {
   const { id: routeParamId } = useParams();
   const navigate = useNavigate();
@@ -30,9 +145,6 @@ export const Events = () => {
   const [currentEvent, setCurrentEvent] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [detailError, setDetailError] = useState('');
-
-  // Đếm ngược thời gian (Countdown Timer)
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, isPassed: false });
 
   // Form đăng ký tham gia (Image 1)
   const [regForm, setRegForm] = useState({
@@ -222,33 +334,6 @@ export const Events = () => {
     }
     return () => { isMounted = false; };
   }, [routeParamId]);
-
-  // 3. Hiệu ứng Countdown Timer thời gian thực (Image 1: [28 NGÀY] [05 GIỜ] [57 PHÚT] [51 GIÂY])
-  useEffect(() => {
-    if (!currentEvent || !currentEvent.event_date) return;
-
-    const calculateTime = () => {
-      const targetTime = new Date(currentEvent.event_date).getTime();
-      const now = new Date().getTime();
-      const diff = targetTime - now;
-
-      if (diff <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isPassed: true });
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setTimeLeft({ days, hours, minutes, seconds, isPassed: false });
-    };
-
-    calculateTime();
-    const interval = setInterval(calculateTime, 1000);
-    return () => clearInterval(interval);
-  }, [currentEvent]);
 
   // Tự động điền thông tin khi người dùng đã đăng nhập
   useEffect(() => {
@@ -543,24 +628,8 @@ export const Events = () => {
                 </div>
               )}
 
-              {/* Nội dung chi tiết (Rich Text Content) */}
-              {currentEvent.content ? (
-                <div 
-                  className="event-rich-content"
-                  dangerouslySetInnerHTML={{ __html: currentEvent.content }}
-                  style={{
-                    fontSize: '14.5px',
-                    lineHeight: '1.75',
-                    color: '#1E293B',
-                    borderTop: '1px solid #E2E8F0',
-                    paddingTop: '1.5rem'
-                  }}
-                />
-              ) : currentEvent.description ? (
-                <div style={{ fontSize: '14px', lineHeight: '1.7', color: '#334155', borderTop: '1px solid #E2E8F0', paddingTop: '1.5rem' }}>
-                  {currentEvent.description}
-                </div>
-              ) : null}
+              {/* Nội dung chi tiết (Rich Text Content) - Bọc memo chống giật nháy khi dịch */}
+              <EventRichContent content={currentEvent.content} description={currentEvent.description} />
 
               {/* Ảnh minh họa trong nội dung (như trong ảnh mẫu người dùng gửi) */}
               <div style={{
@@ -607,52 +676,13 @@ export const Events = () => {
                     <span>Sự kiện bắt đầu sau</span>
                   </div>
 
-                  {timeLeft.isPassed ? (
-                    <div style={{ padding: '8px', textAlign: 'center', backgroundColor: '#F1F5F9', borderRadius: '8px', fontSize: '13px', fontWeight: '700', color: '#64748B' }}>
-                      Sự kiện đã diễn ra
-                    </div>
-                  ) : (
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(4, 1fr)',
-                      gap: '8px',
-                      textAlign: 'center'
-                    }}>
-                      {[
-                        { val: timeLeft.days, label: 'NGÀY' },
-                        { val: timeLeft.hours, label: 'GIỜ' },
-                        { val: timeLeft.minutes, label: 'PHÚT' },
-                        { val: timeLeft.seconds, label: 'GIÂY' }
-                      ].map((box, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            background: 'linear-gradient(135deg, #092569 0%, #144CB8 100%)',
-                            color: '#ffffff',
-                            borderRadius: '8px',
-                            padding: '8px 4px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            boxShadow: '0 2px 6px rgba(30, 99, 233, 0.3)'
-                          }}
-                        >
-                          <span style={{ fontSize: '20px', fontWeight: '900', fontFamily: 'monospace', lineHeight: 1.1 }}>
-                            {String(box.val).padStart(2, '0')}
-                          </span>
-                          <span style={{ fontSize: '9px', fontWeight: '700', letterSpacing: '0.4px', marginTop: '3px', opacity: 0.9 }}>
-                            {box.label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <EventCountdown eventDate={currentEvent.event_date} />
                 </div>
 
                 <div style={{ height: '1px', backgroundColor: '#F1F5F9' }}></div>
 
                 {/* 2. Form: Đăng ký tham gia hoặc thông báo Sự kiện đã kết thúc */}
-                {timeLeft.isPassed || currentEvent.status === 'completed' ? (
+                {(currentEvent.event_date && new Date(currentEvent.event_date).getTime() < Date.now()) || currentEvent.status === 'completed' ? (
                   <div style={{
                     padding: '1.5rem 1rem',
                     backgroundColor: '#FEF2F2',
