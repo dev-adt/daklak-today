@@ -1,284 +1,319 @@
-# 📋 TÀI LIỆU BÀN GIAO KỸ THUẬT & HƯỚNG DẪN TÁI SỬ DỤNG CODEBASE
-# (TECHNICAL HANDOVER & REBRANDING / REDESIGN MANUAL)
+# 📋 TÀI LIỆU BÀN GIAO KỸ THUẬT & HƯỚNG DẪN NHÂN BẢN HỆ THỐNG
+# (TECHNICAL HANDOVER & REBRANDING MANUAL FOR *.TODAY PLATFORMS)
 
-> **Dự án gốc**: Nền tảng Cổng thông tin & Hệ sinh thái số Doanh nghiệp (`doanhnghiepvn.today`)  
+> **Dự án chuẩn (Golden Master)**: Nền tảng Cổng thông tin, Dữ liệu, Du lịch, Đầu tư & Hệ sinh thái số Doanh nghiệp (`DakLak.today`)  
 > **Đơn vị phát triển & bàn giao**: ADT Quốc tế  
-> **Đối tượng sử dụng**: Lập trình viên Fullstack / Frontend / AI Coding Assistant (Antigravity, Cursor, Windsurf, Claude Code...) tiếp nhận phát triển phiên bản mới.  
-> **Mục tiêu tài liệu**: Hướng dẫn toàn diện cách **tái sử dụng 100% logic backend & tính năng nghiệp vụ có sẵn**, chỉ thay đổi **Tên thương hiệu, Màu sắc nhận diện và Thiết kế lại toàn bộ Giao diện Trang chủ (`Home.jsx`)** mà không lo phát sinh lỗi.
+> **Đối tượng sử dụng**: Lập trình viên Fullstack / Frontend / AI Coding Assistant (Antigravity, Cursor, Windsurf, Claude Code...) tiếp nhận nhân bản dự án sang các tỉnh thành/lĩnh vực mới (VD: `gialai.today`, `kontum.today`, `lamdong.today`, `danang.today`...).  
+> **Mục tiêu tài liệu**: Hướng dẫn toàn diện cách **tái sử dụng 100% logic backend, CSDL và hệ thống tính năng nghiệp vụ đã được tối ưu hoàn thiện**, chỉ cần thay đổi **Cấu hình Thương hiệu, Bảng màu nhận diện, và Dữ liệu danh mục** là có ngay một cổng thông tin `.today` mới hoàn chỉnh trong vòng 30 phút.
 
 ---
 
 ## 📑 MỤC LỤC
-1. [Tổng quan Kiến trúc & Triết lý Thiết kế](#1-tổng-quan-kiến-trúc--triết-lý-thiết-kế)
-2. [Cấu trúc Thư mục & Trọng tâm Cần Lưu Ý](#2-cấu-trúc-thư-mục--trọng-tâm-cần-lưu-ý)
-3. [Quy trình 5 Bước Đổi Thương hiệu & Màu sắc (Rebranding)](#3-quy-trình-5-bước-đổi-thương-hiệu--màu-sắc-rebranding)
-4. [Bản đồ Dữ liệu & Tính năng Trang chủ (`Home.jsx`)](#4-bản-đồ-dữ-liệu--tính-năng-trang-chủ-homejsx)
-5. [Hướng dẫn Chi tiết Thiết kế lại Giao diện Trang chủ](#5-hướng-dẫn-chi-tiết-thiết-kế-lại-giao-diện-trang-chủ)
-6. [Khung Code Mẫu Chuẩn (Clean Skeleton) cho `Home.jsx`](#6-khung-code-mẫu-chuẩn-clean-skeleton-cho-homejsx)
-7. [Danh mục API Backend Phục vụ Trang chủ & Nghiệp vụ](#7-danh-mục-api-backend-phục-vụ-trang-chủ--nghiệp-vụ)
-8. [Checklist Kiểm thử & Quy trình Triển khai (Deploy)](#8-checklist-kiểm-thử--quy-trình-triển-khai-deploy)
-9. [Các Lỗi Thường Gặp & Cách Khắc Phục (Troubleshooting)](#9-các-lỗi-thường-gặp--cách-khắc-phục-troubleshooting)
+1. [Tổng quan Kiến trúc & Nguyên lý Thiết kế Golden Master](#1-tổng-quan-kiến-trúc--nguyên-lý-thiết-kế-golden-master)
+2. [Cấu trúc Thư mục Toàn dự án Mới nhất](#2-cấu-trúc-thư-mục-toàn-dự-án-mới-nhất)
+3. [Quy trình 5 Bước Nhân bản Sang Web `.today` Mới (Rebranding Checklist)](#3-quy-trình-5-bước-nhân-bản-sang-web-today-mới-rebranding-checklist)
+4. [Kiến trúc Header & Bộ chọn Đa Ngôn ngữ Chống Dịch Đè (Anti-Mistranslation)](#4-kiến-trúc-header--bộ-chọn-đa-ngôn-ngữ-chống-dịch-đè-anti-mistranslation)
+5. [Cơ chế Đồng bộ Chuyên mục Tức thì (Realtime Category Sync)](#5-cơ-chế-đồng-bộ-chuyên-mục-tức-thì-realtime-category-sync)
+6. [Bản đồ Dữ liệu & Phân khu Trang chủ (`Home.jsx`)](#6-bản-đồ-dữ-liệu--phân-khu-trang-chủ-homejsx)
+7. [Khung Code Mẫu Chuẩn (Clean Skeleton) cho `Home.jsx`](#7-khung-code-mẫu-chuẩn-clean-skeleton-cho-homejsx)
+8. [Danh mục API Backend Chuẩn hóa](#8-danh-mục-api-backend-chuẩn-hóa)
+9. [Quy trình Build, Khởi tạo CSDL & Triển khai VPS (Production)](#9-quy-trình-build-khởi-tạo-csdl--triển-khai-vps-production)
+10. [Các Lỗi Thường Gặp & Cách Khắc Phục (Troubleshooting)](#10-các-lỗi-thường-gặp--cách-khắc-phục-troubleshooting)
 
 ---
 
-## 🏛️ 1. TỔNG QUAN KIẾN TRÚC & TRIẾT LÝ THIẾT KẾ
+## 🏛️ 1. TỔNG QUAN KIẾN TRÚC & NGUYÊN LÝ THIẾT KẾ GOLDEN MASTER
 
-Codebase được thiết kế theo mô hình **Monorepo thu gọn (All-in-one)** tối ưu cho việc vận hành độc lập, tải nhanh và dễ dàng chuyển giao:
+Dự án được cấu trúc theo mô hình **Monorepo thu gọn (All-in-one)**, tích hợp sẵn toàn bộ frontend React và backend Node.js Express trong một repository duy nhất:
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          CLIENT / BROWSER                              │
-│  React 18 SPA (Vite) + Design Tokens + PWA Service Worker + Song ngữ   │
-└────────────────────────────────────┬───────────────────────────────────┘
-                                     │ REST API (/api/*)
-                                     ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                        NODE.JS / EXPRESS BACKEND                       │
-│  - Phân quyền 5 cấp (Admin, Member, Creator, Organizer, Guest)         │
-│  - JWT & Session Auth đa bảng                - API Vé & Soát vé QR     │
-│  - Tự động duyệt Hội viên Silver             - API Leads Tư vấn        │
-│  - Tích hợp AI Gemini 3 Flash / Flash 2.5    - API Bài viết, Chuyên mục│
-└──────────────────┬─────────────────────────────────┬───────────────────┘
-                   │ Pool Connection                 │ OpenRouter / Google SDK
-                   ▼                                 ▼
-      ┌─────────────────────────┐       ┌────────────────────────┐
-      │   MySQL 8.0 / MariaDB   │       │ Google Gemini AI Flash │
-      │ (16 bảng, schema.sql)   │       │   (RAG Knowledge Base) │
-      └─────────────────────────┘       └────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                           CLIENT / BROWSER RUNTIME                            │
+│  React 18 SPA (Vite) + Design Tokens + PWA Service Worker + Dual-Lang Engine  │
+│  - Sticky Header 72px (1 hàng, co giãn font 12.5px-14.5px, chống đè chữ)      │
+│  - Google Translate Engine Silent Injection (dịch cả DB mà không reload)      │
+│  - Trợ lý AI nổi FloatingAIBot đa phiên + Markdown Stream                     │
+└──────────────────────────────────────┬────────────────────────────────────────┘
+                                       │ REST API (/api/*)
+                                       ▼
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                         NODE.JS / EXPRESS BACKEND ENGINE                      │
+│  - Phân quyền 5 cấp: Guest, Member (Auto Silver), Creator, Organizer, Admin   │
+│  - JWT & Session Auth đa bảng                - API Vé & Soát vé QR thời gian  │
+│  - Cache-Control: no-store Chuyên mục tức thì - Quản trị Leads & Báo cáo      │
+│  - AI Gemini Flash RAG (Đọc dữ liệu DB hội viên, sự kiện, bài viết)           │
+└──────────────────────┬─────────────────────────────────┬──────────────────────┘
+                       │ Pool Connection (mysql2)        │ Google Gemini API / OpenRouter
+                       ▼                                 ▼
+          ┌─────────────────────────┐       ┌────────────────────────┐
+          │   MySQL 8.0 / MariaDB   │       │ Google Gemini AI Flash │
+          │ (16 bảng chuẩn hóa)     │       │   (RAG Knowledge Base) │
+          └─────────────────────────┘       └────────────────────────┘
 ```
 
-### Điểm mạnh cốt lõi cần duy trì:
-- **Tập trung hóa cấu hình thương hiệu**: Toàn bộ tên gọi, slogan, logo, hotline, tài khoản ngân hàng VietQR, màu sắc được quy tụ tại [frontend/src/brand.config.js](file:///frontend/src/brand.config.js) và [config/brand.config.js](file:///config/brand.config.js). Tuyệt đối không rải rác hardcode trong từng component.
-- **Độc lập Styling**: Sử dụng **Vanilla CSS và Design Tokens** (`index.css`), không phụ thuộc TailwindCSS, giúp lập trình viên thoải mái sáng tạo lại giao diện mà không sợ xung đột class.
-- **Hỗ trợ Song ngữ tức thì**: Cơ chế `useTranslation()` (`LanguageContext.jsx`) chuyển đổi mượt mà giữa Tiếng Việt và Tiếng Anh không cần reload trang, kèm API dịch thuật động `/api/translate`.
-- **Phân quyền 5 cấp độ độc lập**: Khách (Guest), Hội viên DN (Member - **Tự động duyệt gói Silver**), Biên tập viên (Creator), Ban tổ chức & Soát vé (Organizer & Ticket Inspector), Quản trị viên (Admin).
-- **Trợ lý AI Gemini tích hợp sẵn**: Hệ thống RAG tự động học dữ liệu hội viên, bài viết và sự kiện từ DB để trả lời người dùng 24/7, có lưu vết lịch sử chat (`chat_logs`).
-- **PWA & Tối ưu tải trang**: Tích hợp sẵn Service Worker (`sw.js`), Web App Manifest (`manifest.json`), Code Splitting (React.lazy) và API Client có Timeout + Dữ liệu tĩnh Fallback chống treo màn hình.
+### Điểm mạnh cốt lõi của Codebase:
+1. **Tập trung hóa cấu hình thương hiệu**: 90% thông tin địa phương/thương hiệu (Tên web, tỉnh thành, slogan, logo, màu sắc, hotline, tài khoản VietQR, AI Prompt) nằm tại **2 file duy nhất**: `frontend/src/brand.config.js` và `config/brand.config.js`.
+2. **Độc lập Styling (Zero CSS Conflicts)**: 100% sử dụng Vanilla CSS hiện đại và Design Tokens (`index.css`), không phụ thuộc TailwindCSS, tránh lỗi build xung đột thư viện hay class purge.
+3. **Đa ngôn ngữ 5 thứ tiếng (VI, EN, ZH, JA, KO)**:
+   - Từ điển giao diện tĩnh chuyển đổi 0ms không độ trễ.
+   - Tích hợp engine Google Translate ngầm dịch toàn bộ nội dung động từ cơ sở dữ liệu (tin tức, sự kiện, giới thiệu) sang tiếng Anh, Trung, Nhật, Hàn.
+   - Có cơ chế **cấm dịch đè (`translate="no"` / `notranslate`)** độc quyền tại thanh chọn ngôn ngữ và logo thương hiệu, loại bỏ triệt để hiện tượng mã quốc tế biến thành chữ tiếng Việt (như chữ "Chúng tôi").
+4. **Mở nội dung chi tiết bài viết công khai**: Khách vãng lai xem trọn vẹn nội dung bài viết mà không bị tường chắn ép đăng nhập, tối đa hóa chỉ số SEO Google.
+5. **Đồng bộ danh mục thời gian thực (Zero-Cache Sync)**: Khi Admin thêm/sửa/xóa chuyên mục trong Dashboard, thanh Header ngoài trang chủ cập nhật ngay tức thì mà không cần xóa cache trình duyệt.
 
 ---
 
-## 📂 2. CẤU TRÚC THƯ MỤC & TRỌNG TÂM CẦN LƯU Ý
+## 📂 2. CẤU TRÚC THƯ MỤC TOÀN DỰ ÁN MỚI NHẤT
 
 ```plaintext
-doanhnghiepvn-today/
+daklak-today/
 ├── config/
-│   └── brand.config.js          ⭐ Cấu hình thương hiệu Backend, VietQR & AI Prompt
+│   └── brand.config.js              # ⭐ Cấu hình thương hiệu Backend, VietQR & AI Prompt
 ├── frontend/
-│   ├── public/                  ⭐ Chứa ảnh Logo, Favicon, PWA icons, Avatar AI
-│   │   ├── images/              ⭐ Chứa banner, ảnh đối tác (vib-business-card.webp)
-│   │   └── img_guide/           ⭐ Ảnh chụp màn hình hướng dẫn sử dụng hệ thống
+│   ├── public/                      # Assets tĩnh Frontend
+│   │   ├── images/                  # Ảnh banner, đối tác, ảnh minh họa
+│   │   ├── img_guide/               # Ảnh tài liệu hướng dẫn sử dụng
+│   │   ├── logo_icon.svg            # Logo icon vector
+│   │   ├── logo_icon.png            # Logo icon png
+│   │   ├── favicon.svg / .png       # Favicon tab trình duyệt
+│   │   └── pwa-192x192.png          # Biểu tượng PWA ứng dụng
 │   ├── src/
-│   │   ├── brand.config.js      ⭐⭐ TRỌNG TÂM: File cấu hình thương hiệu Frontend
-│   │   ├── components/          ⭐ Navbar, Footer, FloatingAIBot, SpotlightBanner, SEOHead...
-│   │   ├── contexts/            ⭐ AuthContext (xác thực), LanguageContext (song ngữ), PWAContext (cài app)
-│   │   ├── utils/               ⭐ api.js (Fetch an toàn có Fallback chống sập), dateUtils.js (Xử lý ngày iOS)
-│   │   ├── pages/
-│   │   │   ├── Home.jsx         ⭐⭐ TRỌNG TÂM: Trang chủ cần thiết kế lại
-│   │   │   ├── Events.jsx       (Sự kiện & đăng ký vé QR)
-│   │   │   ├── Posts.jsx        (Tin tức & bảng tin cơ hội)
-│   │   │   ├── PostDetail.jsx   (Chi tiết bài viết - có cơ chế khóa xem với Khách)
-│   │   │   ├── Members.jsx      (Danh bạ doanh nghiệp hội viên)
-│   │   │   ├── Guide.jsx        (Hướng dẫn sử dụng toàn diện)
-│   │   │   ├── MemberDashboard.jsx   (Dashboard hội viên)
-│   │   │   ├── CreatorDashboard.jsx  (Dashboard ban biên tập / creator)
-│   │   │   ├── OrganizerDashboard.jsx(Dashboard ban tổ chức sự kiện)
-│   │   │   ├── AdminCheckin.jsx      (Quét QR / soát vé sự kiện)
-│   │   │   └── ... (Admin Dashboards: Members, Posts, Events, Organizers, Creators, Leads, Categories, Config)
-│   │   ├── index.css            ⭐⭐ TRỌNG TÂM: Hệ thống biến màu (Tokens) & CSS toàn cục
-│   │   ├── App.jsx              (Routing hệ thống & Lazy Loading)
-│   │   └── main.jsx
-│   ├── index.html               ⭐ Header SEO, Meta tags, Font Google
-│   └── vite.config.js           (Cấu hình build ra thư mục root /public)
-├── public/                      (Thư mục chứa bundle production do Vite build ra)
-│   ├── sw.js                    (PWA Service Worker)
-│   └── manifest.json            (PWA Manifest)
+│   │   ├── brand.config.js          # ⭐⭐ FILE CỐT LÕI CẤU HÌNH THƯƠNG HIỆU FRONTEND
+│   │   ├── components/              # Các UI Component độc lập
+│   │   │   ├── Navbar.jsx           # ⭐ Thanh Header Sticky 72px 1 hàng, đa ngôn ngữ
+│   │   │   ├── Footer.jsx           # Chân trang bản quyền, liên hệ & menu điều hướng
+│   │   │   ├── FloatingAIBot.jsx    # Trợ lý AI nổi cố định bên phải màn hình
+│   │   │   ├── SpotlightBanner.jsx  # Banner tiêu điểm lấy ảnh bài viết tự động
+│   │   │   ├── SEOHead.jsx          # Thẻ meta SEO, OpenGraph tự động
+│   │   │   ├── RichTextEditor.jsx   # Soạn thảo bài viết HTML cao cấp
+│   │   │   └── ProtectedRoute.jsx   # Phân quyền định tuyến bảo vệ theo Role
+│   │   ├── contexts/
+│   │   │   ├── AuthContext.jsx      # Quản lý đăng nhập 5 Role độc lập
+│   │   │   ├── LanguageContext.jsx  # Bộ xử lý đa ngôn ngữ (VI, EN, ZH, JA, KO) & Google Translate
+│   │   │   └── PWAContext.jsx       # Xử lý cài đặt ứng dụng Desktop/Mobile
+│   │   ├── constants/
+│   │   │   ├── categories.js        # Danh mục mặc định fallback có nhãn song ngữ
+│   │   │   └── provinces.js         # Danh mục tỉnh thành Việt Nam
+│   │   ├── pages/                   # Các trang ứng dụng chính
+│   │   │   ├── Home.jsx             # ⭐ Trang chủ (Landing page đa phân khu)
+│   │   │   ├── Posts.jsx            # Tin bài, cơ hội đầu tư & bộ lọc chuyên mục
+│   │   │   ├── PostDetail.jsx       # Chi tiết bài viết (mở công khai, chuẩn SEO)
+│   │   │   ├── Events.jsx           # Danh sách sự kiện & đặt vé QR chống giật dịch
+│   │   │   ├── Members.jsx          # Danh bạ hồ sơ doanh nghiệp hội viên
+│   │   │   ├── AIChat.jsx           # Trang trò chuyện AI chuyên sâu
+│   │   │   ├── Search.jsx           # Tìm kiếm dữ liệu toàn hệ thống
+│   │   │   ├── Guide.jsx            # Hướng dẫn sử dụng hệ thống
+│   │   │   ├── Login.jsx            # Đăng nhập đa vai trò
+│   │   │   ├── Register.jsx         # Đăng ký tài khoản hội viên (Tự duyệt Silver)
+│   │   │   ├── MemberDashboard.jsx  # Quản trị hội viên doanh nghiệp
+│   │   │   ├── CreatorDashboard.jsx # Quản trị biên tập viên / Creator
+│   │   │   ├── OrganizerDashboard.jsx # Quản trị ban tổ chức sự kiện
+│   │   │   ├── AdminCheckin.jsx     # Soát vé QR qua camera thời gian thực
+│   │   │   └── Admin*.jsx           # Cụm 8 màn hình Admin (Members, Posts, Events, Categories, Leads...)
+│   │   ├── utils/
+│   │   │   ├── api.js               # Client fetch an toàn có timeout & dữ liệu fallback
+│   │   │   └── dateUtils.js         # Chuẩn hóa ngày giờ chuẩn ISO cho Safari iOS
+│   │   ├── index.css                # ⭐ Design Tokens màu sắc, typography toàn cục
+│   │   ├── App.jsx                  # Routing React Router v6 & Lazy loading
+│   │   └── main.jsx                 # Entry point khởi chạy React
+│   ├── index.html                   # HTML Shell chính, tích hợp silent Google Translate
+│   └── vite.config.js               # Cấu hình Vite build trực tiếp vào thư mục root /public
+├── public/                          # Thư mục bundle production phục vụ Web server
+│   ├── assets/                      # JS, CSS được nén gzip/brotli
+│   ├── sw.js                        # Service Worker PWA
+│   └── manifest.json                # PWA Manifest
 ├── scripts/
-│   └── rebrand.js               (CLI Script tự động đổi tên thương hiệu)
-├── .env.example                 ⭐ Mẫu biến môi trường
-├── db.js                        (Kết nối MySQL Connection Pool)
-├── ecosystem.config.js          (Cấu hình chạy PM2 Cluster trên VPS)
-├── schema.sql                   ⭐⭐ Cấu trúc CSDL chuẩn hóa 16 bảng (Chạy khởi tạo DB)
-├── server.js                    ⭐⭐ Backend Express: Cung cấp 98 REST API & AI Service
-└── hand_over.md                 (Tài liệu này)
+│   └── rebrand.js                   # CLI Script tự động thay đổi tên thương hiệu
+├── .env.example                     # Mẫu biến môi trường
+├── db.js                            # Kết nối MySQL Connection Pool
+├── ecosystem.config.js              # Cấu hình PM2 Cluster trên VPS
+├── schema.sql                       # ⭐⭐ Cấu trúc CSDL chuẩn hóa 16 bảng kèm dữ liệu mẫu
+├── server.js                        # ⭐⭐ Backend Express API: 98 REST Endpoints & AI RAG
+└── hand_over.md                     # Tài liệu bàn giao & nhân bản (Tệp tin này)
 ```
 
 ---
 
-## 🎨 3. QUY TRÌNH 5 BƯỚC ĐỔI THƯƠNG HIỆU & MÀU SẮC (REBRANDING)
+## 🎨 3. QUY TRÌNH 5 BƯỚC NHÂN BẢN SANG WEB `.TODAY` MỚI (REBRANDING CHECKLIST)
 
-Khi bạn muốn biến mã nguồn này thành cổng thông tin của một **Tỉnh thành** (VD: *Đà Nẵng Today*), một **Hiệp hội** (VD: *Hiệp hội Du lịch Việt Nam*) hay một **Tập đoàn**, hãy thực hiện đúng 5 bước sau:
+Khi nhân bản codebase này sang một tỉnh thành hoặc thương hiệu mới (ví dụ: `gialai.today`, `kontum.today`, `danang.today`), bạn chỉ cần làm theo đúng 5 bước sau:
 
 ### Bước 1: Khai báo lại cấu hình Frontend (`frontend/src/brand.config.js`)
-Mở file [frontend/src/brand.config.js](file:///frontend/src/brand.config.js) và thay đổi các trường dữ liệu:
+Mở file [frontend/src/brand.config.js](file:///frontend/src/brand.config.js) và cập nhật thông tin địa phương mới:
+
 ```javascript
 export const brandConfig = {
-  // 1. Tên thương hiệu
-  brandName: 'DaNang.today',            // Tên đầy đủ
-  brandShortName: 'DaNang Today',       // Tên viết tắt
-  platformName: 'DaNang Digital Hub',   // Nền tảng
-  companyLegalName: 'Hiệp hội Phát triển Kinh tế & Du lịch Đà Nẵng',
+  // 1. Tên nhận diện thương hiệu
+  brandName: 'GiaLai.today',
+  brandShortName: 'Gia Lai Today',
+  platformName: 'Gia Lai Digital Investment & Data Hub',
+  companyLegalName: 'Cổng thông tin & Xúc tiến Đầu tư tỉnh Gia Lai',
 
-  // 2. Định vị & Slogan
-  slogan: 'Khám phá thành phố đáng sống — Kết nối giao thương số 1',
-  tagline: 'Cổng thông tin & Xúc tiến Đầu tư TP. Đà Nẵng',
-  domain: 'danang.today',
-  baseUrl: 'https://danang.today',
+  // 2. Định vị & Khẩu hiệu địa phương
+  slogan: 'Khám phá Đại ngàn — Kết nối Doanh nghiệp & Đầu tư Toàn cầu',
+  tagline: 'Cổng thông tin kinh tế, nông nghiệp số và dữ liệu tỉnh Gia Lai',
+  domain: 'gialai.today',
+  baseUrl: 'https://gialai.today',
 
-  // 3. Logo & Hình ảnh
+  // 3. Hình ảnh đại diện
   logo: {
-    primary: '/logo_danang.png',         // Đặt ảnh vào frontend/public/
-    dark: '/logo_danang_dark.png',
-    icon: '/logo_icon.png',
-    favicon: '/favicon.png',
+    primary: '/logo_gialai.png',
+    dark: '/logo_gialai_dark.png',
+    icon: '/logo_icon.svg',
+    favicon: '/favicon.svg'
   },
 
-  // 4. Bảng màu chủ đạo (Design Tokens)
+  // 4. Bảng màu chủ đạo (Tùy biến theo bản sắc địa phương)
+  // Ví dụ: Gia Lai chọn Xanh Đại ngàn (#1B6B40) hoặc Nâu Đất Đỏ (#7A3E1D)
   colors: {
-    primary: '#1E63E9',        // Màu chủ đạo mới (Luminous Royal Blue)
-    primaryHover: '#144CB8',
-    primaryDark: '#0C3386',
-    primaryLight: '#EFF6FF',
-    secondary: '#0F172A',
-    accent: '#00D2FF',         // Cyan / Vàng hổ phách
-    gold: '#F59E0B'
+    primary: '#1B6B40',
+    primaryHover: '#145331',
+    primaryDark: '#0D3820',
+    primaryLight: '#E8F5ED',
+    gold: '#D5A33F',
+    accent: '#F3C562'
   },
 
   // 5. Trợ lý Trí tuệ Nhân tạo AI
   aiAssistant: {
-    name: 'AI Danang Assistant',
-    title: 'Trợ lý AI Cố vấn Đầu tư & Điểm đến Đà Nẵng',
-    welcomeMessage: 'Xin chào! Tôi là Trợ lý AI của DaNang.today...',
-    systemRole: 'Bạn là trợ lý AI chuyên nghiệp về thành phố Đà Nẵng...'
+    name: 'Gia Lai AI Assistant',
+    title: 'Trợ lý AI Cố vấn Dữ liệu & Đầu tư Gia Lai',
+    welcomeMessage: 'Xin chào! Tôi là Trợ lý AI của GiaLai.today...',
+    systemRole: 'Bạn là chuyên gia tư vấn đầu tư, dữ liệu kinh tế và văn hóa tỉnh Gia Lai...'
   },
 
-  // 6. Tài khoản VietQR thanh toán vé sự kiện
+  // 6. Tài khoản ngân hàng VietQR (dành cho thu phí vé sự kiện/hội viên)
   bankAccount: {
-    bankName: 'Techcombank',
-    bankBranch: 'PGD Da Nang',
-    accountNumber: '19036730021017',
-    accountHolder: 'HIEP HOI DOANH NGHIEP DA NANG',
-    binCode: '970407'
+    bankName: 'Vietcombank',
+    bankBranch: 'Chi nhánh Gia Lai',
+    accountNumber: '1023456789',
+    accountHolder: 'CONG TY CP CONG NGHE GIA LAI TODAY',
+    binCode: '970436'
   },
 
-  // 7. Liên hệ & Chân trang
+  // 7. Thông tin liên hệ Footer
   contact: {
-    hotline: '0236 3888 999',
-    phone: '0905 123 456',
-    email: 'contact@danang.today',
-    address: '123 Bạch Đằng, Quận Hải Châu, TP. Đà Nẵng',
-    copyright: '© 2026 Danang.today — Nền tảng phát triển bởi ADT Quốc tế.'
+    hotline: '0269 3888 999',
+    phone: '0905 888 999',
+    email: 'banbientap@gialai.today',
+    address: 'TP. Pleiku, Tỉnh Gia Lai, Việt Nam',
+    copyright: '© 2026 GiaLai.today — Phát triển trên nền tảng Today Platform.'
   }
 };
+export default brandConfig;
 ```
 
 ### Bước 2: Đồng bộ cấu hình Backend (`config/brand.config.js` & `.env`)
-1. Mở file [config/brand.config.js](file:///config/brand.config.js) cập nhật các giá trị tương ứng (`appName`, `brandName`, `bankAccount`, `ai.systemPrompt`).
-2. Mở file `.env` (tạo từ `.env.example`):
+1. Mở file [config/brand.config.js](file:///config/brand.config.js) và đồng bộ các trường `appName`, `brandName`, `bankAccount`, `ai.systemPrompt` tương ứng với tỉnh thành mới.
+2. Sao chép `.env.example` thành `.env` và khai báo:
 ```env
 PORT=5000
-SITE_URL=https://danang.today
-BRAND_NAME=DaNang.today
-AI_AGENT_NAME=AI Danang Assistant
+SITE_URL=https://gialai.today
+BRAND_NAME=GiaLai.today
+AI_AGENT_NAME=Gia Lai AI Assistant
 GEMINI_API_KEY=your_gemini_api_key_here
 OPENROUTER_API_KEY=your_openrouter_api_key_here
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=your_db_password
-DB_NAME=danang_today_db
+DB_NAME=gialai_today_db
 ```
 
-### Bước 3: Thay thế các tài nguyên ảnh trong `frontend/public/`
-Đặt các file hình ảnh mới trùng tên (hoặc đổi tên và cập nhật lại đường dẫn trong `brand.config.js`):
-- `logo_doanhnghiepvn.png` ➔ Logo nền sáng của thương hiệu mới.
-- `logo_doanhnghiepvn_dark.png` ➔ Logo nền tối (dùng trong Navbar / Banner tối).
-- `favicon.png` / `favicon.ico` ➔ Biểu tượng Tab trình duyệt.
-- `ai_robot_avatar-removebg.png` ➔ Ảnh đại diện trợ lý ảo AI.
-
-### Bước 4: Tùy biến mã màu toàn cục trong `frontend/src/index.css`
-Mở [frontend/src/index.css](file:///frontend/src/index.css), chỉnh sửa nhóm biến `:root`:
+### Bước 3: Thay đổi bảng màu Design Tokens trong `frontend/src/index.css`
+Mở [frontend/src/index.css](file:///frontend/src/index.css), cập nhật các mã màu thương hiệu ở thẻ `:root`:
 ```css
 :root {
-  /* Thay đổi màu chủ đạo (Primary Color) - Mặc định hiện tại: Luminous Bamboo Blue */
-  --primary: #1E63E9;
-  --primary-glow: rgba(30, 99, 233, 0.25);
-  --primary-dark: #0C3386;
-  --primary-light: #EFF6FF;
+  /* Màu chủ đạo thương hiệu (Primary) */
+  --primary: #1B6B40;
+  --primary-hover: #145331;
+  --primary-dark: #0D3820;
+  --primary-light: #E8F5ED;
 
-  /* Font chữ thương hiệu */
-  --font-title: 'Outfit', sans-serif;
-  --font-body: 'Plus Jakarta Sans', sans-serif;
+  /* Màu vàng ánh kim bổ trợ (Gold Accent) */
+  --gold: #D5A33F;
+  --gold-glow: rgba(213, 163, 63, 0.35);
+
+  /* Nền Header Navbar */
+  --header-bg: #1B120C;
+  --header-border: rgba(213, 163, 63, 0.35);
 }
 ```
 
-### Bước 5: Build và Khởi động
-```bash
-# 1. Khởi tạo DB nếu chưa có
-mysql -u root -p danang_today_db < schema.sql
+### Bước 4: Thay thế ảnh Icon, Logo & Favicon trong `frontend/public/`
+- Đặt file `logo_icon.svg` hoặc `logo_icon.png` mới vào `frontend/public/`.
+- Đặt `favicon.svg` và `favicon.png` đại diện cho biểu trưng tỉnh thành mới.
+- Đặt ảnh đại diện AI `ai_robot_avatar-removebg.png` (nếu có nhân vật đại sứ AI riêng).
 
-# 2. Build Frontend
-cd frontend
-npm install
-npm run build
-cd ..
-
-# 3. Chạy Backend
-npm install
-node server.js
-```
+### Bước 5: Cập nhật Chuyên mục Mặc định trong CSDL (`schema.sql`)
+Mở file [schema.sql](file:///schema.sql), cập nhật bảng `categories` và `sub_categories` phù hợp với địa phương (VD: Cà phê Pleiku, Tiêu Gia Lai, Du lịch Biển Hồ, Dự án Điện gió...).
 
 ---
 
-## 🗺️ 4. BẢN ĐỒ DỮ LIỆU & TÍNH NĂNG TRANG CHỦ (`Home.jsx`)
+## 🧭 4. KIẾN TRÚC HEADER & BỘ CHỌN ĐA NGÔN NGỮ CHỐNG DỊCH ĐÈ
 
-Trang chủ hiện tại ([frontend/src/pages/Home.jsx](file:///frontend/src/pages/Home.jsx)) gồm **9 phân khu chức năng (Sections)**. Khi thiết kế lại giao diện, bạn chỉ cần thay đổi cấu trúc JSX và style, **giữ nguyên phần state, hooks và xử lý logic kết nối API**:
+Header của hệ thống (`frontend/src/components/Navbar.jsx`) đã được hoàn thiện đạt tiêu chuẩn cao cấp:
 
-| STT | Tên Khối (Section) | Dữ liệu / State phụ trách | Logic & Hành vi bắt buộc giữ |
-| :---: | :--- | :--- | :--- |
-| **1** | **Hero Banner & Search** | `searchQuery`<br>`brandConfig.slogan` | Ô tìm kiếm khi nhấn Enter hoặc bấm icon kính lúp sẽ điều hướng sang `/posts?search=...`<br>Nút CTA cuộn mượt xuống form tư vấn qua hàm `scrollToConsult()`. |
-| **2** | **Sự kiện nổi bật & Countdown** | `eventsList` (từ `/api/events`)<br>`timeLeft`<br>`showRegisterModal` | Đồng hồ đếm ngược thời gian thực cho sự kiện sắp diễn ra gần nhất.<br>Nút mở Modal đăng ký vé nhanh trực tiếp trên Home (`handleRegisterSubmit` gọi `/api/events/:id/register` có kiểm tra trùng lặp). |
-| **3** | **Khối Sứ mệnh Chiến lược** | Nội dung giới thiệu cơ quan / đối tác | Khối sứ mệnh đặt ngay bên dưới Sự kiện để tăng uy tín thương hiệu. |
-| **4** | **6 Trụ cột Tư vấn Hỗ trợ** (`id="tu-van-linh-vuc"`) | Danh sách 6 trụ cột chuyên gia | Khi click vào từng trụ cột, gọi `scrollToConsult(pillarTitle)` để tự động cuộn xuống form và điền sẵn trường `serviceNeed`. |
-| **5** | **Bảng tin & Phóng sự mới nhất** | `latestPosts` (từ `/api/posts?limit=6`)<br>`loadingPosts` | Hiển thị tin tức động từ CSDL kèm ảnh bìa, chuyên mục, ngày đăng.<br>Có cơ chế Fallback tĩnh từ `api.js` và nạp từ cache `dnvn_cached_home_posts`. |
-| **6** | **Cộng đồng Hội viên tiêu biểu** | `featuredMembers` (từ `/api/members`)<br>`loadingMembers` | Hiển thị các doanh nghiệp hội viên nổi bật.<br>Có Fallback tĩnh nếu DB chưa có dữ liệu.<br>Nút mở danh bạ `/members`. |
-| **7** | **Khối Đối tác chiến lược (Partner)** | Ảnh `vib-business-card.webp`<br>Link ngoài | Khối giới thiệu thẻ đối tác ngân hàng / tài chính.<br>Hiệu ứng 3D hover phát sáng, click mở link sang tab mới. |
-| **8** | **Form Đăng ký Tư vấn & Hợp tác** (`id="tu-van"`) | `formData`<br>`formSubmitted`<br>`formLoading` | Form gửi dữ liệu lên endpoint **`/api/leads`**.<br>Gồm: `fullName`, `phone`, `email`, `city`, `companyName`, `serviceNeed`, `notes`, `agreeTerms`. |
-| **9** | **Hỏi đáp thường gặp (FAQ)** | `activeFaq` (ID đang mở)<br>Mảng câu hỏi/trả lời | Accordion đóng/mở câu hỏi thường gặp.<br>Gợi ý câu hỏi nhanh mở Trợ lý AI `/ai-chat`. |
+### 1. Bảng quy chuẩn kích thước Header & Typography:
+- **Nguyên tắc bất biến**: Thanh Header **luôn nằm trên 1 hàng duy nhất** (không bao giờ tách thành 2 tầng gây vỡ layout).
+- **Cơ chế chống đè chữ**: Chữ của chuyên mục sử dụng `white-space: normal; text-align: center; line-height: 1.25;`. Nếu tên chuyên mục dài (VD: *"Doanh nghiệp & Sản phẩm"*), chữ sẽ tự động xuống 2 dòng cân xứng ở giữa nút bấm mà không chạm hoặc đè vào các nút lân cận.
+- **Kích thước thích ứng (Responsive Tiers)**:
+  - **Màn hình lớn (> 1400px)**: Chiều cao `72px`, cỡ chữ `14.5px`, độ đậm `font-weight: 650`, `max-width: 145px`, padding `6px 10px`.
+  - **Laptop tiêu chuẩn (1201px – 1400px)**: Chiều cao `70px`, cỡ chữ `13.5px`, độ đậm `font-weight: 650`, `max-width: 125px`, padding `5px 8px`.
+  - **Laptop nhỏ / Màn hình hẹp (1081px – 1200px)**: Chiều cao `68px`, cỡ chữ `12.5px`, độ đậm `font-weight: 600`, `max-width: 110px`, padding `4px 6px`.
+  - **Tablet & Mobile (≤ 1080px)**: Chiều cao `62px`, chuyên mục chuyển vào Drawer trượt với kích thước `15px` tiện chạm cảm ứng.
+
+### 2. Cơ chế Chống Dịch Đè (Anti-Mistranslation) độc quyền:
+* **Vấn đề đã triệt tiêu**: Khi người dùng dịch sang tiếng Anh hoặc đổi về tiếng Việt, công cụ dịch của Google Translate quét toàn bộ DOM. Các chữ viết tắt ngôn ngữ tiếng Anh như `US` hay `EN` nếu không bảo vệ sẽ bị dịch sang tiếng Việt thành chữ **"Chúng tôi"** (do từ `us` trong tiếng Anh có nghĩa là chúng tôi).
+* **Giải pháp áp dụng trên Codebase**:
+  - Toàn bộ khối bộ chọn ngôn ngữ, nút bấm, thẻ span nhãn (`VI`, `EN`, `ZH`, `JA`, `KO`) và cờ quốc kỳ được gắn cứng hai thuộc tính:
+    `className="notranslate" translate="no"`
+  - Khi Google Translate gặp các thẻ này, engine dịch sẽ **bỏ qua 100%**, đảm bảo các nhãn ngôn ngữ và thương hiệu giữ nguyên tuyệt đối, không bao giờ bị biến đổi nội dung.
 
 ---
 
-## 🎨 5. HƯỚNG DẪN CHI TIẾT THIẾT KẾ LẠI GIAO DIỆN TRANG CHỦ
+## ⚡ 5. CƠ CHẾ ĐỒNG BỘ CHUYÊN MỤC TỨC THÌ (REALTIME CATEGORY SYNC)
 
-Khi bạn muốn vẽ một giao diện Trang chủ hoàn toàn mới (VD: Phong cách Bento Grid, Minimalism, Dark Theme, hoặc Phong cách Tạp chí số), hãy tuân thủ các nguyên tắc sau:
+Hệ thống danh mục đã được xóa bỏ hoàn toàn cơ chế cache đệm 2 phút của server:
 
-### ✅ NGUYÊN TẮC VÀNG (CÁI CẦN GIỮ NGUYÊN):
-1. **Giữ nguyên khối Khởi tạo (Header hooks)**:
-   ```javascript
-   const { role, user } = useAuth();
-   const { currentLang, t } = useTranslation();
-   const navigate = useNavigate();
+1. **Backend API (`server.js`)**:
+   Endpoint `GET /api/categories` phản hồi với header:
+   ```http
+   Cache-Control: no-cache, no-store, must-revalidate
+   Pragma: no-cache
+   Expires: 0
    ```
-2. **Sử dụng API Client an toàn từ `../utils/api`**:
-   Sử dụng `fetchJsonWithTimeout` kèm dữ liệu Fallback (`FALLBACK_POSTS`, `FALLBACK_EVENTS`, `FALLBACK_MEMBERS`) để tránh lỗi màn hình loading vô tận nếu backend khởi động chậm.
-3. **Giữ nguyên các Anchor ID**:
-   - `id="tu-van"` (dành cho Form đăng ký tư vấn).
-   - `id="su-kien"` (dành cho Khối sự kiện).
-   - `id="tu-van-linh-vuc"` (dành cho Khối 6 trụ cột tư vấn).
-4. **Endpoint gửi Form Tư vấn**: Phải gửi đến **`/api/leads`** với `companyName`, `phone`, `fullName` là các trường bắt buộc.
-5. **Giữ nguyên cơ chế đa ngôn ngữ**:
-   Mọi tiêu đề và văn bản hiển thị nên viết dưới dạng:
-   `currentLang === 'en' ? 'English Text' : 'Văn bản Tiếng Việt'`
-
-### 💡 CÁI BẠN ĐƯỢC TỰ DO SÁNG TẠO:
-- **Bố cục (Layout)**: Bạn có thể đổi từ dạng dọc truyền thống sang dạng **Bento Grid**, bố trí thẻ bài viết dạng **Carousel (Slider)**, hoặc đổi thẻ sự kiện thành dạng **Timeline**.
-- **Hero Banner**: Thay vì banner tĩnh, bạn có thể thiết kế dạng Video background, dạng 3D Canvas, hoặc dạng 2 cột (Trái text & form nhanh, Phải là mô hình đồ họa).
-- **Style & Animation**: Bạn có thể viết CSS trực tiếp inline (`style={{...}}`) hoặc tạo thêm file `frontend/src/pages/HomeCustom.css` và import vào `Home.jsx`.
-- **Thứ tự các Sections**: Bạn hoàn toàn có thể đảo thứ tự (VD: đưa Khối Tin tức lên trước Sự kiện, hoặc đưa Khối Đối tác lên gần Hero).
+2. **Frontend Cache Busting & SWR (`Navbar.jsx`)**:
+   - Khi vừa tải trang, Header đọc ngay từ `localStorage.getItem('dnvn_cached_categories')` để hiển thị trong **0ms** (không bao giờ bị giật trắng thanh menu).
+   - Ngay sau đó, một background request chạy ngầm với query timestamp: `/api/categories?_t=${Date.now()}` để kiểm tra bản cập nhật mới nhất từ database.
+3. **Admin Trigger Event (`AdminCategories.jsx`)**:
+   Khi Quản trị viên Thêm, Sửa hoặc Xóa chuyên mục trong Dashboard, Admin gửi sự kiện:
+   ```javascript
+   window.dispatchEvent(new Event('categories-updated'));
+   ```
+   Thanh Header của tất cả các tab đang mở sẽ tự động nạp lại danh mục mới ngay lập tức mà không cần F5.
 
 ---
 
-## 💻 6. KHUNG CODE MẪU CHUẨN (CLEAN SKELETON) CHO `Home.jsx`
+## 🗺️ 6. BẢN ĐỒ DỮ LIỆU & PHÂN KHU TRANG CHỦ (`Home.jsx`)
 
-Dưới đây là khung code tinh gọn chuẩn đã đấu nối sẵn 100% logic, state, và đúng endpoint API (`/api/leads`, `/api/posts`, `/api/events`, `/api/members`). Bạn có thể sao chép đoạn này để bắt đầu thiết kế giao diện mới mà không lo lỗi cú pháp hay lỗi API:
+Trang chủ [frontend/src/pages/Home.jsx](file:///frontend/src/pages/Home.jsx) được tổ chức theo kiến trúc module hóa:
+
+| Phân khu (Section) | Nguồn dữ liệu / Endpoint | Chức năng nghiệp vụ |
+| :--- | :--- | :--- |
+| **1. Spotlight Banner** | Bài viết ghim từ `/api/posts?limit=5` | Lấy trực tiếp ảnh bìa bài viết thật để làm nền, có nút "Xem chi tiết". |
+| **2. Hero Banner & Search** | `brandConfig.slogan` & `searchQuery` | Tìm kiếm dữ liệu điều hướng `/posts?search=...`, nút CTA cuộn xuống form tư vấn. |
+| **3. Dự án Trọng điểm** | Bảng tin dự án kêu gọi đầu tư | Hiển thị dạng lưới **4 cột (Desktop lớn) / 2 cột (Laptop) / 1 cột (Mobile)** cân đối, không bị lệch hàng. |
+| **4. Sự kiện & Countdown** | `/api/events?limit=4` | Đồng hồ đếm ngược thời gian thực, đăng ký vé QR (có memoized content chống giật dịch). |
+| **5. Tin bài & Cơ hội Giao thương** | `/api/posts?limit=6` | Tin tức mới nhất theo danh mục, hiển thị ảnh bìa, ngày đăng, chuyên mục. |
+| **6. Doanh nghiệp Hội viên** | `/api/members?limit=4` | Giới thiệu doanh nghiệp hội viên tiêu biểu đã xác thực. |
+| **7. Form Đăng ký Tư vấn** (`id="tu-van"`) | Gửi đến **`/api/leads`** | Tiếp nhận thông tin nhu cầu đầu tư, kết nối giao thương vào CSDL. |
+| **8. Trợ lý AI Nổi (`FloatingAIBot`)** | Gửi đến `/api/chat` (Gemini Flash RAG) | Nút tròn cố định góc phải dưới, click mở modal trò chuyện trực tiếp 24/7. |
+
+---
+
+## 💻 7. KHUNG CODE MẪU CHUẨN (CLEAN SKELETON) CHO `Home.jsx`
+
+Khi nhân bản sang một tỉnh thành và muốn vẽ lại phong cách giao diện khác (VD: Bento Grid, Magazine, Minimalism), bạn chỉ cần sao chép khung code mẫu chuẩn dưới đây để đảm bảo **đầy đủ 100% logic API, xử lý form và đa ngôn ngữ**:
 
 ```jsx
 import React, { useState, useEffect } from 'react';
@@ -297,28 +332,25 @@ export const Home = () => {
   const { currentLang } = useTranslation();
   const navigate = useNavigate();
 
-  // 1. STATE DỮ LIỆU ĐỘNG TỪ BACKEND
+  // 1. DỮ LIỆU ĐỘNG TỪ BACKEND
   const [latestPosts, setLatestPosts] = useState(FALLBACK_POSTS);
   const [eventsList, setEventsList] = useState(FALLBACK_EVENTS);
   const [featuredMembers, setFeaturedMembers] = useState(FALLBACK_MEMBERS);
-  const [loading, setLoading] = useState(false);
-
-  // 2. STATE TÌM KIẾM & FORM TƯ VẤN (GỬI ĐẾN /api/leads)
   const [searchQuery, setSearchQuery] = useState('');
+
+  // 2. DỮ LIỆU FORM TƯ VẤN (GỬI ĐẾN /api/leads)
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
     email: '',
     city: '',
     companyName: '',
-    serviceNeed: 'Tư vấn vốn & tiếp cận tín dụng',
-    notes: '',
-    agreeTerms: true
+    serviceNeed: 'Xúc tiến đầu tư & Hợp tác thương mại',
+    notes: ''
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
 
-  // 3. FETCH DỮ LIỆU TỰ ĐỘNG CÓ TIMEOUT & RETRY
   useEffect(() => {
     let isMounted = true;
     const loadHomeData = async () => {
@@ -326,29 +358,22 @@ export const Home = () => {
         const [resPosts, resEvents, resMembers] = await Promise.allSettled([
           fetchJsonWithTimeout('/api/posts?limit=6'),
           fetchJsonWithTimeout('/api/events?limit=4'),
-          fetchJsonWithTimeout('/api/members?limit=3')
+          fetchJsonWithTimeout('/api/members?limit=4')
         ]);
 
         if (isMounted) {
-          if (resPosts.status === 'fulfilled' && resPosts.value?.data) {
-            setLatestPosts(resPosts.value.data);
-          }
-          if (resEvents.status === 'fulfilled' && resEvents.value?.data) {
-            setEventsList(resEvents.value.data);
-          }
-          if (resMembers.status === 'fulfilled' && resMembers.value?.data) {
-            setFeaturedMembers(resMembers.value.data);
-          }
+          if (resPosts.status === 'fulfilled' && resPosts.value?.data) setLatestPosts(resPosts.value.data);
+          if (resEvents.status === 'fulfilled' && resEvents.value?.data) setEventsList(resEvents.value.data);
+          if (resMembers.status === 'fulfilled' && resMembers.value?.data) setFeaturedMembers(resMembers.value.data);
         }
       } catch (err) {
-        console.warn('Lỗi tải dữ liệu trang chủ:', err);
+        console.warn('Lỗi nạp dữ liệu trang chủ:', err);
       }
     };
     loadHomeData();
     return () => { isMounted = false; };
   }, []);
 
-  // Xử lý tìm kiếm
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -356,14 +381,6 @@ export const Home = () => {
     }
   };
 
-  // Cuộn mượt xuống form tư vấn
-  const scrollToConsult = (serviceName = '') => {
-    if (serviceName) setFormData(prev => ({ ...prev, serviceNeed: serviceName }));
-    const el = document.getElementById('tu-van');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  // Xử lý gửi Form Tư vấn chuẩn endpoint /api/leads
   const handleConsultSubmit = async (e) => {
     e.preventDefault();
     if (!formData.fullName || !formData.phone || !formData.companyName) {
@@ -388,12 +405,11 @@ export const Home = () => {
       if (res.ok) {
         setFormSubmitted(true);
       } else {
-        const errData = await res.json();
-        alert(errData.error || 'Có lỗi xảy ra khi gửi thông tin');
+        const errJson = await res.json();
+        alert(errJson.error || 'Có lỗi xảy ra khi gửi thông tin');
       }
     } catch (err) {
-      console.error('Submit error:', err);
-      alert('Không thể kết nối đến máy chủ, vui lòng thử lại.');
+      alert('Không thể kết nối máy chủ, vui lòng thử lại.');
     } finally {
       setFormLoading(false);
     }
@@ -403,84 +419,33 @@ export const Home = () => {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <SEOHead 
         title={`${brandConfig.brandName} — ${brandConfig.slogan}`}
-        description={brandConfig.description}
+        description={brandConfig.tagline}
       />
       <SpotlightBanner />
       <Navbar />
 
       <main style={{ flex: 1 }}>
         {/* ========================================================
-            BẮT ĐẦU VÙNG THIẾT KẾ GIAO DIỆN MỚI CỦA BẠN TẠI ĐÂY
+            VÙNG TỰ DO SÁNG TẠO GIAO DIỆN MỚI CỦA BẠN TẠI ĐÂY
             ======================================================== */}
-
-        {/* SECTION 1: HERO BANNER MỚI */}
-        <section className="custom-hero-section">
+        <section className="hero-section">
           <h1>{brandConfig.brandName}</h1>
           <p>{brandConfig.slogan}</p>
           <form onSubmit={handleSearch}>
             <input 
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={currentLang === 'en' ? 'Search topics...' : 'Tìm kiếm nội dung...'}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder={currentLang === 'en' ? 'Search data & projects...' : 'Tìm kiếm dữ liệu, dự án...'}
             />
             <button type="submit">{currentLang === 'en' ? 'Search' : 'Tìm kiếm'}</button>
           </form>
-          <button onClick={() => scrollToConsult()}>
-            {currentLang === 'en' ? 'Get Consulted' : 'Đăng ký tư vấn'}
-          </button>
         </section>
 
-        {/* SECTION 2: SỰ KIỆN NỔI BẬT */}
-        <section id="su-kien" className="custom-events-section">
-          <h2>{currentLang === 'en' ? 'Upcoming Events' : 'Sự kiện sắp diễn ra'}</h2>
-          <div className="events-grid">
-            {eventsList.map(item => (
-              <div key={item.id} className="event-card">
-                <h3>{item.title}</h3>
-                <Link to={`/events/${item.id}`}>Chi tiết</Link>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* SECTION 3: 6 TRỤ CỘT TƯ VẤN */}
-        <section id="tu-van-linh-vuc" className="custom-pillars-section">
-          <h2>{currentLang === 'en' ? 'Expert Pillars' : 'Lĩnh vực tư vấn trọng điểm'}</h2>
-          <button onClick={() => scrollToConsult('Tư vấn Vốn')}>Tư vấn Vốn</button>
-          <button onClick={() => scrollToConsult('Ứng dụng AI')}>Ứng dụng AI</button>
-        </section>
-
-        {/* SECTION 4: BÀI VIẾT & TIN TỨC */}
-        <section className="custom-posts-section">
-          <h2>{currentLang === 'en' ? 'Latest Opportunities' : 'Cơ hội giao thương mới'}</h2>
-          <div className="posts-grid">
-            {latestPosts.map(post => (
-              <div key={post.id} className="post-card">
-                <h3>{post.title}</h3>
-                <Link to={`/posts/${post.id}`}>Xem bài</Link>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* SECTION 5: HỘI VIÊN TIÊU BIỂU */}
-        <section className="custom-members-section">
-          <h2>{currentLang === 'en' ? 'Featured Members' : 'Hội viên tiêu biểu'}</h2>
-          <div className="members-grid">
-            {featuredMembers.map(m => (
-              <div key={m.id} className="member-card">
-                <h4>{m.company_name || m.name}</h4>
-                <Link to="/members">Xem hồ sơ</Link>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* SECTION 6: FORM ĐĂNG KÝ TƯ VẤN (BẮT BUỘC CÓ ID "tu-van") */}
-        <section id="tu-van" className="custom-consult-section">
-          <h2>{currentLang === 'en' ? 'Register for Consultation' : 'Đăng ký tư vấn doanh nghiệp'}</h2>
+        {/* Form liên hệ tư vấn (Anchor ID "tu-van") */}
+        <section id="tu-van" className="consult-section">
+          <h2>{currentLang === 'en' ? 'Investment Connection' : 'Kết nối & Xúc tiến Đầu tư'}</h2>
           {formSubmitted ? (
-            <p>✅ Đăng ký thành công! Chuyên gia sẽ liên hệ trong 24h.</p>
+            <p>✅ Đã gửi thông tin thành công! Bộ phận xúc tiến sẽ liên hệ trong 24h.</p>
           ) : (
             <form onSubmit={handleConsultSubmit}>
               <input 
@@ -496,21 +461,17 @@ export const Home = () => {
                 required 
               />
               <input 
-                placeholder="Tên doanh nghiệp (*)" 
+                placeholder="Tên doanh nghiệp / Đơn vị (*)" 
                 value={formData.companyName} 
                 onChange={e => setFormData({ ...formData, companyName: e.target.value })} 
                 required 
               />
               <button type="submit" disabled={formLoading}>
-                {formLoading ? 'Đang gửi...' : 'Gửi yêu cầu'}
+                {formLoading ? 'Đang gửi...' : 'Gửi đăng ký'}
               </button>
             </form>
           )}
         </section>
-
-        {/* ========================================================
-            KẾT THÚC VÙNG THIẾT KẾ GIAO DIỆN
-            ======================================================== */}
       </main>
 
       <Footer />
@@ -518,93 +479,129 @@ export const Home = () => {
     </div>
   );
 };
-
 export default Home;
 ```
 
 ---
 
-## 🔌 7. DANH MỤC API BACKEND PHỤC VỤ TRANG CHỦ & NGHIỆP VỤ
+## 🔌 8. DANH MỤC API BACKEND CHUẨN HÓA
 
-Khi cần mở rộng thêm tính năng hoặc tùy biến dữ liệu trên Trang chủ, bạn có thể gọi trực tiếp các Endpoint REST API sau:
+Backend Express (`server.js`) cung cấp 98 endpoints RESTful hoàn chỉnh:
 
-| Endpoint | Method | Tham số (Query / Body) | Dữ liệu trả về (JSON) | Mục đích sử dụng |
-| :--- | :---: | :--- | :--- | :--- |
-| `/api/posts` | `GET` | `limit=6`, `category`, `search` | `{ success: true, data: [...] }` | Lấy danh sách tin tức / bài viết mới nhất |
-| `/api/events` | `GET` | `limit=4`, `status=upcoming` | `{ success: true, data: [...] }` | Lấy danh sách sự kiện sắp diễn ra kèm ngày giờ |
-| `/api/events/:id` | `GET` | `id` (Param) | `{ success: true, data: {...} }` | Lấy chi tiết 1 sự kiện |
-| `/api/events/:id/register` | `POST` | `{ fullName, phone, email, company, quantity, paymentProof }` | `{ success: true, ticketCode: "..." }` | Đăng ký vé sự kiện & nhận mã QR (Kiểm tra chống trùng) |
-| `/api/events/check-account` | `POST` | `{ phone, email }` | `{ exists: true/false }` | Kiểm tra tài khoản hội viên có trùng với người đăng ký vé |
-| `/api/members` | `GET` | `limit=3`, `featured=true` | `{ success: true, data: [...] }` | Lấy danh sách doanh nghiệp hội viên đã xác thực |
-| **`/api/leads`** | **`POST`** | `{ fullName, phone, email, city, companyName, memberType, notes }` | `{ success: true, id: ... }` | ⭐ Gửi dữ liệu đăng ký form tư vấn Trang chủ vào CSDL |
-| `/api/chat` | `POST` | `{ message, sessionId }` | `{ reply: "...", sessionId: "..." }` | Gửi câu hỏi đến Trợ lý AI Gemini Flash |
-| `/api/chat/sessions` | `GET` | Không | `{ success: true, sessions: [...] }` | Lấy danh sách các phiên trò chuyện của người dùng |
-| `/api/translate` | `POST` | `{ text, targetLang }` | `{ translatedText: "..." }` | Hỗ trợ dịch nhanh nội dung sang Tiếng Anh/Tiếng Việt |
-| `/api/categories` | `GET` | Không | `{ success: true, data: [...] }` | Lấy danh sách chuyên mục chính & lĩnh vực con song ngữ |
+| Endpoint | Phương thức | Dữ liệu gửi lên | Mục đích sử dụng |
+| :--- | :---: | :--- | :--- |
+| **`/api/categories`** | `GET` | Không | Lấy danh sách chuyên mục & lĩnh vực con (Header no-cache tức thì). |
+| **`/api/posts`** | `GET` | `limit`, `category`, `search`, `page` | Lấy danh sách bài viết & tin tức kinh tế, đầu tư. |
+| **`/api/posts/:id`** | `GET` | `id` (Param) | Chi tiết bài viết (mở công khai cho mọi người đọc). |
+| **`/api/events`** | `GET` | `limit`, `status=upcoming` | Lấy danh sách hội thảo, sự kiện xúc tiến. |
+| **`/api/events/:id/register`** | `POST` | `fullName`, `phone`, `email`, `quantity` | Đăng ký vé sự kiện, xuất mã vé QR và kiểm tra trùng lặp. |
+| **`/api/members`** | `GET` | `limit`, `featured=true` | Lấy danh sách doanh nghiệp hội viên đã xác thực. |
+| **`/api/leads`** | `POST` | `fullName`, `phone`, `companyName`, `memberType`, `notes` | Lưu thông tin yêu cầu tư vấn/đầu tư từ trang chủ vào CSDL. |
+| **`/api/chat`** | `POST` | `message`, `sessionId` | Gửi câu hỏi đến Trợ lý AI Gemini Flash RAG. |
+| **`/api/chat/sessions`** | `GET` | Không (dựa theo Cookie/User) | Danh sách các phiên trò chuyện của người dùng. |
+| **`/api/auth/register`** | `POST` | `username`, `password`, `company_name`, `tier` | Đăng ký tài khoản (Gói Silver tự động kích hoạt ngay). |
+| **`/api/auth/login`** | `POST` | `username`, `password` | Đăng nhập đa vai trò (Admin, Member, Creator, Organizer). |
+| **`/api/admin/checkin`** | `POST` | `ticketCode` | Quét mã QR soát vé sự kiện thời gian thực. |
 
 ---
 
-## 🚀 8. CHECKLIST KIỂM THỬ & QUY TRÌNH TRIỂN KHAI (DEPLOY)
+## 🚀 9. QUY TRÌNH BUILD, KHỞI TẠO CSDL & TRIỂN KHAI VPS (PRODUCTION)
 
-Sau khi hoàn tất chỉnh sửa thương hiệu hoặc thiết kế lại trang chủ, hãy thực hiện kiểm thử theo checklist sau:
-
-### ✅ Checklist Kiểm tra Chức năng Nghiệp vụ:
-1. **Kiểm tra Tìm kiếm**: Nhập từ khóa vào ô search ở Hero section ➔ Xác nhận điều hướng sang `/posts?search=...` chính xác.
-2. **Kiểm tra Đếm ngược Sự kiện**: Xác nhận bộ đếm ngày / giờ / phút / giây chạy đúng thời gian thực và không bị lỗi `NaN` trên Safari iOS.
-3. **Kiểm tra Form Đăng ký Tư vấn**: Điền Họ tên, Số điện thoại, Tên công ty ➔ Bấm Gửi ➔ Kiểm tra hiển thị thông báo thành công và kiểm tra bản ghi được lưu vào bảng `leads` trong MySQL.
-4. **Kiểm tra Đăng ký Hội viên Tự động duyệt Silver**: Đăng ký một tài khoản mới tại `/register` với gói Silver ➔ Xác nhận tài khoản được `approved` tức thì và đăng nhập thành công vào `/member-dashboard` mà không cần duyệt thủ công.
-5. **Kiểm tra Giới hạn Nội dung Khách**: Truy cập `/posts/:id` dưới tư cách khách chưa đăng nhập ➔ Xác nhận nội dung bài viết hiển thị khóa/che mờ kèm nút kêu gọi đăng nhập.
-6. **Kiểm tra Đăng ký Vé Sự kiện**: Đăng ký vé thành công nhận mã QR và kiểm tra không cho phép đăng ký trùng số điện thoại/email trong cùng sự kiện.
-7. **Kiểm tra Chuyển đổi Ngôn ngữ**: Bấm nút cờ Anh/Việt trên Navbar ➔ Xác nhận toàn bộ tiêu đề trang chủ đổi ngữ nghĩa tức thì.
-8. **Kiểm tra Nút Hướng dẫn & Liên kết Footer**: Kiểm tra nút `Hướng dẫn sử dụng` ở Footer mở đúng trang `/guide`.
-
-### 📦 Quy trình Build & Khởi động Chuẩn:
+### 1. Khởi tạo Cơ sở Dữ liệu MySQL trên VPS:
 ```bash
-# 1. Khởi tạo Database đầy đủ 16 bảng từ schema.sql
-mysql -u root -p ten_db_moi < schema.sql
+# Đăng nhập MySQL và tạo Database mới cho tỉnh thành
+mysql -u root -p
+CREATE DATABASE gialai_today_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+EXIT;
 
-# 2. Cài đặt dependency & build frontend
+# Import toàn bộ cấu trúc 16 bảng và seed data chuẩn
+mysql -u root -p gialai_today_db < schema.sql
+```
+
+### 2. Cài đặt Dependency & Build Frontend:
+```bash
+# 1. Cài đặt package backend
+npm install
+
+# 2. Cài đặt package frontend và compile bản build production
 cd frontend
 npm install
 npm run build
 cd ..
+# Kết quả build sẽ được Vite xuất thẳng ra thư mục public/ của project
+```
 
-# 3. Cài đặt dependency backend và chạy server
-npm install
-node server.js
-# Truy cập http://localhost:5000 để nghiệm thu
-
-# 4. Khi deploy lên VPS (Production):
-pm2 restart ecosystem.config.js --env production
-# hoặc
+### 3. Cấu hình Vận hành PM2 Cluster:
+Mở file [ecosystem.config.js](file:///ecosystem.config.js), đổi tên app tương ứng với domain mới:
+```javascript
+module.exports = {
+  apps: [{
+    name: 'gialai-today',
+    script: 'server.js',
+    instances: 'max',
+    exec_mode: 'cluster',
+    env_production: {
+      NODE_ENV: 'production',
+      PORT: 5000
+    }
+  }]
+};
+```
+Khởi chạy dịch vụ:
+```bash
 pm2 start ecosystem.config.js --env production
 pm2 save
+pm2 startup
+```
+
+### 4. Cấu hình Nginx Reverse Proxy & SSL Let's Encrypt:
+Tạo file `/etc/nginx/sites-available/gialai.today`:
+```nginx
+server {
+    server_name gialai.today www.gialai.today;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    client_max_body_size 50M;
+}
+```
+Kích hoạt Nginx và cấp phát chứng chỉ SSL miễn phí:
+```bash
+ln -s /etc/nginx/sites-available/gialai.today /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+certbot --nginx -d gialai.today -d www.gialai.today
 ```
 
 ---
 
-## 🛠️ 9. CÁC LỖI THƯỜNG GẶP & CÁCH KHẮC PHỤC (TROUBLESHOOTING)
+## 🛠️ 10. CÁC LỖI THƯỜNG GẶP & CÁCH KHẮC PHỤC (TROUBLESHOOTING)
 
-### 1. Lỗi gửi Form tư vấn báo lỗi hoặc 404
-- **Nguyên nhân**: Gọi nhầm URL `/api/consultations` (API cũ) hoặc thiếu trường bắt buộc `companyName`, `phone`, `fullName`.
-- **Cách xử lý**: Đảm bảo gọi chính xác **`POST /api/leads`** với body gồm `fullName`, `phone`, `companyName`, `memberType`.
+### 1. Nút ngôn ngữ hoặc nhãn UI bị dịch thành "Chúng tôi"
+- **Nguyên nhân**: Sử dụng chữ `US` hoặc không có thuộc tính cấm dịch, khiến Google Translate hiểu nhầm `US` là đại từ nhân xưng tiếng Anh.
+- **Cách xử lý**: Đảm bảo bao bọc phần hiển thị ngôn ngữ bằng `className="notranslate" translate="no"`.
 
-### 2. Màn hình trắng sau khi sửa `Home.jsx`
-- **Nguyên nhân**: Lỗi cú pháp JSX (chưa đóng thẻ, thiếu dấu ngoặc nhọn, hoặc truy cập thuộc tính của biến `undefined`).
-- **Cách xử lý**: Mở F12 Console trên trình duyệt để đọc dòng báo lỗi cụ thể. Kiểm tra xem các biến như `item.title`, `m.company_name` có được dùng toán tử an toàn chưa (VD: `m?.company_name || ''`).
+### 2. Xóa chuyên mục trong Admin nhưng ngoài Trang chủ vẫn còn
+- **Nguyên nhân**: Trình duyệt lưu cache API cũ hoặc trình duyệt giữ service worker.
+- **Cách xử lý**: Codebase hiện tại đã cấu hình `Cache-Control: no-cache, no-store, must-revalidate` và phát sự kiện `categories-updated`. Nếu kiểm tra thấy máy khách chưa cập nhật, chỉ cần Hard Refresh (`Ctrl + F5`) một lần duy nhất.
 
-### 3. Sự kiện Countdown hiển thị `00 Ngày 00 Giờ` hoặc `NaN`
-- **Nguyên nhân**: Chuỗi ngày tháng từ MySQL trả về định dạng `YYYY-MM-DD HH:mm:ss` có khoảng trắng khiến hàm `new Date()` trên iOS Safari bị lỗi.
-- **Cách xử lý**: Luôn dùng hàm bọc chuyển đổi `parseEventDate(dStr)` hoặc import từ `../utils/dateUtils.js` để tự động đổi khoảng trắng thành ký tự `T` chuẩn ISO 8601 trước khi parse.
+### 3. Đồng hồ Countdown Sự kiện bị nhấp nháy hoặc hiển thị `NaN`
+- **Nguyên nhân**: Định dạng ngày tháng MySQL có khoảng cách (`YYYY-MM-DD HH:mm:ss`) gây lỗi trên trình duyệt Safari iOS, hoặc React re-render xung đột với Google Translate DOM.
+- **Cách xử lý**: Luôn dùng hàm bọc `parseEventDate` từ `frontend/src/utils/dateUtils.js` và cô lập logic countdown vào component con tách biệt.
 
-### 4. Đã sửa ảnh Logo trong `public/` nhưng web vẫn hiện ảnh cũ
-- **Nguyên nhân**: Trình duyệt hoặc Service Worker (PWA) lưu cache ảnh tĩnh.
-- **Cách xử lý**: Nhấn `Ctrl + F5` (hoặc `Cmd + Shift + R`) để Hard Refresh. Nếu vẫn chưa đổi, vào F12 ➔ Tab **Application** ➔ **Storage** ➔ Bấm **Clear site data**.
-
-### 5. Lỗi kết nối Database khi chạy trên môi trường mới
-- **Nguyên nhân**: File `.env` chưa có hoặc bảng CSDL chưa được khởi tạo.
-- **Cách xử lý**: Kiểm tra lại file `.env`, chắc chắn đã chạy lệnh `mysql -u root -p ten_database < schema.sql` để khởi tạo cấu trúc 16 bảng chuẩn.
+### 4. Đổi Logo trong `public/` nhưng trình duyệt không nhận
+- **Nguyên nhân**: Trình duyệt lưu cache ảnh tĩnh hoặc Service Worker của PWA lưu giữ bản offline.
+- **Cách xử lý**: Đổi tên file ảnh (VD: `/logo_icon_v2.svg`) và cập nhật đường dẫn trong `brand.config.js`.
 
 ---
 
-*Tài liệu này được đồng bộ và chuẩn hóa toàn diện bởi ADT Quốc tế. Vui lòng lưu trữ tệp tin này tại thư mục gốc của repository để phục vụ các đợt clone và chuyển giao dự án.*
+*Tài liệu này là cẩm nang tiêu chuẩn được chuyển giao độc quyền bởi ADT Quốc tế. Mọi thành viên trong nhóm dự án vui lòng tuân thủ đúng các nguyên tắc trên để việc nhân bản sang các tỉnh thành diễn ra nhanh chóng, chuẩn xác và không phát sinh lỗi.*
