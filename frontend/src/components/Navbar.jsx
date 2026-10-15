@@ -176,248 +176,68 @@ export const Navbar = () => {
           right: 0 !important;
           z-index: 99999 !important;
           background: #26160E !important;
-          background-image: linear-gradient(90deg, #1C0F08 0%, #3B2417 50%, #1C0F08 100%) !important;
-          border-bottom: 1px solid rgba(213, 163, 63, 0.28) !important;
-          box-shadow: 0 4px 20px rgba(28, 15, 8, 0.65), 0 1px 0 rgba(213, 163, 63, 0.2) !important;
+          background-image: linear-gradient(180deg, #22120A 0%, #160B06 100%) !important;
+          border-bottom: 2px solid rgba(213, 163, 63, 0.35) !important;
+          box-shadow: 0 4px 24px rgba(20, 10, 5, 0.65), 0 1px 0 rgba(213, 163, 63, 0.2) !important;
           width: 100% !important;
           max-width: 100vw !important;
           box-sizing: border-box !important;
         }
 
-        .dnvn-navbar-container {
+        /* ROW 1: TOP BRAND & UTILITIES BAR */
+        .dnvn-navbar-top {
+          width: 100% !important;
+          border-bottom: 1px solid rgba(213, 163, 63, 0.16) !important;
+        }
+
+        .dnvn-header-container {
           width: 100% !important;
           max-width: 1600px !important;
           margin: 0 auto !important;
-          padding: 0 14px !important;
-          min-height: 64px !important;
+          padding: 8px 18px !important;
+          min-height: 52px !important;
           display: flex !important;
           align-items: center !important;
           justify-content: space-between !important;
           position: relative !important;
           box-sizing: border-box !important;
-          overflow: visible !important;
         }
 
-        /* Center Nav: Always visible, never clips dropdown menus */
-        .dnvn-nav-center {
-          position: static !important;
-          background: transparent !important;
-          backdrop-filter: none !important;
-          -webkit-backdrop-filter: none !important;
-          border: none !important;
-          box-shadow: none !important;
-          height: auto !important;
-          padding: 0 !important;
-          margin: 0 4px !important;
+        /* ROW 2: BOTTOM CATEGORIES NAVIGATION BAR (2ND ROW) */
+        .dnvn-navbar-bottom {
+          width: 100% !important;
+          background: rgba(0, 0, 0, 0.25) !important;
+          border-top: 1px solid rgba(255, 255, 255, 0.04) !important;
+        }
+
+        .dnvn-categories-container {
+          min-height: 44px !important;
+          padding: 2px 18px !important;
+          justify-content: center !important;
+        }
+
+        .dnvn-nav-categories {
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          gap: 3px !important;
-          flex: 1 1 auto !important;
-          min-width: 0 !important;
+          gap: 12px !important;
+          width: 100% !important;
+          flex-wrap: nowrap !important;
           overflow: visible !important;
-        }
-
-        /* Responsive Breakpoints: Switches cleanly to mobile drawer under 1080px */
-        @media (max-width: 1080px) {
-          .dnvn-navbar-header {
-            width: 100% !important;
-            max-width: 100vw !important;
-          }
-          .dnvn-navbar-container {
-            justify-content: space-between !important;
-            padding: 0 12px !important;
-            min-height: 56px !important;
-            max-width: 100% !important;
-            overflow: hidden !important;
-          }
-          .dnvn-nav-center {
-            display: none !important;
-          }
-          .dnvn-mobile-toggle {
-            display: flex !important;
-          }
-          .dnvn-btn-join-desktop {
-            display: none !important;
-          }
-          .dnvn-nav-right {
-            margin-left: auto !important;
-            gap: 6px !important;
-            flex-shrink: 0 !important;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .dnvn-navbar-container {
-            padding: 0 8px !important;
-            min-height: 52px !important;
-          }
-          .dnvn-brand-subtitle {
-            display: none !important;
-          }
-          .dnvn-brand-title {
-            font-size: 15px !important;
-          }
-          .dnvn-brand-icon {
-            width: 28px !important;
-            height: 28px !important;
-          }
-          .dnvn-btn-pwa-install {
-            display: none !important;
-          }
-          .dnvn-btn-join-desktop {
-            display: none !important;
-          }
-          .dnvn-login-btn {
-            display: none !important;
-          }
-          .dnvn-ai-nav-btn span {
-            display: none !important;
-          }
-          .dnvn-ai-nav-btn {
-            padding: 4px 6px !important;
-            min-height: 28px !important;
-          }
-          .dnvn-nav-right {
-            gap: 4px !important;
-          }
-          .dnvn-mobile-toggle {
-            padding: 4px !important;
-            font-size: 22px !important;
-          }
-        }
-
-        @media (min-width: 1081px) {
-          .dnvn-mobile-toggle {
-            display: none !important;
-          }
-        }
-
-        /* Fluid Scaling for Laptops (1081px - 1300px) */
-        @media (min-width: 1081px) and (max-width: 1300px) {
-          .dnvn-navbar-container {
-            padding: 0 10px !important;
-          }
-          .dnvn-brand-link {
-            gap: 6px !important;
-            margin-right: 4px !important;
-          }
-          .dnvn-brand-icon {
-            width: 32px !important;
-            height: 32px !important;
-          }
-          .dnvn-brand-title {
-            font-size: 15px !important;
-          }
-          .dnvn-brand-subtitle {
-            font-size: 6.5px !important;
-            letter-spacing: 0.3px !important;
-          }
-          .dnvn-nav-center {
-            gap: 2px !important;
-            margin: 0 4px !important;
-          }
-          .dnvn-nav-item-btn {
-            font-size: 12px !important;
-            padding: 5px 6px !important;
-            max-width: 115px !important;
-            min-height: 34px !important;
-            line-height: 1.2 !important;
-            gap: 2px !important;
-          }
-          .dnvn-nav-item-btn i {
-            font-size: 9px !important;
-          }
-          .dnvn-ai-nav-btn {
-            padding: 4px 8px !important;
-            font-size: 11px !important;
-            gap: 3px !important;
-            min-height: 32px !important;
-          }
-          .dnvn-nav-right {
-            gap: 5px !important;
-          }
-          .dnvn-btn-join-desktop {
-            padding: 5px 9px !important;
-            font-size: 11px !important;
-          }
-          .dnvn-login-btn {
-            padding: 5px 8px !important;
-            font-size: 11.5px !important;
-          }
-        }
-
-        /* Screen sizes (1301px - 1500px) */
-        @media (min-width: 1301px) and (max-width: 1500px) {
-          .dnvn-nav-item-btn {
-            font-size: 13px !important;
-            padding: 5px 8px !important;
-            max-width: 135px !important;
-            min-height: 36px !important;
-            gap: 3px !important;
-          }
-          .dnvn-brand-title {
-            font-size: 16.5px !important;
-          }
-          .dnvn-brand-subtitle {
-            font-size: 7px !important;
-          }
-          .dnvn-ai-nav-btn {
-            padding: 5px 10px !important;
-            font-size: 12px !important;
-          }
-          .dnvn-btn-join-desktop {
-            padding: 5px 11px !important;
-            font-size: 12px !important;
-          }
-          .dnvn-login-btn {
-            padding: 5px 9px !important;
-            font-size: 12.5px !important;
-          }
-        }
-
-        /* Large desktop screens (>= 1501px) */
-        @media (min-width: 1501px) {
-          .dnvn-nav-item-btn {
-            font-size: 14px !important;
-            padding: 6px 11px !important;
-            max-width: none !important;
-            min-height: 38px !important;
-            gap: 4px !important;
-          }
-          .dnvn-brand-title {
-            font-size: 18px !important;
-          }
-          .dnvn-brand-subtitle {
-            font-size: 7.5px !important;
-          }
-          .dnvn-ai-nav-btn {
-            padding: 6px 12px !important;
-            font-size: 12.5px !important;
-          }
-          .dnvn-btn-join-desktop {
-            padding: 6px 13px !important;
-            font-size: 12.5px !important;
-          }
-          .dnvn-login-btn {
-            padding: 6px 11px !important;
-            font-size: 13px !important;
-          }
         }
 
         /* Brand Styling */
         .dnvn-brand-link {
           display: flex !important;
           align-items: center !important;
-          gap: 9px !important;
+          gap: 10px !important;
           text-decoration: none !important;
-          margin-right: 8px !important;
           flex-shrink: 0 !important;
         }
 
         .dnvn-brand-icon {
-          width: 36px !important;
-          height: 36px !important;
+          width: 38px !important;
+          height: 38px !important;
           border-radius: 9px !important;
           background: linear-gradient(135deg, #7A3E1D 0%, #D5A33F 100%) !important;
           display: flex !important;
@@ -425,9 +245,9 @@ export const Navbar = () => {
           justify-content: center !important;
           color: #ffffff !important;
           font-weight: 900 !important;
-          font-size: 14px !important;
-          border: 1px solid rgba(213, 163, 63, 0.4) !important;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+          font-size: 15px !important;
+          border: 1px solid rgba(213, 163, 63, 0.45) !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
           overflow: hidden !important;
           flex-shrink: 0 !important;
         }
@@ -441,18 +261,19 @@ export const Navbar = () => {
         .dnvn-brand-text-box {
           display: flex !important;
           flex-direction: column !important;
-          line-height: 1.1 !important;
+          line-height: 1.15 !important;
         }
 
         .dnvn-brand-title {
           font-family: 'Be Vietnam Pro', 'Outfit', sans-serif !important;
           font-weight: 800 !important;
+          font-size: 19px !important;
           color: #ffffff !important;
           letter-spacing: -0.3px !important;
         }
 
         .dnvn-brand-subtitle {
-          font-size: 7px !important;
+          font-size: 7.5px !important;
           font-weight: 700 !important;
           color: #D5A33F !important;
           letter-spacing: 0.5px !important;
@@ -465,24 +286,25 @@ export const Navbar = () => {
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
-          gap: 4px !important;
-          background: rgba(213, 163, 63, 0.15) !important;
+          gap: 5px !important;
+          background: rgba(213, 163, 63, 0.16) !important;
           border: 1px solid rgba(213, 163, 63, 0.45) !important;
           color: #F3C562 !important;
           font-weight: 700 !important;
+          font-size: 12.5px !important;
           text-decoration: none !important;
           border-radius: 8px !important;
-          padding: 4px 9px !important;
+          padding: 6px 12px !important;
           transition: all 0.2s ease !important;
           flex-shrink: 0 !important;
           white-space: nowrap !important;
         }
 
         .dnvn-ai-nav-btn:hover {
-          background: rgba(213, 163, 63, 0.3) !important;
+          background: rgba(213, 163, 63, 0.32) !important;
           color: #ffffff !important;
           transform: translateY(-1px) !important;
-          box-shadow: 0 4px 12px rgba(213, 163, 63, 0.3) !important;
+          box-shadow: 0 4px 14px rgba(213, 163, 63, 0.35) !important;
         }
 
         /* Nav Item wrapper & Button */
@@ -496,9 +318,11 @@ export const Navbar = () => {
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
-          color: #E6DCD2 !important;
+          color: #EFE7DE !important;
           text-decoration: none !important;
           font-weight: 600 !important;
+          font-size: 14.5px !important;
+          padding: 8px 14px !important;
           border-radius: 6px !important;
           transition: all 0.18s ease !important;
           cursor: pointer !important;
@@ -506,30 +330,30 @@ export const Navbar = () => {
           border: 1px solid transparent !important;
           box-sizing: border-box !important;
           user-select: none !important;
+          white-space: nowrap !important;
+          gap: 5px !important;
         }
 
         .dnvn-nav-item-btn:hover {
-          color: #D5A33F !important;
-          background-color: rgba(213, 163, 63, 0.14) !important;
+          color: #F3C562 !important;
+          background-color: rgba(213, 163, 63, 0.16) !important;
           border-color: rgba(213, 163, 63, 0.35) !important;
         }
 
         .dnvn-nav-item-btn.active {
           color: #FFFFFF !important;
-          background-color: rgba(168, 69, 36, 0.45) !important;
+          background-color: rgba(168, 69, 36, 0.5) !important;
           border-bottom: 2px solid #D5A33F !important;
         }
 
         .dnvn-nav-text {
           white-space: nowrap !important;
-          overflow: hidden !important;
-          text-overflow: ellipsis !important;
-          text-align: center !important;
+          display: inline-block !important;
         }
 
         .dnvn-dropdown-panel {
           position: absolute !important;
-          top: calc(100% + 4px) !important;
+          top: calc(100% + 2px) !important;
           left: 0 !important;
           min-width: 250px !important;
           background-color: #2A170F !important;
@@ -542,7 +366,6 @@ export const Navbar = () => {
           animation: dnvnFadeIn 0.15s ease-out !important;
         }
 
-        /* Invisible bridge to prevent mouse leaving between trigger and panel */
         .dnvn-dropdown-panel::before {
           content: '' !important;
           position: absolute !important;
@@ -562,7 +385,7 @@ export const Navbar = () => {
           display: block !important;
           padding: 8px 16px !important;
           color: #F1ECE6 !important;
-          font-size: 12.5px !important;
+          font-size: 13px !important;
           font-weight: 500 !important;
           text-decoration: none !important;
           transition: all 0.15s ease !important;
@@ -579,10 +402,84 @@ export const Navbar = () => {
         .dnvn-nav-right {
           display: flex !important;
           align-items: center !important;
-          gap: 6px !important;
+          gap: 8px !important;
           margin-left: auto !important;
           flex-shrink: 0 !important;
           overflow: visible !important;
+        }
+
+        /* Laptop screens (1081px - 1366px) */
+        @media (min-width: 1081px) and (max-width: 1366px) {
+          .dnvn-nav-categories {
+            gap: 6px !important;
+          }
+          .dnvn-nav-item-btn {
+            font-size: 13px !important;
+            padding: 7px 10px !important;
+            gap: 3px !important;
+          }
+          .dnvn-brand-title {
+            font-size: 17px !important;
+          }
+        }
+
+        /* Responsive Breakpoints: Tablet & Mobile (<= 1080px) */
+        @media (max-width: 1080px) {
+          .dnvn-navbar-bottom {
+            display: none !important;
+          }
+          .dnvn-navbar-top {
+            border-bottom: none !important;
+          }
+          .dnvn-header-container {
+            padding: 0 12px !important;
+            min-height: 56px !important;
+          }
+          .dnvn-mobile-toggle {
+            display: flex !important;
+          }
+          .dnvn-btn-join-desktop {
+            display: none !important;
+          }
+          .dnvn-nav-right {
+            gap: 6px !important;
+          }
+        }
+
+        @media (min-width: 1081px) {
+          .dnvn-mobile-toggle {
+            display: none !important;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .dnvn-header-container {
+            padding: 0 8px !important;
+            min-height: 52px !important;
+          }
+          .dnvn-brand-subtitle {
+            display: none !important;
+          }
+          .dnvn-brand-title {
+            font-size: 15px !important;
+          }
+          .dnvn-brand-icon {
+            width: 30px !important;
+            height: 30px !important;
+          }
+          .dnvn-login-btn {
+            display: none !important;
+          }
+          .dnvn-ai-nav-btn span {
+            display: none !important;
+          }
+          .dnvn-ai-nav-btn {
+            padding: 4px 6px !important;
+            min-height: 28px !important;
+          }
+          .dnvn-nav-right {
+            gap: 4px !important;
+          }
         }
       `}</style>
 
@@ -592,404 +489,410 @@ export const Navbar = () => {
       </a>
 
       <header className="dnvn-navbar-header">
-        <div className="dnvn-navbar-container">
-          
-          {/* 1. BRAND LOGO */}
-          <Link 
-            to="/" 
-            className="dnvn-brand-link"
-            onClick={(e) => {
-              if (location.pathname === '/') {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }
-            }}
-            title={brandConfig.brandName}
-          >
-            <div className="dnvn-brand-icon">
-              <img 
-                src="/logo_icon.svg" 
-                alt="DakLak.today Logo" 
-                className="dnvn-brand-icon-img"
-                onError={(e) => { 
-                  e.target.src = '/logo_icon.png';
-                  e.target.onerror = () => {
-                    e.target.style.display = 'none';
-                    e.target.parentNode.innerText = 'DL';
-                  };
-                }}
-              />
-            </div>
-            <div className="dnvn-brand-text-box">
-              <span className="dnvn-brand-title">
-                Daklak<span style={{ color: '#D5A33F' }}>.today</span>
-              </span>
-              <span className="dnvn-brand-subtitle">
-                {currentLang === 'en' ? 'DAK LAK INFORMATION, DATA & INVESTMENT' : 'CỔNG THÔNG TIN, DỮ LIỆU & ĐẦU TƯ ĐẮK LẮK'}
-              </span>
-            </div>
-          </Link>
-
-          {/* 2. DYNAMIC CENTER NAVIGATION (LẤY TỪ ADMIN "QUẢN LÝ CHUYÊN MỤC & LĨNH VỰC") */}
-          <nav 
-            ref={navRef}
-            className="dnvn-nav-center" 
-            aria-label="Menu chính"
-          >
-            {/* Hiển thị tất cả danh mục động với định dạng 2 dòng co giãn thông minh */}
-            {categoriesList.map((cat) => {
-              const subs = getSubList(cat);
-              const hasSubs = subs.length > 0;
-              const isOpen = activeDropdownId === (cat.id || cat.name);
-              const isCatActive = location.pathname === '/posts' && location.search.includes(encodeURIComponent(cat.name));
-              const catDisplayName = getCategoryName(cat);
-
-              return (
-                <div
-                  key={cat.id || cat.name}
-                  className="dnvn-cat-wrapper"
-                  onMouseEnter={() => handleMouseEnter(cat.id || cat.name)}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  <Link
-                    to={`/posts?category=${encodeURIComponent(cat.name)}`}
-                    className={`dnvn-nav-item-btn ${isCatActive ? 'active' : ''}`}
-                    aria-expanded={isOpen}
-                    aria-haspopup={hasSubs ? 'true' : 'false'}
-                    onClick={(e) => {
-                      if (window.innerWidth <= 1080 && hasSubs) {
-                        e.preventDefault();
-                        handleToggleDropdown(cat.id || cat.name, e);
-                      }
-                    }}
-                    onKeyDown={(e) => handleKeyDown(cat.id || cat.name, e)}
-                    title={catDisplayName}
-                  >
-                    <span className="dnvn-nav-text">{catDisplayName}</span>
-                    {hasSubs && (
-                      <i 
-                        className={`ti ti-chevron-down ${isOpen ? 'rotate' : ''}`}
-                        style={{ 
-                          fontSize: '10px', 
-                          marginLeft: '2px', 
-                          opacity: 0.75, 
-                          transition: 'transform 0.18s ease',
-                          transform: isOpen ? 'rotate(180deg)' : 'none'
-                        }} 
-                      />
-                    )}
-                  </Link>
-
-                  {/* Mega / Dropdown menu cho lĩnh vực chuyên ngành con */}
-                  {hasSubs && isOpen && (
-                    <div 
-                      className="dnvn-dropdown-panel"
-                      role="menu"
-                    >
-                      {/* Lối vào xem toàn bộ chuyên mục cha */}
-                      <Link
-                        to={`/posts?category=${encodeURIComponent(cat.name)}`}
-                        className="dnvn-dropdown-item"
-                        style={{
-                          color: '#D5A33F',
-                          fontWeight: '700',
-                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                          marginBottom: '4px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}
-                        onClick={() => setActiveDropdownId(null)}
-                      >
-                        <i className="ti ti-layout-grid" style={{ fontSize: '13px' }} />
-                        <span>{currentLang === 'en' ? `All ${catDisplayName}` : `Tất cả ${catDisplayName}`}</span>
-                      </Link>
-
-                      {subs.map((sub, idx) => {
-                        const subName = typeof sub === 'object' ? sub.name : sub;
-                        const subLabel = getSubName(sub);
-                        return (
-                          <Link
-                            key={idx}
-                            to={`/posts?category=${encodeURIComponent(cat.name)}&subCategory=${encodeURIComponent(subName)}`}
-                            className="dnvn-dropdown-item"
-                            role="menuitem"
-                            onClick={() => setActiveDropdownId(null)}
-                          >
-                            {subLabel}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </nav>
-
-          {/* 3. RIGHT CONTROLS: AI ASSISTANT, LANGUAGE, SEARCH, PWA & AUTH */}
-          <div className="dnvn-nav-right">
+        {/* ROW 1: BRAND LOGO + UTILITIES & CONTROLS */}
+        <div className="dnvn-navbar-top">
+          <div className="dnvn-header-container">
             
-            {/* Trợ lý Trí tuệ Nhân tạo AI Nav Button */}
-            <Link
-              to="/ai-chat"
-              className="dnvn-ai-nav-btn"
-              title={currentLang === 'en' ? "Dak Lak AI Assistant" : "Trợ lý AI Đắk Lắk"}
-            >
-              <i className="ti ti-sparkles" style={{ color: '#D5A33F', fontSize: '12px' }}></i>
-              <span>{currentLang === 'en' ? 'AI Assistant' : 'Trợ lý AI'}</span>
-            </Link>
-
-            {/* Tìm kiếm nhanh */}
-            <Link
-              to="/search"
-              title={currentLang === 'en' ? 'Search Database' : 'Tìm kiếm dữ liệu'}
-              style={{
-                color: '#E6DCD2',
-                padding: '5px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                textDecoration: 'none',
-                borderRadius: '6px',
-                transition: 'color 0.15s'
+            {/* 1. BRAND LOGO */}
+            <Link 
+              to="/" 
+              className="dnvn-brand-link"
+              onClick={(e) => {
+                if (location.pathname === '/') {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#D5A33F'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#E6DCD2'; }}
+              title={brandConfig.brandName}
             >
-              <i className="ti ti-search" style={{ fontSize: '16px' }}></i>
+              <div className="dnvn-brand-icon">
+                <img 
+                  src="/logo_icon.svg" 
+                  alt="DakLak.today Logo" 
+                  className="dnvn-brand-icon-img"
+                  onError={(e) => { 
+                    e.target.src = '/logo_icon.png';
+                    e.target.onerror = () => {
+                      e.target.style.display = 'none';
+                      e.target.parentNode.innerText = 'DL';
+                    };
+                  }}
+                />
+              </div>
+              <div className="dnvn-brand-text-box">
+                <span className="dnvn-brand-title">
+                  Daklak<span style={{ color: '#D5A33F' }}>.today</span>
+                </span>
+                <span className="dnvn-brand-subtitle">
+                  {currentLang === 'en' ? 'DAK LAK INFORMATION, DATA & INVESTMENT' : 'CỔNG THÔNG TIN, DỮ LIỆU & ĐẦU TƯ ĐẮK LẮK'}
+                </span>
+              </div>
             </Link>
 
-            {/* Bộ chuyển đổi Đa ngôn ngữ (Thanh sổ xuống) */}
-            <div ref={langDropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
-              <button
-                type="button"
-                onClick={() => setLangDropdownOpen(prev => !prev)}
-                aria-expanded={langDropdownOpen}
-                aria-haspopup="true"
-                title="Chuyển đổi ngôn ngữ / Switch Language"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(213, 163, 63, 0.35)',
-                  borderRadius: '8px',
-                  padding: '5px 8px',
-                  color: '#ffffff',
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  transition: 'all 0.18s ease',
-                  flexShrink: 0
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(213, 163, 63, 0.2)';
-                  e.currentTarget.style.borderColor = 'rgba(213, 163, 63, 0.6)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
-                  e.currentTarget.style.borderColor = 'rgba(213, 163, 63, 0.35)';
-                }}
-              >
-                <span style={{ fontSize: '13px', lineHeight: 1 }}>{currentLangObj.flag}</span>
-                <span style={{ fontSize: '11px', letterSpacing: '0.5px' }}>{currentLangObj.label}</span>
-                <i 
-                  className="ti ti-chevron-down" 
-                  style={{ 
-                    fontSize: '10px', 
-                    color: '#D5A33F', 
-                    transition: 'transform 0.2s ease',
-                    transform: langDropdownOpen ? 'rotate(180deg)' : 'none'
-                  }} 
-                />
-              </button>
-
-              {langDropdownOpen && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 6px)',
-                    right: 0,
-                    backgroundColor: '#26160E',
-                    backgroundImage: 'linear-gradient(180deg, #2D1A10 0%, #1A0D07 100%)',
-                    border: '1px solid rgba(213, 163, 63, 0.45)',
-                    borderRadius: '10px',
-                    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(213, 163, 63, 0.2)',
-                    minWidth: '175px',
-                    padding: '6px',
-                    zIndex: 100001,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '2px'
-                  }}
-                >
-                  {(availableLanguages || []).map((lang) => {
-                    const isActive = currentLang === lang.code;
-                    return (
-                      <button
-                        key={lang.code}
-                        type="button"
-                        onClick={() => {
-                          changeLang(lang.code);
-                          setLangDropdownOpen(false);
-                        }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          width: '100%',
-                          padding: '8px 10px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          background: isActive ? 'rgba(213, 163, 63, 0.18)' : 'transparent',
-                          color: isActive ? '#F3C562' : '#E6DCD2',
-                          fontSize: '12.5px',
-                          fontWeight: isActive ? '700' : '500',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          transition: 'all 0.15s'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isActive) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.07)';
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isActive) e.currentTarget.style.background = 'transparent';
-                        }}
-                      >
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '15px' }}>{lang.flag}</span>
-                          <span>{lang.name}</span>
-                        </span>
-                        {isActive && <i className="ti ti-check" style={{ color: '#D5A33F', fontSize: '13px' }} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Nút Đăng ký trải nghiệm / Kết nối (Chỉ hiện khi chưa đăng nhập và trên desktop) */}
-            {role === 'guest' && (
+            {/* 2. RIGHT CONTROLS: AI ASSISTANT, LANGUAGE, SEARCH & AUTH */}
+            <div className="dnvn-nav-right">
+              
+              {/* Trợ lý Trí tuệ Nhân tạo AI Nav Button */}
               <Link
-                to="/register"
-                className="dnvn-btn-join-desktop"
-                style={{
-                  backgroundColor: '#A84524',
-                  backgroundImage: 'linear-gradient(135deg, #A84524 0%, #7A3E1D 100%)',
-                  color: '#ffffff',
-                  fontSize: '11.5px',
-                  fontWeight: '700',
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                  boxShadow: '0 2px 10px rgba(168, 69, 36, 0.45)',
-                  border: '1px solid rgba(213, 163, 63, 0.35)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.18s ease',
-                  flexShrink: 0
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(168, 69, 36, 0.6)';
-                  e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #B54F2D 0%, #A84524 100%)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.boxShadow = '0 2px 10px rgba(168, 69, 36, 0.45)';
-                  e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #A84524 0%, #7A3E1D 100%)';
-                }}
+                to="/ai-chat"
+                className="dnvn-ai-nav-btn"
+                title={currentLang === 'en' ? "Dak Lak AI Assistant" : "Trợ lý AI Đắk Lắk"}
               >
-                <i className="ti ti-user-plus" style={{ fontSize: '12px' }}></i>
-                <span>{currentLang === 'en' ? 'Connect' : 'Kết nối'}</span>
+                <i className="ti ti-sparkles" style={{ color: '#D5A33F', fontSize: '13px' }}></i>
+                <span>{currentLang === 'en' ? 'AI Assistant' : 'Trợ lý AI'}</span>
               </Link>
-            )}
 
-            {/* Trạng thái Người dùng / Đăng nhập */}
-            {role === 'guest' ? (
+              {/* Tìm kiếm nhanh */}
               <Link
-                to="/login"
-                className="dnvn-login-btn"
+                to="/search"
+                title={currentLang === 'en' ? 'Search Database' : 'Tìm kiếm dữ liệu'}
                 style={{
-                  color: '#F1ECE6',
-                  fontSize: '12px',
+                  color: '#E6DCD2',
+                  padding: '6px 8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
                   textDecoration: 'none',
-                  fontWeight: '600',
-                  padding: '6px 9px',
                   borderRadius: '6px',
-                  whiteSpace: 'nowrap',
-                  transition: 'color 0.18s',
-                  flexShrink: 0
+                  transition: 'color 0.15s'
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = '#D5A33F'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = '#F1ECE6'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#E6DCD2'; }}
               >
-                {currentLang === 'en' ? 'Login' : 'Đăng nhập'}
+                <i className="ti ti-search" style={{ fontSize: '17px' }}></i>
               </Link>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                <Link
-                  to={role === 'admin' ? "/admin-dashboard" : role === 'creator' ? "/creator-dashboard" : role === 'organizer' ? "/organizer-dashboard" : "/member-dashboard"}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    backgroundColor: '#7A3E1D',
-                    color: '#ffffff',
-                    fontWeight: '700',
-                    fontSize: '11px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textDecoration: 'none',
-                    border: '1.5px solid #D5A33F',
-                    boxShadow: '0 2px 8px rgba(122, 62, 29, 0.5)'
-                  }}
-                  title={user?.name || 'Dashboard'}
-                >
-                  {getInitials(user?.name)}
-                </Link>
-                <button
-                  onClick={() => logout()}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#F87171',
-                    fontSize: '16px',
-                    cursor: 'pointer',
-                    padding: '4px'
-                  }}
-                  title={currentLang === 'en' ? "Logout" : "Đăng xuất"}
-                >
-                  <i className="ti ti-logout"></i>
-                </button>
-              </div>
-            )}
 
-            {/* Nút Toggle Mobile Drawer (chỉ hiện trên màn hình <= 1080px) (F-02) */}
-            <button
-              ref={mobileToggleRef}
-              className="dnvn-mobile-toggle"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#ffffff',
-                fontSize: '24px',
-                cursor: 'pointer',
-                padding: '4px',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              title={mobileMenuOpen ? (currentLang === 'en' ? "Close mobile menu" : "Đóng menu di động") : (currentLang === 'en' ? "Open mobile menu" : "Mở menu di động")}
-              aria-label={mobileMenuOpen ? (currentLang === 'en' ? "Close mobile menu" : "Đóng menu di động") : (currentLang === 'en' ? "Open mobile menu" : "Mở menu di động")}
-              aria-expanded={mobileMenuOpen}
-              aria-controls="dnvn-mobile-drawer"
+              {/* Bộ chuyển đổi Đa ngôn ngữ (Thanh sổ xuống) */}
+              <div ref={langDropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
+                <button
+                  type="button"
+                  onClick={() => setLangDropdownOpen(prev => !prev)}
+                  aria-expanded={langDropdownOpen}
+                  aria-haspopup="true"
+                  title="Chuyển đổi ngôn ngữ / Switch Language"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(213, 163, 63, 0.35)',
+                    borderRadius: '8px',
+                    padding: '5px 9px',
+                    color: '#ffffff',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.18s ease',
+                    flexShrink: 0
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(213, 163, 63, 0.2)';
+                    e.currentTarget.style.borderColor = 'rgba(213, 163, 63, 0.6)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                    e.currentTarget.style.borderColor = 'rgba(213, 163, 63, 0.35)';
+                  }}
+                >
+                  <span style={{ fontSize: '14px', lineHeight: 1 }}>{currentLangObj.flag}</span>
+                  <span style={{ fontSize: '11px', letterSpacing: '0.5px' }}>{currentLangObj.label}</span>
+                  <i 
+                    className="ti ti-chevron-down" 
+                    style={{ 
+                      fontSize: '10px', 
+                      color: '#D5A33F', 
+                      transition: 'transform 0.2s ease',
+                      transform: langDropdownOpen ? 'rotate(180deg)' : 'none'
+                    }} 
+                  />
+                </button>
+
+                {langDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 6px)',
+                      right: 0,
+                      backgroundColor: '#26160E',
+                      backgroundImage: 'linear-gradient(180deg, #2D1A10 0%, #1A0D07 100%)',
+                      border: '1px solid rgba(213, 163, 63, 0.45)',
+                      borderRadius: '10px',
+                      boxShadow: '0 12px 32px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(213, 163, 63, 0.2)',
+                      minWidth: '175px',
+                      padding: '6px',
+                      zIndex: 100001,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '2px'
+                    }}
+                  >
+                    {(availableLanguages || []).map((lang) => {
+                      const isActive = currentLang === lang.code;
+                      return (
+                        <button
+                          key={lang.code}
+                          type="button"
+                          onClick={() => {
+                            changeLang(lang.code);
+                            setLangDropdownOpen(false);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: isActive ? 'rgba(213, 163, 63, 0.18)' : 'transparent',
+                            color: isActive ? '#F3C562' : '#E6DCD2',
+                            fontSize: '12.5px',
+                            fontWeight: isActive ? '700' : '500',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            transition: 'all 0.15s'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isActive) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.07)';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isActive) e.currentTarget.style.background = 'transparent';
+                          }}
+                        >
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '15px' }}>{lang.flag}</span>
+                            <span>{lang.name}</span>
+                          </span>
+                          {isActive && <i className="ti ti-check" style={{ color: '#D5A33F', fontSize: '13px' }} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Nút Đăng ký trải nghiệm / Kết nối (Chỉ hiện khi chưa đăng nhập và trên desktop) */}
+              {role === 'guest' && (
+                <Link
+                  to="/register"
+                  className="dnvn-btn-join-desktop"
+                  style={{
+                    backgroundColor: '#A84524',
+                    backgroundImage: 'linear-gradient(135deg, #A84524 0%, #7A3E1D 100%)',
+                    color: '#ffffff',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    boxShadow: '0 2px 10px rgba(168, 69, 36, 0.45)',
+                    border: '1px solid rgba(213, 163, 63, 0.35)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.18s ease',
+                    flexShrink: 0
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(168, 69, 36, 0.6)';
+                    e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #B54F2D 0%, #A84524 100%)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = '0 2px 10px rgba(168, 69, 36, 0.45)';
+                    e.currentTarget.style.backgroundImage = 'linear-gradient(135deg, #A84524 0%, #7A3E1D 100%)';
+                  }}
+                >
+                  <i className="ti ti-user-plus" style={{ fontSize: '13px' }}></i>
+                  <span>{currentLang === 'en' ? 'Connect' : 'Kết nối'}</span>
+                </Link>
+              )}
+
+              {/* Trạng thái Người dùng / Đăng nhập */}
+              {role === 'guest' ? (
+                <Link
+                  to="/login"
+                  className="dnvn-login-btn"
+                  style={{
+                    color: '#F1ECE6',
+                    fontSize: '12.5px',
+                    textDecoration: 'none',
+                    fontWeight: '600',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    whiteSpace: 'nowrap',
+                    transition: 'color 0.18s',
+                    flexShrink: 0
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = '#D5A33F'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = '#F1ECE6'; }}
+                >
+                  {currentLang === 'en' ? 'Login' : 'Đăng nhập'}
+                </Link>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                  <Link
+                    to={role === 'admin' ? "/admin-dashboard" : role === 'creator' ? "/creator-dashboard" : role === 'organizer' ? "/organizer-dashboard" : "/member-dashboard"}
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      backgroundColor: '#7A3E1D',
+                      color: '#ffffff',
+                      fontWeight: '700',
+                      fontSize: '11px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textDecoration: 'none',
+                      border: '1.5px solid #D5A33F',
+                      boxShadow: '0 2px 8px rgba(122, 62, 29, 0.5)'
+                    }}
+                    title={user?.name || 'Dashboard'}
+                  >
+                    {getInitials(user?.name)}
+                  </Link>
+                  <button
+                    onClick={() => logout()}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#F87171',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      padding: '4px'
+                    }}
+                    title={currentLang === 'en' ? "Logout" : "Đăng xuất"}
+                  >
+                    <i className="ti ti-logout"></i>
+                  </button>
+                </div>
+              )}
+
+              {/* Nút Toggle Mobile Drawer (chỉ hiện trên màn hình <= 1080px) (F-02) */}
+              <button
+                ref={mobileToggleRef}
+                className="dnvn-mobile-toggle"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                title={mobileMenuOpen ? (currentLang === 'en' ? "Close mobile menu" : "Đóng menu di động") : (currentLang === 'en' ? "Open mobile menu" : "Mở menu di động")}
+                aria-label={mobileMenuOpen ? (currentLang === 'en' ? "Close mobile menu" : "Đóng menu di động") : (currentLang === 'en' ? "Open mobile menu" : "Mở menu di động")}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="dnvn-mobile-drawer"
+              >
+                <i className={mobileMenuOpen ? "ti ti-x" : "ti ti-menu-2"}></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ROW 2: DYNAMIC CATEGORIES NAVIGATION (RIÊNG 1 HÀNG CHO 7 CHUYÊN MỤC) */}
+        <div className="dnvn-navbar-bottom">
+          <div className="dnvn-header-container dnvn-categories-container">
+            <nav 
+              ref={navRef}
+              className="dnvn-nav-categories" 
+              aria-label="Menu chuyên mục"
             >
-              <i className={mobileMenuOpen ? "ti ti-x" : "ti ti-menu-2"}></i>
-            </button>
+              {categoriesList.map((cat) => {
+                const subs = getSubList(cat);
+                const hasSubs = subs.length > 0;
+                const isOpen = activeDropdownId === (cat.id || cat.name);
+                const isCatActive = location.pathname === '/posts' && location.search.includes(encodeURIComponent(cat.name));
+                const catDisplayName = getCategoryName(cat);
+
+                return (
+                  <div
+                    key={cat.id || cat.name}
+                    className="dnvn-cat-wrapper"
+                    onMouseEnter={() => handleMouseEnter(cat.id || cat.name)}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <Link
+                      to={`/posts?category=${encodeURIComponent(cat.name)}`}
+                      className={`dnvn-nav-item-btn ${isCatActive ? 'active' : ''}`}
+                      aria-expanded={isOpen}
+                      aria-haspopup={hasSubs ? 'true' : 'false'}
+                      onClick={(e) => {
+                        if (window.innerWidth <= 1080 && hasSubs) {
+                          e.preventDefault();
+                          handleToggleDropdown(cat.id || cat.name, e);
+                        }
+                      }}
+                      onKeyDown={(e) => handleKeyDown(cat.id || cat.name, e)}
+                      title={catDisplayName}
+                    >
+                      <span className="dnvn-nav-text">{catDisplayName}</span>
+                      {hasSubs && (
+                        <i 
+                          className={`ti ti-chevron-down ${isOpen ? 'rotate' : ''}`}
+                          style={{ 
+                            fontSize: '11px', 
+                            marginLeft: '3px', 
+                            opacity: 0.8, 
+                            transition: 'transform 0.18s ease',
+                            transform: isOpen ? 'rotate(180deg)' : 'none'
+                          }} 
+                        />
+                      )}
+                    </Link>
+
+                    {/* Mega / Dropdown menu cho lĩnh vực chuyên ngành con */}
+                    {hasSubs && isOpen && (
+                      <div 
+                        className="dnvn-dropdown-panel"
+                        role="menu"
+                      >
+                        {/* Lối vào xem toàn bộ chuyên mục cha */}
+                        <Link
+                          to={`/posts?category=${encodeURIComponent(cat.name)}`}
+                          className="dnvn-dropdown-item"
+                          style={{
+                            color: '#D5A33F',
+                            fontWeight: '700',
+                            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                            marginBottom: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                          onClick={() => setActiveDropdownId(null)}
+                        >
+                          <i className="ti ti-layout-grid" style={{ fontSize: '13px' }} />
+                          <span>{currentLang === 'en' ? `All ${catDisplayName}` : `Tất cả ${catDisplayName}`}</span>
+                        </Link>
+
+                        {subs.map((sub, idx) => {
+                          const subName = typeof sub === 'object' ? sub.name : sub;
+                          const subLabel = getSubName(sub);
+                          return (
+                            <Link
+                              key={idx}
+                              to={`/posts?category=${encodeURIComponent(cat.name)}&subCategory=${encodeURIComponent(subName)}`}
+                              className="dnvn-dropdown-item"
+                              role="menuitem"
+                              onClick={() => setActiveDropdownId(null)}
+                            >
+                              {subLabel}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
           </div>
         </div>
 
