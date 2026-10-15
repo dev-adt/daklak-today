@@ -8,9 +8,17 @@ import { getCategoryLabel, getSubCategoryLabel, CATEGORIES_DATA } from '../const
 
 export const Navbar = () => {
   const { role, user, logout } = useAuth();
-  const { currentLang, changeLang, t } = useTranslation();
+  const { currentLang, changeLang, t, availableLanguages } = useTranslation();
   const { isInstallable, isInstalled, installApp } = usePWA();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const langDropdownRef = useRef(null);
+  const currentLangObj = (availableLanguages || []).find(l => l.code === currentLang) || {
+    code: currentLang,
+    label: (currentLang || 'VI').toUpperCase(),
+    name: 'Tiếng Việt',
+    flag: '🇻🇳'
+  };
   // Khởi tạo ngay lập tức từ bộ nhớ đệm hoặc CATEGORIES_DATA chuẩn để Header luôn hiện 0ms không bao giờ bị trắng
   const [categoriesList, setCategoriesList] = useState(() => {
     try {
@@ -43,11 +51,14 @@ export const Navbar = () => {
         if (activeDropdownId) {
           setActiveDropdownId(null);
         }
+        if (langDropdownOpen) {
+          setLangDropdownOpen(false);
+        }
       }
     };
     window.addEventListener('keydown', handleEscapeKey);
     return () => window.removeEventListener('keydown', handleEscapeKey);
-  }, [mobileMenuOpen, activeDropdownId]);
+  }, [mobileMenuOpen, activeDropdownId, langDropdownOpen]);
 
   // Đồng bộ động Chuyên mục & Lĩnh vực từ Backend / Database ngầm trong nền (SWR Pattern)
   useEffect(() => {
@@ -79,6 +90,9 @@ export const Navbar = () => {
     const handleClickOutside = (e) => {
       if (navRef.current && !navRef.current.contains(e.target)) {
         setActiveDropdownId(null);
+      }
+      if (langDropdownRef.current && !langDropdownRef.current.contains(e.target)) {
+        setLangDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -279,10 +293,10 @@ export const Navbar = () => {
           }
         }
 
-        /* Fluid Scaling for Laptops (1081px - 1440px) so "Đăng nhập" is NEVER clipped */
-        @media (min-width: 1081px) and (max-width: 1440px) {
+        /* Fluid Scaling for Laptops (1081px - 1300px) */
+        @media (min-width: 1081px) and (max-width: 1300px) {
           .dnvn-navbar-container {
-            padding: 0 8px !important;
+            padding: 0 10px !important;
           }
           .dnvn-brand-link {
             gap: 6px !important;
@@ -293,7 +307,7 @@ export const Navbar = () => {
             height: 32px !important;
           }
           .dnvn-brand-title {
-            font-size: 14.5px !important;
+            font-size: 15px !important;
           }
           .dnvn-brand-subtitle {
             font-size: 6.5px !important;
@@ -301,53 +315,93 @@ export const Navbar = () => {
           }
           .dnvn-nav-center {
             gap: 2px !important;
-            margin: 0 2px !important;
+            margin: 0 4px !important;
           }
           .dnvn-nav-item-btn {
-            font-size: 10px !important;
-            padding: 3px 3px !important;
-            max-width: 78px !important;
-            min-height: 32px !important;
-            line-height: 1.15 !important;
+            font-size: 12px !important;
+            padding: 5px 6px !important;
+            max-width: 115px !important;
+            min-height: 34px !important;
+            line-height: 1.2 !important;
             gap: 2px !important;
           }
           .dnvn-nav-item-btn i {
-            font-size: 8px !important;
+            font-size: 9px !important;
           }
           .dnvn-ai-nav-btn {
-            padding: 3px 6px !important;
-            font-size: 10px !important;
+            padding: 4px 8px !important;
+            font-size: 11px !important;
             gap: 3px !important;
             min-height: 32px !important;
           }
           .dnvn-nav-right {
-            gap: 4px !important;
-          }
-          .dnvn-lang-btn {
-            padding: 2px 5px !important;
-            font-size: 9.5px !important;
+            gap: 5px !important;
           }
           .dnvn-btn-join-desktop {
-            padding: 4px 7px !important;
-            font-size: 10px !important;
+            padding: 5px 9px !important;
+            font-size: 11px !important;
           }
           .dnvn-login-btn {
-            padding: 4px 5px !important;
-            font-size: 10.5px !important;
+            padding: 5px 8px !important;
+            font-size: 11.5px !important;
           }
         }
 
-        @media (min-width: 1441px) {
+        /* Screen sizes (1301px - 1500px) */
+        @media (min-width: 1301px) and (max-width: 1500px) {
           .dnvn-nav-item-btn {
-            font-size: 11.5px !important;
-            padding: 4px 7px !important;
-            max-width: 115px !important;
+            font-size: 13px !important;
+            padding: 5px 8px !important;
+            max-width: 135px !important;
+            min-height: 36px !important;
+            gap: 3px !important;
           }
           .dnvn-brand-title {
-            font-size: 17px !important;
+            font-size: 16.5px !important;
+          }
+          .dnvn-brand-subtitle {
+            font-size: 7px !important;
+          }
+          .dnvn-ai-nav-btn {
+            padding: 5px 10px !important;
+            font-size: 12px !important;
+          }
+          .dnvn-btn-join-desktop {
+            padding: 5px 11px !important;
+            font-size: 12px !important;
+          }
+          .dnvn-login-btn {
+            padding: 5px 9px !important;
+            font-size: 12.5px !important;
+          }
+        }
+
+        /* Large desktop screens (>= 1501px) */
+        @media (min-width: 1501px) {
+          .dnvn-nav-item-btn {
+            font-size: 14px !important;
+            padding: 6px 11px !important;
+            max-width: none !important;
+            min-height: 38px !important;
+            gap: 4px !important;
+          }
+          .dnvn-brand-title {
+            font-size: 18px !important;
           }
           .dnvn-brand-subtitle {
             font-size: 7.5px !important;
+          }
+          .dnvn-ai-nav-btn {
+            padding: 6px 12px !important;
+            font-size: 12.5px !important;
+          }
+          .dnvn-btn-join-desktop {
+            padding: 6px 13px !important;
+            font-size: 12.5px !important;
+          }
+          .dnvn-login-btn {
+            padding: 6px 11px !important;
+            font-size: 13px !important;
           }
         }
 
@@ -467,10 +521,9 @@ export const Navbar = () => {
         }
 
         .dnvn-nav-text {
-          display: -webkit-box !important;
-          -webkit-line-clamp: 2 !important;
-          -webkit-box-orient: vertical !important;
+          white-space: nowrap !important;
           overflow: hidden !important;
+          text-overflow: ellipsis !important;
           text-align: center !important;
         }
 
@@ -706,91 +759,114 @@ export const Navbar = () => {
               <i className="ti ti-search" style={{ fontSize: '16px' }}></i>
             </Link>
 
-            {/* Bộ chuyển đổi Song ngữ VI / EN */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.08)',
-              borderRadius: '20px',
-              padding: '2px',
-              border: '1px solid rgba(213, 163, 63, 0.25)',
-              margin: '0 2px'
-            }}>
+            {/* Bộ chuyển đổi Đa ngôn ngữ (Thanh sổ xuống) */}
+            <div ref={langDropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
               <button
-                onClick={() => changeLang('vi')}
-                className="dnvn-lang-btn"
+                type="button"
+                onClick={() => setLangDropdownOpen(prev => !prev)}
+                aria-expanded={langDropdownOpen}
+                aria-haspopup="true"
+                title="Chuyển đổi ngôn ngữ / Switch Language"
                 style={{
-                  background: currentLang === 'vi' ? '#A84524' : 'transparent',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '16px',
-                  padding: '3px 7px',
-                  fontSize: '10.5px',
-                  fontWeight: currentLang === 'vi' ? '700' : '500',
-                  cursor: 'pointer',
-                  boxShadow: currentLang === 'vi' ? '0 2px 6px rgba(168, 69, 36, 0.5)' : 'none'
-                }}
-              >
-                VI
-              </button>
-              <button
-                onClick={() => changeLang('en')}
-                className="dnvn-lang-btn"
-                style={{
-                  background: currentLang === 'en' ? '#A84524' : 'transparent',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '16px',
-                  padding: '3px 7px',
-                  fontSize: '10.5px',
-                  fontWeight: currentLang === 'en' ? '700' : '500',
-                  cursor: 'pointer',
-                  boxShadow: currentLang === 'en' ? '0 2px 6px rgba(168, 69, 36, 0.5)' : 'none'
-                }}
-              >
-                EN
-              </button>
-            </div>
-
-            {/* Nút Cài đặt PWA Desktop */}
-            {isInstallable && !isInstalled && (
-              <button
-                onClick={installApp}
-                className="dnvn-btn-pwa-install"
-                title="Cài đặt ứng dụng DakLak.today (PWA)"
-                style={{
-                  backgroundColor: 'rgba(213, 163, 63, 0.16)',
-                  border: '1px solid rgba(213, 163, 63, 0.45)',
-                  color: '#F3C562',
-                  fontSize: '11.5px',
-                  fontWeight: '700',
-                  padding: '6px 10px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '5px',
-                  whiteSpace: 'nowrap',
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(213, 163, 63, 0.35)',
+                  borderRadius: '8px',
+                  padding: '5px 8px',
+                  color: '#ffffff',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
                   transition: 'all 0.18s ease',
                   flexShrink: 0
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(213, 163, 63, 0.32)';
-                  e.currentTarget.style.color = '#FFFFFF';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = '0 3px 10px rgba(213, 163, 63, 0.35)';
+                  e.currentTarget.style.backgroundColor = 'rgba(213, 163, 63, 0.2)';
+                  e.currentTarget.style.borderColor = 'rgba(213, 163, 63, 0.6)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(213, 163, 63, 0.16)';
-                  e.currentTarget.style.color = '#F3C562';
-                  e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.borderColor = 'rgba(213, 163, 63, 0.35)';
                 }}
               >
-                <i className="ti ti-device-mobile-down" style={{ fontSize: '13px' }}></i>
-                <span>{currentLang === 'en' ? 'Install App' : 'Cài App'}</span>
+                <span style={{ fontSize: '13px', lineHeight: 1 }}>{currentLangObj.flag}</span>
+                <span style={{ fontSize: '11px', letterSpacing: '0.5px' }}>{currentLangObj.label}</span>
+                <i 
+                  className="ti ti-chevron-down" 
+                  style={{ 
+                    fontSize: '10px', 
+                    color: '#D5A33F', 
+                    transition: 'transform 0.2s ease',
+                    transform: langDropdownOpen ? 'rotate(180deg)' : 'none'
+                  }} 
+                />
               </button>
-            )}
+
+              {langDropdownOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    right: 0,
+                    backgroundColor: '#26160E',
+                    backgroundImage: 'linear-gradient(180deg, #2D1A10 0%, #1A0D07 100%)',
+                    border: '1px solid rgba(213, 163, 63, 0.45)',
+                    borderRadius: '10px',
+                    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(213, 163, 63, 0.2)',
+                    minWidth: '175px',
+                    padding: '6px',
+                    zIndex: 100001,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2px'
+                  }}
+                >
+                  {(availableLanguages || []).map((lang) => {
+                    const isActive = currentLang === lang.code;
+                    return (
+                      <button
+                        key={lang.code}
+                        type="button"
+                        onClick={() => {
+                          changeLang(lang.code);
+                          setLangDropdownOpen(false);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          width: '100%',
+                          padding: '8px 10px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          background: isActive ? 'rgba(213, 163, 63, 0.18)' : 'transparent',
+                          color: isActive ? '#F3C562' : '#E6DCD2',
+                          fontSize: '12.5px',
+                          fontWeight: isActive ? '700' : '500',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'all 0.15s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isActive) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.07)';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isActive) e.currentTarget.style.background = 'transparent';
+                        }}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '15px' }}>{lang.flag}</span>
+                          <span>{lang.name}</span>
+                        </span>
+                        {isActive && <i className="ti ti-check" style={{ color: '#D5A33F', fontSize: '13px' }} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* Nút Đăng ký trải nghiệm / Kết nối (Chỉ hiện khi chưa đăng nhập và trên desktop) */}
             {role === 'guest' && (
@@ -935,46 +1011,45 @@ export const Navbar = () => {
             }}
           >
             {/* Chuyển ngôn ngữ & Trạng thái trong Drawer */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              <div style={{ fontSize: '12px', color: '#BFAEA2' }}>{currentLang === 'en' ? 'Language / Ngôn ngữ:' : 'Ngôn ngữ / Language:'}</div>
+            <div style={{ paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ fontSize: '12px', color: '#BFAEA2', marginBottom: '8px' }}>{currentLang === 'en' ? 'Select Language / Chọn ngôn ngữ:' : 'Chọn ngôn ngữ / Select Language:'}</div>
               <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                borderRadius: '14px',
-                padding: '2px',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(5, 1fr)',
+                gap: '4px',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '8px',
+                padding: '3px',
                 border: '1px solid rgba(213, 163, 63, 0.25)'
               }}>
-                <button
-                  onClick={() => changeLang('vi')}
-                  style={{
-                    background: currentLang === 'vi' ? '#A84524' : 'transparent',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '3px 10px',
-                    fontSize: '11px',
-                    fontWeight: currentLang === 'vi' ? '700' : '500',
-                    cursor: 'pointer'
-                  }}
-                >
-                  VI
-                </button>
-                <button
-                  onClick={() => changeLang('en')}
-                  style={{
-                    background: currentLang === 'en' ? '#A84524' : 'transparent',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '3px 10px',
-                    fontSize: '11px',
-                    fontWeight: currentLang === 'en' ? '700' : '500',
-                    cursor: 'pointer'
-                  }}
-                >
-                  EN
-                </button>
+                {(availableLanguages || []).map((lang) => {
+                  const isActive = currentLang === lang.code;
+                  return (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => changeLang(lang.code)}
+                      style={{
+                        background: isActive ? '#A84524' : 'transparent',
+                        color: isActive ? '#ffffff' : '#D1C4B9',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '6px 2px',
+                        fontSize: '11px',
+                        fontWeight: isActive ? '700' : '500',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '2px',
+                        boxShadow: isActive ? '0 2px 6px rgba(168, 69, 36, 0.5)' : 'none'
+                      }}
+                    >
+                      <span style={{ fontSize: '14px' }}>{lang.flag}</span>
+                      <span>{lang.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

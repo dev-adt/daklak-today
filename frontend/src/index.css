@@ -2992,4 +2992,47 @@ select option {
   }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Silent Google Translate Integration (Ẩn hoàn toàn khung thô của Google)
+   ───────────────────────────────────────────────────────────── */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+iframe.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+#goog-gt-tt, 
+.goog-tooltip, 
+.goog-tooltip:hover {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+.goog-text-highlight {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+body > .skiptranslate:not(#root) {
+  display: none !important;
+}
+
+.goog-te-gadget {
+  display: none !important;
+}
+
+
 

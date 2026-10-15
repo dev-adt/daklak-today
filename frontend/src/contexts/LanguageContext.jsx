@@ -2033,6 +2033,98 @@ const LANGS = {
     status_rejected: '拒否されました',
     status_draft: '下書き',
     status_pending: '保留中'
+  },
+  ko: {
+    flag: '🇰🇷',
+    label: 'KO',
+    sb_sub: '기업 회원 관리',
+    search_placeholder: '검색...',
+    menu_manage: '관리',
+    menu_dashboard: '개요',
+    menu_members: '회원사',
+    menu_posts: '게시글',
+    menu_register: '회원가입',
+    menu_admin: '회원 승인',
+    menu_ai: 'AI 어시스턴트',
+    menu_system: '시스템',
+    menu_settings: 'AI 설정',
+    lang_label: '언어',
+    stat_total_members: '총 회원사',
+    stat_active: '활동 중',
+    stat_pending: '승인 대기',
+    stat_need_action: '처리 필요',
+    stat_posts: '이번 달 게시글',
+    stat_published: '발행됨',
+    stat_events: '예정된 이벤트',
+    stat_this_month: '이번 달',
+    section_new_members: '신규 등록 회원사',
+    section_pending_posts: '대기 중인 게시글',
+    btn_add: '새로 만들기',
+    notify_lang_switch: (n) => `${n}(으)로 전환되었습니다`,
+    menu_directory: '전체 디렉토리',
+    menu_tiers: '서비스 등급 혜택',
+    menu_marketplace: '시장',
+    menu_opportunities: '비즈니스 기회',
+    menu_national_feeds: '전국 피드',
+    menu_events: '이벤트',
+    menu_guide: '가이드',
+    menu_login: '로그인',
+    menu_logout: '로그아웃',
+    menu_welcome: '환영합니다',
+    hero_badge: '베트남 1위 비즈니스 연결 플랫폼',
+    hero_title: '기업을 연결하고, 함께 지속 가능한 성장을 이룹니다',
+    hero_desc: 'DakLak.today는 주요 기업 간의 신뢰할 수 있는 가교입니다. 비즈니스 파트너를 빠르게 찾고 협력 기회를 공유하세요.',
+    hero_btn_register: '지금 가입하기 (무료)',
+    hero_btn_explore: '회원사 탐색',
+    status_approved: '승인됨',
+    status_rejected: '거절됨',
+    status_draft: '임시저장',
+    status_pending: '대기중'
+  }
+};
+
+export const AVAILABLE_LANGUAGES = [
+  { code: 'vi', label: 'VI', name: 'Tiếng Việt', flag: '🇻🇳', gtCode: 'vi' },
+  { code: 'en', label: 'EN', name: 'English', flag: '🇬🇧', gtCode: 'en' },
+  { code: 'zh', label: 'ZH', name: '中文', flag: '🇨🇳', gtCode: 'zh-CN' },
+  { code: 'ja', label: 'JA', name: '日本語', flag: '🇯🇵', gtCode: 'ja' },
+  { code: 'ko', label: 'KO', name: '한국어', flag: '🇰🇷', gtCode: 'ko' }
+];
+
+export const applyGoogleTranslate = (lang) => {
+  if (typeof window === 'undefined') return;
+  const targetObj = AVAILABLE_LANGUAGES.find(l => l.code === lang) || AVAILABLE_LANGUAGES[0];
+  const gtCode = targetObj.gtCode;
+
+  // Cookie cho Google Translate Web Engine
+  const hostname = window.location.hostname;
+  const cookieVal = lang === 'vi' ? '' : `/vi/${gtCode}`;
+  const expires = lang === 'vi' ? 'Thu, 01 Jan 1970 00:00:00 UTC' : 'Fri, 31 Dec 9999 23:59:59 GMT';
+
+  document.cookie = `googtrans=${cookieVal}; expires=${expires}; path=/;`;
+  if (hostname) {
+    document.cookie = `googtrans=${cookieVal}; expires=${expires}; path=/; domain=${hostname};`;
+    document.cookie = `googtrans=${cookieVal}; expires=${expires}; path=/; domain=.${hostname};`;
+  }
+
+  // Tác động trực tiếp vào select ngầm của Google Translate
+  const triggerCombo = () => {
+    const select = document.querySelector('.goog-te-combo');
+    if (select) {
+      const targetVal = lang === 'vi' ? 'vi' : gtCode;
+      if (select.value !== targetVal) {
+        select.value = targetVal;
+        select.dispatchEvent(new Event('change'));
+      }
+      return true;
+    }
+    return false;
+  };
+
+  if (!triggerCombo()) {
+    setTimeout(triggerCombo, 250);
+    setTimeout(triggerCombo, 600);
+    setTimeout(triggerCombo, 1200);
   }
 };
 
@@ -2045,22 +2137,38 @@ export const LanguageProvider = ({ children }) => {
 
   const t = (key) => {
     const langObj = LANGS[currentLang] || LANGS.vi;
-    const value = langObj[key] || LANGS.vi[key];
+    const value = langObj?.[key] || LANGS.en?.[key] || LANGS.vi[key];
     if (typeof value === 'function') return value;
     return value || key;
   };
 
   const changeLang = (lang) => {
-    if (LANGS[lang]) {
+    if (AVAILABLE_LANGUAGES.some(l => l.code === lang)) {
       setCurrentLang(lang);
       localStorage.setItem('app_lang', lang);
+      applyGoogleTranslate(lang);
     }
   };
 
-  const getLangDetails = () => LANGS[currentLang] || LANGS.vi;
+  useEffect(() => {
+    const saved = localStorage.getItem('app_lang');
+    if (saved && saved !== 'vi') {
+      applyGoogleTranslate(saved);
+    }
+  }, []);
+
+  const getLangDetails = () => AVAILABLE_LANGUAGES.find(l => l.code === currentLang) || AVAILABLE_LANGUAGES[0];
 
   return (
-    <LanguageContext.Provider value={{ currentLang, t, changeLang, getLangDetails, LANGS, brand: brandConfig }}>
+    <LanguageContext.Provider value={{ 
+      currentLang, 
+      t, 
+      changeLang, 
+      getLangDetails, 
+      LANGS, 
+      availableLanguages: AVAILABLE_LANGUAGES,
+      brand: brandConfig 
+    }}>
       {children}
     </LanguageContext.Provider>
   );
