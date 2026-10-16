@@ -3202,6 +3202,126 @@ app.delete('/api/admin/posts/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// Đăng bài viết mới trực tiếp (Admin - toàn quyền xuất bản ngay)
+app.post('/api/admin/posts', authMiddleware, async (req, res) => {
+  try {
+    const { 
+      title, summary, body, type, category, sub_category, 
+      source_url, tags, contact_info, author_name, deadline, 
+      image_url, status, is_featured 
+    } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({ success: false, error: 'Tiêu đề bài viết không được để trống.' });
+    }
+    if (!category) {
+      return res.status(400).json({ success: false, error: 'Vui lòng chọn Chuyên mục cho bài viết.' });
+    }
+    if (!body || !body.trim()) {
+      return res.status(400).json({ success: false, error: 'Nội dung chi tiết bài viết không được để trống.' });
+    }
+
+    const finalStatus = status || 'approved';
+    const finalFeatured = is_featured ? 1 : 0;
+    const finalAuthor = author_name || 'Ban Quản trị DakLak.today';
+    const slug = await generateUniquePostSlug(title);
+    const publishedAt = finalStatus === 'approved' ? new Date() : null;
+
+    const [result] = await db.query(
+      `INSERT INTO posts (
+        creator_id, member_id, title, slug, summary, body, type, 
+        category, sub_category, source_url, tags, contact_info, 
+        author_name, deadline, image_url, status, is_featured, published_at
+      ) VALUES (NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        title.trim(), slug, summary || '', body, type || 'Tin tức',
+        category, sub_category || '', source_url || null,
+        JSON.stringify(Array.isArray(tags) ? tags : []),
+        contact_info || '', finalAuthor, deadline || null,
+        image_url || null, finalStatus, finalFeatured, publishedAt
+      ]
+    );
+
+    res.json({
+      success: true,
+      id: result.insertId,
+      slug,
+      status: finalStatus,
+      message: 'Admin đã tạo và xuất bản bài viết thành công!'
+    });
+  } catch (err) {
+    console.error("Lỗi admin tạo bài viết:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Toàn quyền chỉnh sửa bất kỳ bài viết nào (Admin)
+app.put('/api/admin/posts/:id', authMiddleware, async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const [existing] = await db.query('SELECT * FROM posts WHERE id = ?', [postId]);
+    if (!existing.length) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy bài viết.' });
+    }
+
+    const { 
+      title, summary, body, type, category, sub_category, 
+      source_url, tags, contact_info, author_name, deadline, 
+      image_url, status, is_featured 
+    } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({ success: false, error: 'Tiêu đề bài viết không được để trống.' });
+    }
+    if (!category) {
+      return res.status(400).json({ success: false, error: 'Vui lòng chọn Chuyên mục cho bài viết.' });
+    }
+    if (!body || !body.trim()) {
+      return res.status(400).json({ success: false, error: 'Nội dung chi tiết bài viết không được để trống.' });
+    }
+
+    const currentPost = existing[0];
+    const finalStatus = status || currentPost.status || 'approved';
+    const finalFeatured = is_featured !== undefined ? (is_featured ? 1 : 0) : currentPost.is_featured;
+    const finalAuthor = author_name !== undefined ? author_name : currentPost.author_name;
+    const slug = await generateUniquePostSlug(title, postId);
+    
+    // Nếu chuyển sang approved mà trước đó chưa có published_at
+    let publishedAt = currentPost.published_at;
+    if (finalStatus === 'approved' && !publishedAt) {
+      publishedAt = new Date();
+    }
+
+    await db.query(
+      `UPDATE posts SET 
+        title = ?, slug = ?, summary = ?, body = ?, type = ?, 
+        category = ?, sub_category = ?, source_url = ?, tags = ?, 
+        contact_info = ?, author_name = ?, deadline = ?, image_url = ?, 
+        status = ?, is_featured = ?, published_at = ?
+       WHERE id = ?`,
+      [
+        title.trim(), slug, summary !== undefined ? summary : (currentPost.summary || ''), 
+        body, type || currentPost.type || 'Tin tức',
+        category, sub_category || '', source_url || null,
+        JSON.stringify(Array.isArray(tags) ? tags : []),
+        contact_info !== undefined ? contact_info : (currentPost.contact_info || ''),
+        finalAuthor, deadline || null, image_url || null,
+        finalStatus, finalFeatured, publishedAt, postId
+      ]
+    );
+
+    res.json({
+      success: true,
+      slug,
+      status: finalStatus,
+      message: 'Admin đã cập nhật nội dung bài viết thành công!'
+    });
+  } catch (err) {
+    console.error("Lỗi admin cập nhật bài viết:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ════════════════════════════════════════════
 // CATEGORIES & SUB-CATEGORIES API
 // ════════════════════════════════════════════

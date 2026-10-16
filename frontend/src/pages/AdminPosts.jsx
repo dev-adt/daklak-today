@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import AdminLayout from '../components/AdminLayout';
+import RichTextEditor from '../components/RichTextEditor';
+import { CATEGORIES_DATA } from '../constants/categories';
+import { fetchJsonWithTimeout } from '../utils/api';
 
 export const AdminPosts = () => {
   const { getAuthHeaders } = useAuth();
@@ -20,6 +23,46 @@ export const AdminPosts = () => {
   // States for viewing full post
   const [viewPostModalOpen, setViewPostModalOpen] = useState(false);
   const [selectedPostToView, setSelectedPostToView] = useState(null);
+
+  // States for creating & editing post
+  const [postModalOpen, setPostModalOpen] = useState(false);
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [submittingPost, setSubmittingPost] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [categoriesList, setCategoriesList] = useState(CATEGORIES_DATA);
+
+  const initialPostForm = {
+    title: '',
+    summary: '',
+    body: '',
+    category: CATEGORIES_DATA[0]?.name || 'Khám phá Đắk Lắk',
+    sub_category: CATEGORIES_DATA[0]?.subcategories?.[0] || 'Điểm đến & Thắng cảnh',
+    type: 'Tin tức',
+    author_name: 'Ban Quản trị DakLak.today',
+    contact_info: '',
+    source_url: '',
+    tags: '',
+    deadline: '',
+    image_url: '',
+    status: 'approved',
+    is_featured: false
+  };
+
+  const [postForm, setPostForm] = useState(initialPostForm);
+
+  useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        const res = await fetchJsonWithTimeout('/api/categories', {}, 5000);
+        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+          setCategoriesList(res.data);
+        }
+      } catch (e) {
+        // Fallback to CATEGORIES_DATA
+      }
+    };
+    fetchCats();
+  }, []);
 
   const loadPosts = async () => {
     setLoading(true);
@@ -55,6 +98,175 @@ export const AdminPosts = () => {
       } catch (e) {
         console.error("Lỗi lấy chi tiết bài viết:", e);
       }
+    }
+  };
+
+  const handleOpenCreatePost = () => {
+    setEditingPostId(null);
+    const firstCat = categoriesList[0];
+    setPostForm({
+      title: '',
+      summary: '',
+      body: '',
+      category: firstCat?.name || 'Khám phá Đắk Lắk',
+      sub_category: firstCat?.subcategories?.[0] || 'Điểm đến & Thắng cảnh',
+      type: 'Tin tức',
+      author_name: 'Ban Quản trị DakLak.today',
+      contact_info: '',
+      source_url: '',
+      tags: '',
+      deadline: '',
+      image_url: '',
+      status: 'approved',
+      is_featured: false
+    });
+    setPostModalOpen(true);
+  };
+
+  const handleOpenEditPost = async (p) => {
+    setEditingPostId(p.id);
+    let fullPost = p;
+    if (!p.body) {
+      try {
+        const res = await fetch(`/api/posts/${p.id}?_t=${Date.now()}`, { headers: getAuthHeaders(), cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.data) fullPost = data.data;
+        }
+      } catch (e) {
+        console.error("Lỗi lấy chi tiết bài viết để sửa:", e);
+      }
+    }
+
+    let tagsStr = '';
+    if (Array.isArray(fullPost.tags)) {
+      tagsStr = fullPost.tags.join(', ');
+    } else if (typeof fullPost.tags === 'string') {
+      try {
+        const parsed = JSON.parse(fullPost.tags);
+        if (Array.isArray(parsed)) tagsStr = parsed.join(', ');
+        else tagsStr = fullPost.tags;
+      } catch (err) {
+        tagsStr = fullPost.tags;
+      }
+    }
+
+    setPostForm({
+      title: fullPost.title || '',
+      summary: fullPost.summary || '',
+      body: fullPost.body || '',
+      category: fullPost.category || (categoriesList[0]?.name || 'Khám phá Đắk Lắk'),
+      sub_category: fullPost.sub_category || '',
+      type: fullPost.type || 'Tin tức',
+      author_name: fullPost.author_name || fullPost.company_name || 'Ban Quản trị DakLak.today',
+      contact_info: fullPost.contact_info || '',
+      source_url: fullPost.source_url || '',
+      tags: tagsStr,
+      deadline: fullPost.deadline ? String(fullPost.deadline).slice(0, 10) : '',
+      image_url: fullPost.image_url || '',
+      status: fullPost.status || 'approved',
+      is_featured: fullPost.is_featured === 1
+    });
+    setPostModalOpen(true);
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Kích thước file ảnh không được vượt quá 10MB");
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64Data = reader.result;
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: {
+              ...getAuthHeaders(),
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              fileName: file.name,
+              fileType: file.type,
+              base64Data
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data.url) {
+            setPostForm(prev => ({ ...prev, image_url: data.url }));
+          } else {
+            alert(data.error || 'Tải ảnh lên thất bại');
+          }
+        } catch (uploadErr) {
+          alert('Lỗi tải ảnh: ' + uploadErr.message);
+        } finally {
+          setUploadingImage(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      alert('Lỗi đọc file: ' + err.message);
+      setUploadingImage(false);
+    }
+  };
+
+  const handleSavePost = async (e) => {
+    e.preventDefault();
+    if (!postForm.title.trim()) {
+      alert('Vui lòng nhập tiêu đề bài viết!');
+      return;
+    }
+    if (!postForm.category) {
+      alert('Vui lòng chọn chuyên mục cho bài viết!');
+      return;
+    }
+    if (!postForm.body.trim()) {
+      alert('Vui lòng nhập nội dung chi tiết bài viết!');
+      return;
+    }
+
+    setSubmittingPost(true);
+    try {
+      const isEdit = !!editingPostId;
+      const url = isEdit ? `/api/admin/posts/${editingPostId}` : '/api/admin/posts';
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const tagsArray = postForm.tags
+        ? (typeof postForm.tags === 'string' ? postForm.tags.split(',').map(t => t.trim()).filter(Boolean) : postForm.tags)
+        : [];
+
+      const payload = {
+        ...postForm,
+        tags: tagsArray
+      };
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(isEdit ? 'Cập nhật bài viết thành công!' : 'Đăng bài viết mới thành công!');
+        setPostModalOpen(false);
+        await loadPosts();
+      } else {
+        alert(data.error || 'Lưu bài viết thất bại');
+      }
+    } catch (err) {
+      alert('Lỗi hệ thống: ' + err.message);
+    } finally {
+      setSubmittingPost(false);
     }
   };
 
@@ -239,6 +451,28 @@ export const AdminPosts = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', width: '220px', outline: 'none' }}
             />
+
+            {/* Nut Dang Bai Viet Moi */}
+            <button 
+              className="btn btn-primary"
+              onClick={handleOpenCreatePost}
+              style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '6px', 
+                fontSize: '12px', 
+                padding: '7px 14px', 
+                borderRadius: '8px', 
+                fontWeight: 600,
+                background: '#10B981',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <i className="ti ti-plus" style={{ fontSize: '14px' }}></i> Đăng bài mới
+            </button>
           </div>
         </div>
 
@@ -335,6 +569,14 @@ export const AdminPosts = () => {
                         <td style={{ padding: '12px 16px' }}>
                           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                             <button className="quick-btn" onClick={() => handleOpenViewPost(p)} style={{ padding: '4px 8px', fontSize: '11px', background: '#3B82F6', color: '#fff', border: '1px solid #3B82F6', borderRadius: '4px', cursor: 'pointer' }}>Xem</button>
+                            <button 
+                              className="quick-btn" 
+                              onClick={() => handleOpenEditPost(p)} 
+                              style={{ padding: '4px 8px', fontSize: '11px', background: '#6366F1', color: '#fff', border: '1px solid #6366F1', borderRadius: '4px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                              title="Toàn quyền sửa bài viết này"
+                            >
+                              <i className="ti ti-edit"></i> Sửa
+                            </button>
                             <a 
                               href={`/posts/${p.slug || p.id}`} 
                               target="_blank" 
@@ -521,6 +763,17 @@ export const AdminPosts = () => {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button 
                   className="btn" 
+                  onClick={() => {
+                    const post = selectedPostToView;
+                    setViewPostModalOpen(false);
+                    handleOpenEditPost(post);
+                  }}
+                  style={{ fontSize: '12px', padding: '7px 14px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <i className="ti ti-edit"></i> Sửa bài viết
+                </button>
+                <button 
+                  className="btn" 
                   onClick={() => setViewPostModalOpen(false)}
                   style={{ fontSize: '12px', padding: '7px 14px', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
                 >
@@ -567,6 +820,319 @@ export const AdminPosts = () => {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE / EDIT POST MODAL */}
+      {postModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '20px' }}>
+          <div className="card" style={{ width: '920px', maxWidth: '100%', maxHeight: '92vh', overflowY: 'auto', padding: '2rem', background: '#fff', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px', marginBottom: '1.5rem' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', color: '#0F172A', fontWeight: 700 }}>
+                  {editingPostId ? 'Chỉnh sửa bài viết (Toàn quyền Admin)' : 'Đăng bài viết mới (Admin)'}
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748B' }}>
+                  {editingPostId 
+                    ? 'Bạn có toàn quyền thay đổi tiêu đề, nội dung chi tiết, trạng thái và hình ảnh của bài viết này.' 
+                    : 'Tạo bài viết và xuất bản ngay lên hệ thống DakLak.today mà không cần qua xét duyệt.'}
+                </p>
+              </div>
+              <button 
+                onClick={() => setPostModalOpen(false)}
+                style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#64748B', lineHeight: '20px', padding: 0 }}
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleSavePost}>
+              {/* Tiêu đề */}
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '6px' }}>
+                  Tiêu đề bài viết <span style={{ color: '#EF4444' }}>*</span>
+                </label>
+                <input 
+                  type="text" 
+                  value={postForm.title} 
+                  onChange={(e) => setPostForm(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Nhập tiêu đề bài viết rõ ràng, hấp dẫn..." 
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13.5px', outline: 'none', boxSizing: 'border-box' }}
+                  required
+                />
+              </div>
+
+              {/* Grid 2 cột: Chuyên mục & Lĩnh vực */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '6px' }}>
+                    Chuyên mục chính <span style={{ color: '#EF4444' }}>*</span>
+                  </label>
+                  <select 
+                    value={postForm.category} 
+                    onChange={(e) => {
+                      const selectedCatName = e.target.value;
+                      const matched = categoriesList.find(c => c.name === selectedCatName);
+                      setPostForm(prev => ({
+                        ...prev,
+                        category: selectedCatName,
+                        sub_category: matched?.subcategories?.[0] || ''
+                      }));
+                    }}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', outline: 'none', background: '#fff', boxSizing: 'border-box' }}
+                    required
+                  >
+                    {categoriesList.map(cat => (
+                      <option key={cat.name} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '6px' }}>
+                    Lĩnh vực con / Phân nhóm
+                  </label>
+                  {(() => {
+                    const currentCatObj = categoriesList.find(c => c.name === postForm.category);
+                    const subList = currentCatObj?.subcategories || [];
+                    if (subList.length > 0) {
+                      return (
+                        <select 
+                          value={postForm.sub_category} 
+                          onChange={(e) => setPostForm(prev => ({ ...prev, sub_category: e.target.value }))}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', outline: 'none', background: '#fff', boxSizing: 'border-box' }}
+                        >
+                          <option value="">-- Chọn lĩnh vực --</option>
+                          {subList.map(sub => (
+                            <option key={sub} value={sub}>{sub}</option>
+                          ))}
+                        </select>
+                      );
+                    }
+                    return (
+                      <input 
+                        type="text" 
+                        value={postForm.sub_category} 
+                        onChange={(e) => setPostForm(prev => ({ ...prev, sub_category: e.target.value }))}
+                        placeholder="Nhập phân nhóm (nếu có)..."
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Grid 2 cột: Loại bài & Tên tác giả */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '6px' }}>
+                    Loại bài viết
+                  </label>
+                  <select 
+                    value={postForm.type} 
+                    onChange={(e) => setPostForm(prev => ({ ...prev, type: e.target.value }))}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', outline: 'none', background: '#fff', boxSizing: 'border-box' }}
+                  >
+                    <option value="Tin tức">Tin tức & Khám phá</option>
+                    <option value="Nhu cầu kết nối">Nhu cầu kết nối / Mua bán</option>
+                    <option value="Giới thiệu sản phẩm">Giới thiệu sản phẩm / Dịch vụ</option>
+                    <option value="Cung cấp dịch vụ">Cung cấp dịch vụ</option>
+                    <option value="Hợp tác kinh doanh">Hợp tác kinh doanh</option>
+                    <option value="Tuyển dụng">Tuyển dụng & Việc làm</option>
+                    <option value="Thông báo">Thông báo chính thức</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '6px' }}>
+                    Tên tác giả / Đơn vị đăng
+                  </label>
+                  <input 
+                    type="text" 
+                    value={postForm.author_name} 
+                    onChange={(e) => setPostForm(prev => ({ ...prev, author_name: e.target.value }))}
+                    placeholder="Ban Quản trị DakLak.today..." 
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* Ảnh đại diện */}
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '6px' }}>
+                  Ảnh bìa đại diện
+                </label>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input 
+                    type="text" 
+                    value={postForm.image_url} 
+                    onChange={(e) => setPostForm(prev => ({ ...prev, image_url: e.target.value }))}
+                    placeholder="Dán link ảnh trực tiếp hoặc tải ảnh từ máy tính..." 
+                    style={{ flex: 1, minWidth: '240px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                  <label 
+                    style={{ 
+                      padding: '8px 14px', 
+                      background: uploadingImage ? '#94A3B8' : '#3B82F6', 
+                      color: '#fff', 
+                      borderRadius: '8px', 
+                      cursor: uploadingImage ? 'not-allowed' : 'pointer', 
+                      fontSize: '12px', 
+                      fontWeight: 600, 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '5px' 
+                    }}
+                  >
+                    <i className={uploadingImage ? "ti ti-loader animate-spin" : "ti ti-upload"}></i>
+                    {uploadingImage ? 'Đang tải ảnh...' : 'Tải ảnh lên'}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleFileUpload} 
+                      disabled={uploadingImage} 
+                      style={{ display: 'none' }} 
+                    />
+                  </label>
+                </div>
+                {postForm.image_url && (
+                  <div style={{ marginTop: '8px', width: '100%', maxHeight: '160px', overflow: 'hidden', borderRadius: '6px', border: '1px solid #E2E8F0', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img 
+                      src={postForm.image_url} 
+                      alt="Xem trước" 
+                      style={{ maxHeight: '160px', width: 'auto', objectFit: 'contain' }}
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Tóm tắt ngắn */}
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '6px' }}>
+                  Tóm tắt ngắn (Hiển thị ở danh sách bài viết)
+                </label>
+                <textarea 
+                  rows={2} 
+                  value={postForm.summary} 
+                  onChange={(e) => setPostForm(prev => ({ ...prev, summary: e.target.value }))}
+                  placeholder="Mô tả súc tích nội dung bài viết trong 1-2 câu..." 
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* Nội dung chi tiết - RichTextEditor */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '6px' }}>
+                  Nội dung chi tiết bài viết <span style={{ color: '#EF4444' }}>*</span>
+                </label>
+                <RichTextEditor 
+                  value={postForm.body} 
+                  onChange={(val) => setPostForm(prev => ({ ...prev, body: val }))} 
+                  placeholder="Soạn thảo nội dung bài viết chi tiết, chèn hình ảnh, định dạng văn bản..." 
+                />
+              </div>
+
+              {/* Grid 3 cột: Thông tin liên hệ, Hạn đăng, Tags */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1E293B', marginBottom: '5px' }}>
+                    Thông tin liên hệ
+                  </label>
+                  <input 
+                    type="text" 
+                    value={postForm.contact_info} 
+                    onChange={(e) => setPostForm(prev => ({ ...prev, contact_info: e.target.value }))}
+                    placeholder="Hotline, Email, Zalo..." 
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12.5px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1E293B', marginBottom: '5px' }}>
+                    Hạn đăng bài (Tùy chọn)
+                  </label>
+                  <input 
+                    type="date" 
+                    value={postForm.deadline} 
+                    onChange={(e) => setPostForm(prev => ({ ...prev, deadline: e.target.value }))}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12.5px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1E293B', marginBottom: '5px' }}>
+                    Tags (Phân cách bằng dấu phẩy)
+                  </label>
+                  <input 
+                    type="text" 
+                    value={postForm.tags} 
+                    onChange={(e) => setPostForm(prev => ({ ...prev, tags: e.target.value }))}
+                    placeholder="daklak, dautu, nongnghiep..." 
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12.5px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* Grid 2 cột: Trạng thái & Ghim nổi bật */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '12px 16px', borderRadius: '8px', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '15px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <label style={{ fontSize: '12.5px', fontWeight: 600, color: '#1E293B' }}>Trạng thái:</label>
+                  <select 
+                    value={postForm.status} 
+                    onChange={(e) => setPostForm(prev => ({ ...prev, status: e.target.value }))}
+                    style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12.5px', outline: 'none', background: '#fff', fontWeight: 600, color: postForm.status === 'approved' ? '#059669' : '#D97706' }}
+                  >
+                    <option value="approved">Xuất bản công khai (Đã duyệt)</option>
+                    <option value="pending">Chờ xét duyệt</option>
+                    <option value="rejected">Từ chối / Khóa</option>
+                    <option value="hidden">Ẩn bài viết</option>
+                  </select>
+                </div>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: '#1E293B' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={postForm.is_featured} 
+                    onChange={(e) => setPostForm(prev => ({ ...prev, is_featured: e.target.checked }))} 
+                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  />
+                  <span>Ghim nổi bật ngoài Trang chủ <i className="ti ti-star-filled" style={{ color: '#F59E0B' }}></i></span>
+                </label>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setPostModalOpen(false)}
+                  style={{ padding: '8px 18px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#F1F5F9', color: '#475569', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Hủy bỏ
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={submittingPost}
+                  style={{ 
+                    padding: '8px 22px', 
+                    borderRadius: '6px', 
+                    border: 'none', 
+                    background: '#10B981', 
+                    color: '#fff', 
+                    fontSize: '13px', 
+                    fontWeight: 600, 
+                    cursor: submittingPost ? 'not-allowed' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  {submittingPost && <i className="ti ti-loader animate-spin"></i>}
+                  {submittingPost ? 'Đang lưu...' : (editingPostId ? 'Lưu thay đổi bài viết' : 'Đăng bài viết ngay')}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
