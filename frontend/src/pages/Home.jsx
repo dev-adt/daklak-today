@@ -78,6 +78,183 @@ const HomeEventCountdown = React.memo(({ eventDate }) => {
   );
 });
 
+// 7 Doanh nghiệp tiêu biểu (1 Group + 6 công ty thành viên) theo tài liệu "Doanh nghiệp tiêu biểu daklaktoday.docx"
+const FEATURED_ENTERPRISES = [
+  {
+    id: 'minh-dang-group',
+    name: 'TẬP ĐOÀN MINH ĐĂNG',
+    shortName: 'Minh Đăng Group',
+    roleTag: 'Tập đoàn Chủ quản Hệ sinh thái',
+    roleTagEn: 'Ecosystem Holding Group',
+    year: '2015',
+    experience: '10 năm phát triển',
+    headquarters: '159 Võ Văn Tần, phường Xuân Hòa, TP. Hồ Chí Minh',
+    headquartersEn: '159 Vo Van Tan, Xuan Hoa Ward, Ho Chi Minh City',
+    sectors: 'Xuất nhập khẩu nông sản • Chuỗi giá trị cà phê • Dịch vụ y tế • Cảng thủy nội địa & logistics',
+    sectorsEn: 'Agri Export • Coffee Value Chain • Healthcare • Inland Port & Logistics',
+    philosophy: 'Chất lượng – Đổi mới – Bền vững',
+    philosophyEn: 'Quality – Innovation – Sustainability',
+    highlight: 'Sau 10 năm phát triển, Minh Đăng Group từng bước trở thành tập đoàn kinh tế đa ngành tại Việt Nam. Tập đoàn chú trọng nâng cao giá trị cà phê Việt Nam, phát triển chuỗi giá trị toàn diện và lan tỏa bản sắc vùng đất Buôn Ma Thuột đến người tiêu dùng trong nước và quốc tế.',
+    highlightEn: 'After 10 years of growth, Minh Dang Group has evolved into a prominent multi-industry conglomerate, elevating Vietnamese coffee value and bringing Buon Ma Thuot heritage to global consumers.',
+    stats: [
+      { label: 'Thành lập', labelEn: 'Founded', value: '2015' },
+      { label: 'Quy mô', labelEn: 'Scale', value: 'Đa ngành' },
+      { label: 'Thành viên', labelEn: 'Subsidiaries', value: '06 Đơn vị' }
+    ],
+    logo: '/images/companies/minh-dang-group.jpg',
+    color: '#7A3E1D'
+  },
+  {
+    id: 'eakar-vina',
+    name: 'CÔNG TY CP XUẤT NHẬP KHẨU EAKAR VINA',
+    shortName: 'Eakar Vina',
+    roleTag: 'Nông sản Xuất khẩu • Khởi nguồn Ea Kar',
+    roleTagEn: 'Agri Export • Ea Kar Heritage',
+    year: '2018',
+    origin: 'Khởi nguồn từ Ea Kar, Đắk Lắk',
+    originEn: 'Originated from Ea Kar, Dak Lak',
+    headquarters: 'Tầng 17, Vincom Center, 72 Lê Thánh Tôn, TPHCM | VP: 159 Võ Văn Tần, TPHCM',
+    headquartersEn: '17th Fl, Vincom Center, 72 Le Thanh Ton & 159 Vo Van Tan, HCMC',
+    sectors: 'Thương mại Cà phê Robusta • Hồ tiêu chất lượng cao • Chuỗi cung ứng nông sản',
+    sectorsEn: 'Robusta Coffee • High-grade Pepper • Agricultural Supply Chain',
+    philosophy: 'Uy tín – Chất lượng – Đồng hành cùng Nông dân',
+    philosophyEn: 'Prestige – Quality – Farmer Partnership',
+    highlight: 'Khởi nguồn từ vùng đất Ea Kar (Đắk Lắk), Eakar Vina hướng đến Top 10 doanh nghiệp nông sản hàng đầu Việt Nam. Công ty liên kết chặt chẽ cùng nông hộ địa phương, tạo đầu ra bền vững và đưa nông sản đặc trưng Tây Nguyên vươn tầm quốc tế.',
+    highlightEn: 'Rooted in Ea Kar (Dak Lak), aiming for Top 10 agri-enterprises in Vietnam. Partnering closely with local farmers to secure stable output and export Central Highlands produce.',
+    stats: [
+      { label: 'Xuất phát điểm', labelEn: 'Origin', value: 'Ea Kar, ĐL' },
+      { label: 'Chủ lực', labelEn: 'Focus', value: 'Cà phê & Tiêu' },
+      { label: 'Mục tiêu', labelEn: 'Target', value: 'Top 10 Nông sản' }
+    ],
+    logo: '/images/companies/eakar-vina.jpg',
+    color: '#1F5A3A'
+  },
+  {
+    id: 'ctp-group',
+    name: 'CÔNG TY CP TẬP ĐOÀN CTP GROUP',
+    shortName: 'CTP Group (HNX: CTP)',
+    roleTag: 'Doanh nghiệp Niêm yết HNX (Mã: CTP)',
+    roleTagEn: 'HNX-Listed Enterprise (Stock: CTP)',
+    stockCode: 'HNX: CTP',
+    year: '2010',
+    headquarters: 'Tòa nhà Simco Sông Đà, Vạn Phúc, Hà Đông, Hà Nội | VP: 159 Võ Văn Tần, TPHCM',
+    headquartersEn: 'Simco Song Da Bldg, Van Phuc, Ha Dong, Hanoi | Office: 159 Vo Van Tan, HCMC',
+    sectors: 'Chế biến & Kinh doanh Cà phê • Bất động sản • Xây dựng & Hạ tầng',
+    sectorsEn: 'Coffee Processing & Trade • Real Estate • Construction & Infrastructure',
+    philosophy: 'Quy mô vượt trội – Đầu tư chế biến sâu',
+    philosophyEn: 'Superior Scale – Deep Processing Investment',
+    highlight: 'Doanh nghiệp niêm yết trên sàn chứng khoán HNX, sở hữu hệ thống nhà máy và kho bãi hơn 13.142 m², đầu tư vùng nguyên liệu quy mô lớn và chuỗi giá trị cà phê khép kín gia tăng giá trị.',
+    highlightEn: 'Listed on HNX, possessing modern processing facilities and warehouses exceeding 13,142 m², investing in extensive raw material zones and an integrated coffee value chain.',
+    stats: [
+      { label: 'Mã chứng khoán', labelEn: 'Stock', value: 'HNX: CTP' },
+      { label: 'Kho bãi & Nhà máy', labelEn: 'Facilities', value: '13.142 m²' },
+      { label: 'Thành lập', labelEn: 'Founded', value: '2010' }
+    ],
+    logo: '/images/companies/ctp-group.png',
+    color: '#A84524'
+  },
+  {
+    id: 'bazan-coffee',
+    name: 'NHÀ MÁY BAZAN HERITAGE COFFEE',
+    shortName: 'Bazan Heritage Coffee',
+    roleTag: 'Nhà máy Chế biến sâu • KCN Hòa Phú',
+    roleTagEn: 'Deep-Processing Plant • Hoa Phu IP',
+    location: 'Khu công nghiệp Hòa Phú, xã Hòa Phú, TP. Buôn Ma Thuột, Đắk Lắk',
+    headquarters: 'KCN Hòa Phú, Buôn Ma Thuột, Đắk Lắk | Trụ sở: 159 Võ Văn Tần, TPHCM',
+    headquartersEn: 'Hoa Phu Industrial Park, Buon Ma Thuot, Dak Lak | HQ: 159 Vo Van Tan, HCMC',
+    sectors: 'Chế biến sâu Cà phê Robusta Đặc sản • Tinh hoa Hạt Cà phê Đất Đỏ Bazan',
+    sectorsEn: 'Specialty Robusta Deep Processing • Red Bazan Soil Heritage',
+    philosophy: 'Tôn vinh Giá trị Nguyên bản Hạt Cà phê Việt',
+    philosophyEn: 'Honoring Original Value of Vietnamese Coffee',
+    highlight: 'Nhà máy tọa lạc tại thủ phủ Đắk Lắk, kế thừa trọn vẹn tinh hoa đất trời bazan với quy trình chế biến hiện đại, gìn giữ hương vị nồng nàn đặc trưng và nâng cao vị thế Robusta Việt Nam trong chuỗi cung ứng toàn cầu.',
+    highlightEn: 'Located right in Dak Lak coffee capital, harnessing the rich red basalt soil with advanced processing lines to preserve authentic aroma and elevate Vietnamese Robusta globally.',
+    stats: [
+      { label: 'Vị trí', labelEn: 'Location', value: 'KCN Hòa Phú' },
+      { label: 'Dòng sản phẩm', labelEn: 'Products', value: 'Robusta Đặc sản' },
+      { label: 'Bản sắc', labelEn: 'Identity', value: 'Đất đỏ Bazan' }
+    ],
+    logo: '/images/companies/bazan-coffee.jpg',
+    color: '#D5A33F'
+  },
+  {
+    id: 'vnt',
+    name: 'CÔNG TY TNHH ĐẦU TƯ THƯƠNG MẠI XNK VNT',
+    shortName: 'VNT Import Export',
+    roleTag: 'Thương mại Quốc tế & Xúc tiến Toàn cầu',
+    roleTagEn: 'International Trade & Global Export',
+    headquarters: 'Số 11A Hồng Hà, phường Tân Sơn Hòa, TP. Hồ Chí Minh',
+    headquartersEn: '11A Hong Ha, Tan Son Hoa Ward, Ho Chi Minh City',
+    sectors: 'Thương mại Nông sản • Xuất nhập khẩu Quốc tế • Cung ứng Thị trường',
+    sectorsEn: 'Agricultural Trade • Global Import-Export • Market Supply',
+    philosophy: 'Chuyên nghiệp – Uy tín – Kết nối Không biên giới',
+    philosophyEn: 'Professionalism – Prestige – Borderless Connection',
+    highlight: 'Cầu nối xúc tiến thương mại quốc tế uy tín trong hệ sinh thái Minh Đăng Group, chuyên nghiệp hóa chuỗi xuất nhập khẩu và kết nối nông sản Tây Nguyên đến các thị trường tiêu thụ quốc tế.',
+    highlightEn: 'A trusted international trade bridge within Minh Dang Group, professionalizing the import-export supply chain and connecting Central Highlands produce globally.',
+    stats: [
+      { label: 'Lĩnh vực', labelEn: 'Sector', value: 'XNK Nông sản' },
+      { label: 'Mạng lưới', labelEn: 'Network', value: 'Quốc tế' },
+      { label: 'Tiêu chuẩn', labelEn: 'Standard', value: 'Chuyên nghiệp' }
+    ],
+    logo: '/images/companies/vnt.png',
+    color: '#185FA5'
+  },
+  {
+    id: 'phuc-vinh',
+    name: 'CÔNG TY CP ĐẦU TƯ XUẤT NHẬP KHẨU PHÚC VINH',
+    shortName: 'Phúc Vinh Port & Logistics',
+    roleTag: 'Hạ tầng Cảng thủy Nội địa & Logistics',
+    roleTagEn: 'Inland Port & Logistics Infrastructure',
+    headquarters: 'Số 322, ấp Phước Trung, xã Phước Vinh, Tỉnh Tây Ninh',
+    headquartersEn: '322, Phuoc Trung Hamlet, Phuoc Vinh Commune, Tay Ninh Province',
+    sectors: 'Khai thác Cảng thủy Nội địa • Vận tải Hàng hóa • Logistics Nông sản Chuỗi',
+    sectorsEn: 'Inland Port Operations • Freight Waterway Transport • Agri-Logistics',
+    philosophy: 'Lưu thông Hiệu quả – Kết nối Chuỗi Cung ứng',
+    philosophyEn: 'Efficient Circulation – Supply Chain Connectivity',
+    highlight: 'Phát triển hạ tầng cảng thủy nội địa hiện đại, tối ưu hóa quy trình lưu thông và giảm thiểu chi phí logistics cho hàng hóa nông sản trong chuỗi giá trị xuất nhập khẩu.',
+    highlightEn: 'Developing modern inland port infrastructure, optimizing circulation processes, and reducing logistics costs for agricultural produce in the export supply chain.',
+    stats: [
+      { label: 'Hạ tầng', labelEn: 'Infra', value: 'Cảng thủy nội địa' },
+      { label: 'Vị trí', labelEn: 'Location', value: 'Tây Ninh' },
+      { label: 'Tối ưu', labelEn: 'Role', value: 'Giảm phí Logistics' }
+    ],
+    logo: '/images/companies/phuc-vinh.png',
+    color: '#0F766E'
+  },
+  {
+    id: 'md-homes',
+    name: 'CÔNG TY CỔ PHẦN THƯƠNG MẠI MD HOMES',
+    shortName: 'MD Homes',
+    roleTag: 'Nông sản Hồ tiêu & Đầu tư Bất động sản',
+    roleTagEn: 'Pepper Trading & Real Estate',
+    headquarters: '159 Võ Văn Tần, phường Xuân Hòa, TP. Hồ Chí Minh',
+    headquartersEn: '159 Vo Van Tan, Xuan Hoa Ward, Ho Chi Minh City',
+    sectors: 'Kinh doanh & Cung ứng Hồ tiêu xuất khẩu • Đầu tư & Kinh doanh Bất động sản',
+    sectorsEn: 'High-grade Pepper Export • Real Estate Investment',
+    philosophy: 'Đa dạng hóa Danh mục – Giá trị Bền vững',
+    philosophyEn: 'Portfolio Diversification – Sustainable Value',
+    highlight: 'Cung ứng nguồn hồ tiêu Tây Nguyên tiêu chuẩn cao cho thị trường trong nước và quốc tế, song song khai thác các cơ hội bất động sản tạo nền tảng tăng trưởng vững chắc dài hạn.',
+    highlightEn: 'Supplying high-standard Central Highlands pepper to domestic and foreign markets, alongside real estate investment opportunities for long-term growth.',
+    stats: [
+      { label: 'Sản phẩm chính', labelEn: 'Main Product', value: 'Hồ tiêu chất lượng' },
+      { label: 'Mảng bổ trợ', labelEn: 'Addition', value: 'Bất động sản' },
+      { label: 'Thị trường', labelEn: 'Market', value: 'Nội địa & XNK' }
+    ],
+    logo: '/images/companies/md-homes.png',
+    color: '#C2410C'
+  }
+];
+
+// Danh sách logo đối tác (hiển thị 4 logo trên thanh lướt 1s vô hạn ở dưới cùng)
+const PARTNER_COMPANIES = [
+  { id: 1, name: 'Minh Đăng Group', logo: '/images/companies/minh-dang-group.jpg' },
+  { id: 2, name: 'Eakar Vina', logo: '/images/companies/eakar-vina.jpg' },
+  { id: 3, name: 'CTP Group (HNX: CTP)', logo: '/images/companies/ctp-group.png' },
+  { id: 4, name: 'Bazan Heritage Coffee', logo: '/images/companies/bazan-coffee.jpg' },
+  { id: 5, name: 'VNT Import Export', logo: '/images/companies/vnt.png' },
+  { id: 6, name: 'Phúc Vinh Port & Logistics', logo: '/images/companies/phuc-vinh.png' },
+  { id: 7, name: 'MD Homes', logo: '/images/companies/md-homes.png' }
+];
+
 export const Home = () => {
   const { role, user, token } = useAuth();
   let storedMemberUser = null;
@@ -102,6 +279,76 @@ export const Home = () => {
 
   // Investment Projects Filter State
   const [selectedSector, setSelectedSector] = useState('all');
+
+  // State Slider Doanh nghiệp tiêu biểu (7 công ty từ file docx)
+  const [enterpriseIndex, setEnterpriseIndex] = useState(0);
+  const handlePrevEnterprise = () => {
+    setEnterpriseIndex(prev => (prev - 1 + FEATURED_ENTERPRISES.length) % FEATURED_ENTERPRISES.length);
+  };
+  const handleNextEnterprise = () => {
+    setEnterpriseIndex(prev => (prev + 1) % FEATURED_ENTERPRISES.length);
+  };
+
+  // State Slider Đối tác của chúng tôi (4 logo, tự động chuyển mỗi 1s, dừng khi hover)
+  const [partnerIndex, setPartnerIndex] = useState(PARTNER_COMPANIES.length);
+  const [isPartnerHovered, setIsPartnerHovered] = useState(false);
+  const [withPartnerTransition, setWithPartnerTransition] = useState(true);
+  const [partnerVisibleCount, setPartnerVisibleCount] = useState(4);
+
+  useEffect(() => {
+    const updateVisibleCount = () => {
+      if (window.innerWidth <= 640) setPartnerVisibleCount(2);
+      else if (window.innerWidth <= 1024) setPartnerVisibleCount(3);
+      else setPartnerVisibleCount(4);
+    };
+    updateVisibleCount();
+    window.addEventListener('resize', updateVisibleCount);
+    return () => window.removeEventListener('resize', updateVisibleCount);
+  }, []);
+
+  // Tự động lướt sang mỗi 1s, tạm dừng khi di chuột
+  useEffect(() => {
+    if (isPartnerHovered) return;
+    const interval = setInterval(() => {
+      setPartnerIndex(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isPartnerHovered]);
+
+  // Vòng lặp vô hạn mượt mà
+  const totalPartners = PARTNER_COMPANIES.length;
+  useEffect(() => {
+    if (partnerIndex >= totalPartners * 2) {
+      const resetTimer = setTimeout(() => {
+        setWithPartnerTransition(false);
+        setPartnerIndex(totalPartners);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setWithPartnerTransition(true);
+          });
+        });
+      }, 400);
+      return () => clearTimeout(resetTimer);
+    } else if (partnerIndex < totalPartners) {
+      const resetTimer = setTimeout(() => {
+        setWithPartnerTransition(false);
+        setPartnerIndex(partnerIndex + totalPartners);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setWithPartnerTransition(true);
+          });
+        });
+      }, 400);
+      return () => clearTimeout(resetTimer);
+    }
+  }, [partnerIndex, totalPartners]);
+
+  const handlePrevPartner = () => {
+    setPartnerIndex(prev => prev - 1);
+  };
+  const handleNextPartner = () => {
+    setPartnerIndex(prev => prev + 1);
+  };
 
   // Form Tư vấn & Hợp tác đầu tư (POST /api/leads)
   const [formData, setFormData] = useState({
@@ -759,6 +1006,161 @@ export const Home = () => {
                   </p>
                 </div>
                 <span className="quick-access-link" style={{ color: 'var(--bazan-brown)' }}>{currentLang === 'en' ? 'Chat with AI →' : 'Trò chuyện ngay →'}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            BLOCK: DOANH NGHIỆP TIÊU BIỂU (7 DOANH NGHIỆP HỆ SINH THÁI)
+            ======================================================== */}
+        <section className="daklak-featured-enterprise-section" id="doanh-nghiep-tieu-bieu">
+          <div className="daklak-container">
+            <div className="daklak-section-header" style={{ marginBottom: '35px' }}>
+              <span className="daklak-section-badge">
+                <i className="ti ti-building" style={{ marginRight: '4px' }} />
+                {currentLang === 'en' ? 'Dak Lak Business Ecosystem' : 'Hệ Sinh Thái Doanh Nghiệp Tiêu Biểu'}
+              </span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Featured Enterprises' : 'Doanh Nghiệp Tiêu Biểu'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'Discover the prominent multi-industry business ecosystem dedicated to sustainable growth, agricultural processing, and elevating Dak Lak coffee value chains.'
+                  : 'Khám phá hệ sinh thái doanh nghiệp đa ngành tiêu biểu đồng hành cùng sự phát triển bền vững, nâng tầm chuỗi giá trị cà phê và nông sản chất lượng cao tỉnh Đắk Lắk.'}
+              </p>
+            </div>
+
+            {/* Slider Container */}
+            <div className="daklak-enterprise-slider-wrapper">
+              {/* Nút lướt Trái */}
+              <button
+                type="button"
+                className="daklak-enterprise-nav-btn prev"
+                onClick={handlePrevEnterprise}
+                aria-label="Doanh nghiệp trước"
+                title={currentLang === 'en' ? 'Previous enterprise' : 'Doanh nghiệp trước'}
+              >
+                <i className="ti ti-chevron-left" />
+              </button>
+
+              {/* Nút lướt Phải */}
+              <button
+                type="button"
+                className="daklak-enterprise-nav-btn next"
+                onClick={handleNextEnterprise}
+                aria-label="Doanh nghiệp tiếp theo"
+                title={currentLang === 'en' ? 'Next enterprise' : 'Doanh nghiệp tiếp theo'}
+              >
+                <i className="ti ti-chevron-right" />
+              </button>
+
+              {/* Thẻ hiển thị doanh nghiệp hiện tại */}
+              {(() => {
+                const enterprise = FEATURED_ENTERPRISES[enterpriseIndex];
+                return (
+                  <div className="daklak-enterprise-card">
+                    {/* Cột Trái: Thông tin chi tiết */}
+                    <div className="daklak-enterprise-left">
+                      <div className="daklak-enterprise-header-row">
+                        <div className="daklak-enterprise-logo-frame">
+                          <img
+                            src={enterprise.logo}
+                            alt={enterprise.name}
+                            className="daklak-enterprise-logo-img"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        </div>
+                        <div>
+                          <span className="daklak-enterprise-role-badge">
+                            <i className="ti ti-rosette-discount-check" />
+                            {currentLang === 'en' ? enterprise.roleTagEn : enterprise.roleTag}
+                          </span>
+                          <h3 className="daklak-enterprise-name" style={{ marginTop: '6px' }}>
+                            {enterprise.name}
+                          </h3>
+                        </div>
+                      </div>
+
+                      <div className="daklak-enterprise-meta-list">
+                        <div className="daklak-enterprise-meta-item">
+                          <i className="ti ti-map-pin" />
+                          <span><strong>{currentLang === 'en' ? 'HQ / Location:' : 'Trụ sở / Địa chỉ:'}</strong> {currentLang === 'en' ? enterprise.headquartersEn : enterprise.headquarters}</span>
+                        </div>
+                        <div className="daklak-enterprise-meta-item">
+                          <i className="ti ti-briefcase" />
+                          <span><strong>{currentLang === 'en' ? 'Sectors:' : 'Lĩnh vực cốt lõi:'}</strong> {currentLang === 'en' ? enterprise.sectorsEn : enterprise.sectors}</span>
+                        </div>
+                      </div>
+
+                      <p className="daklak-enterprise-desc">
+                        "{currentLang === 'en' ? enterprise.highlightEn : enterprise.highlight}"
+                      </p>
+
+                      <div className="daklak-enterprise-philosophy">
+                        <i className="ti ti-sparkles" style={{ color: '#D5A33F' }} />
+                        <span>{currentLang === 'en' ? 'Core Philosophy:' : 'Tôn chỉ phát triển:'}</span>
+                        <span style={{ color: '#A84524' }}>{currentLang === 'en' ? enterprise.philosophyEn : enterprise.philosophy}</span>
+                      </div>
+                    </div>
+
+                    {/* Cột Phải: Thống kê & Kết nối */}
+                    <div className="daklak-enterprise-right">
+                      <div style={{ fontSize: '0.85rem', color: '#D5A33F', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <i className="ti ti-chart-arrows-vertical" />
+                        <span>{currentLang === 'en' ? 'KEY HIGHLIGHTS' : 'CHỈ SỐ TIÊU BIỂU'}</span>
+                      </div>
+
+                      <div className="daklak-enterprise-stats-grid">
+                        {enterprise.stats.map((st, sIdx) => (
+                          <div key={sIdx} className="daklak-enterprise-stat-box">
+                            <div className="daklak-enterprise-stat-val notranslate" translate="no">{st.value}</div>
+                            <div className="daklak-enterprise-stat-lbl">{currentLang === 'en' ? st.labelEn : st.label}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ fontSize: '0.88rem', color: '#E0D5CC', lineHeight: 1.5, background: 'rgba(255, 255, 255, 0.05)', padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                        <i className="ti ti-info-circle" style={{ color: '#F3C562', marginRight: '6px' }} />
+                        {currentLang === 'en'
+                          ? 'Enterprise profile verified under DakLak.today investment & trade promotion directory.'
+                          : 'Hồ sơ doanh nghiệp đã được xác thực trong danh bạ dữ liệu & xúc tiến đầu tư DakLak.today.'}
+                      </div>
+
+                      <div className="daklak-enterprise-indicator">
+                        <span className="daklak-enterprise-count notranslate" translate="no">
+                          {String(enterpriseIndex + 1).padStart(2, '0')} / {String(FEATURED_ENTERPRISES.length).padStart(2, '0')}
+                        </span>
+                        <button
+                          type="button"
+                          className="daklak-enterprise-btn-connect"
+                          onClick={() => scrollToConsult(enterprise.shortName)}
+                        >
+                          <i className="ti ti-mail-forward" />
+                          <span>{currentLang === 'en' ? 'Connect Enterprise' : 'Kết nối Doanh nghiệp'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Thumbnails điều hướng nhanh bên dưới */}
+              <div className="daklak-enterprise-thumbnails">
+                {FEATURED_ENTERPRISES.map((ent, tIdx) => {
+                  const isActive = tIdx === enterpriseIndex;
+                  return (
+                    <button
+                      key={ent.id}
+                      type="button"
+                      className={`daklak-enterprise-thumb-item ${isActive ? 'active' : ''}`}
+                      onClick={() => setEnterpriseIndex(tIdx)}
+                    >
+                      <img src={ent.logo} alt={ent.shortName} className="daklak-enterprise-thumb-logo" />
+                      <span>{ent.shortName}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -2119,6 +2521,77 @@ export const Home = () => {
                   </button>
                 </form>
               )}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            BLOCK: ĐỐI TÁC CỦA CHÚNG TÔI (CAROUSEL TRÊN FOOTER)
+            ======================================================== */}
+        <section className="daklak-partners-section" id="doi-tac">
+          <div className="daklak-container">
+            <h2 className="daklak-partners-title">
+              {currentLang === 'en' ? 'OUR PARTNERS' : 'ĐỐI TÁC CỦA CHÚNG TÔI'}
+            </h2>
+            <div className="daklak-partners-underline" />
+
+            <div
+              className="daklak-partners-carousel-container"
+              onMouseEnter={() => setIsPartnerHovered(true)}
+              onMouseLeave={() => setIsPartnerHovered(false)}
+            >
+              {/* Nút lướt Trái */}
+              <button
+                type="button"
+                className="daklak-partner-arrow-btn"
+                onClick={handlePrevPartner}
+                aria-label="Đối tác trước"
+                title={currentLang === 'en' ? 'Previous partner' : 'Đối tác trước'}
+              >
+                <i className="ti ti-arrow-left" />
+              </button>
+
+              {/* Khung nhìn trượt 4 logo */}
+              <div className="daklak-partners-viewport">
+                <div
+                  className="daklak-partners-track"
+                  style={{
+                    transform: `translateX(-${partnerIndex * (100 / partnerVisibleCount)}%)`,
+                    transition: withPartnerTransition ? 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)' : 'none'
+                  }}
+                >
+                  {[...PARTNER_COMPANIES, ...PARTNER_COMPANIES, ...PARTNER_COMPANIES].map((pt, pIdx) => (
+                    <div
+                      key={`${pt.id}-${pIdx}`}
+                      className="daklak-partner-item-wrap"
+                      style={{
+                        flex: `0 0 ${100 / partnerVisibleCount}%`,
+                        maxWidth: `${100 / partnerVisibleCount}%`
+                      }}
+                    >
+                      <div className="daklak-partner-item" title={pt.name}>
+                        <img
+                          src={pt.logo}
+                          alt={pt.name}
+                          className="daklak-partner-logo"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Nút lướt Phải */}
+              <button
+                type="button"
+                className="daklak-partner-arrow-btn"
+                onClick={handleNextPartner}
+                aria-label="Đối tác tiếp theo"
+                title={currentLang === 'en' ? 'Next partner' : 'Đối tác tiếp theo'}
+              >
+                <i className="ti ti-arrow-right" />
+              </button>
             </div>
           </div>
         </section>
