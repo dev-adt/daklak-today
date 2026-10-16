@@ -96,6 +96,10 @@ const FEATURED_ENTERPRISES = [
     philosophyEn: 'Quality – Innovation – Sustainability',
     highlight: 'Sau 10 năm phát triển, Minh Đăng Group từng bước trở thành tập đoàn kinh tế đa ngành tại Việt Nam. Tập đoàn chú trọng nâng cao giá trị cà phê Việt Nam, phát triển chuỗi giá trị toàn diện và lan tỏa bản sắc vùng đất Buôn Ma Thuột đến người tiêu dùng trong nước và quốc tế.',
     highlightEn: 'After 10 years of growth, Minh Dang Group has evolved into a prominent multi-industry conglomerate, elevating Vietnamese coffee value and bringing Buon Ma Thuot heritage to global consumers.',
+    keyFocus: 'Phát triển hệ sinh thái đa ngành bền vững; hoàn thiện chuỗi giá trị cà phê khép kín từ vùng nguyên liệu, chế biến sâu đến mạng lưới phân phối đa kênh và ứng dụng công nghệ.',
+    keyFocusEn: 'Developing a sustainable multi-industry ecosystem; perfecting closed coffee value chains from raw material zones, deep processing to multi-channel distribution and technology.',
+    tags: ['Chuỗi giá trị khép kín', 'Phân phối đa kênh', 'Bản sắc Buôn Ma Thuột'],
+    tagsEn: ['Closed Value Chain', 'Omni-channel Distribution', 'Buon Ma Thuot Heritage'],
     stats: [
       { label: 'Thành lập', labelEn: 'Founded', value: '2015' },
       { label: 'Quy mô', labelEn: 'Scale', value: 'Đa ngành' },
@@ -121,6 +125,10 @@ const FEATURED_ENTERPRISES = [
     philosophyEn: 'Prestige – Quality – Farmer Partnership',
     highlight: 'Khởi nguồn từ vùng đất Ea Kar (Đắk Lắk), Eakar Vina hướng đến Top 10 doanh nghiệp nông sản hàng đầu Việt Nam. Công ty liên kết chặt chẽ cùng nông hộ địa phương, tạo đầu ra bền vững và đưa nông sản đặc trưng Tây Nguyên vươn tầm quốc tế.',
     highlightEn: 'Rooted in Ea Kar (Dak Lak), aiming for Top 10 agri-enterprises in Vietnam. Partnering closely with local farmers to secure stable output and export Central Highlands produce.',
+    keyFocus: 'Tập trung hai ngành hàng chủ lực cà phê và hồ tiêu; đồng hành chặt chẽ cùng nông hộ địa phương, tạo đầu ra ổn định và đưa nông sản đặc trưng Tây Nguyên vươn tầm thế giới.',
+    keyFocusEn: 'Focusing on core Robusta coffee & high-grade pepper; closely partnering with local farmers to ensure stable output and elevate Central Highlands produce globally.',
+    tags: ['Khởi nguồn Ea Kar - Đắk Lắk', 'Cà phê & Hồ tiêu chủ lực', 'Top 10 Nông sản VN'],
+    tagsEn: ['Ea Kar Origin - Dak Lak', 'Key Coffee & Pepper', 'Top 10 Vietnam Agri'],
     stats: [
       { label: 'Xuất phát điểm', labelEn: 'Origin', value: 'Ea Kar, ĐL' },
       { label: 'Chủ lực', labelEn: 'Focus', value: 'Cà phê & Tiêu' },
@@ -145,6 +153,10 @@ const FEATURED_ENTERPRISES = [
     philosophyEn: 'Superior Scale – Deep Processing Investment',
     highlight: 'Doanh nghiệp niêm yết trên sàn chứng khoán HNX, sở hữu hệ thống nhà máy và kho bãi hơn 13.142 m², đầu tư vùng nguyên liệu quy mô lớn và chuỗi giá trị cà phê khép kín gia tăng giá trị.',
     highlightEn: 'Listed on HNX, possessing modern processing facilities and warehouses exceeding 13,142 m², investing in extensive raw material zones and an integrated coffee value chain.',
+    keyFocus: 'Doanh nghiệp niêm yết sàn HNX với tiềm lực hạ tầng nhà máy, kho bãi hơn 13.142 m²; đẩy mạnh chế biến sâu, đầu tư vùng nguyên liệu quy mô lớn và phát triển chuỗi giá trị đa ngành.',
+    keyFocusEn: 'HNX-listed enterprise boasting modern factory and warehouse facilities exceeding 13,142 m²; accelerating deep agro-processing, extensive plantation zones, and multi-sector investment.',
+    tags: ['Niêm yết HNX (Mã: CTP)', 'Kho bãi >13.142 m²', 'Chế biến sâu & Đa ngành'],
+    tagsEn: ['HNX-Listed (Stock: CTP)', 'Facilities >13,142 m²', 'Deep Processing & Diversified'],
     stats: [
       { label: 'Mã chứng khoán', labelEn: 'Stock', value: 'HNX: CTP' },
       { label: 'Kho bãi & Nhà máy', labelEn: 'Facilities', value: '13.142 m²' },
@@ -168,6 +180,10 @@ const FEATURED_ENTERPRISES = [
     philosophyEn: 'Honoring Original Value of Vietnamese Coffee',
     highlight: 'Nhà máy tọa lạc tại thủ phủ Đắk Lắk, kế thừa trọn vẹn tinh hoa đất trời bazan với quy trình chế biến hiện đại, gìn giữ hương vị nồng nàn đặc trưng và nâng cao vị thế Robusta Việt Nam trong chuỗi cung ứng toàn cầu.',
     highlightEn: 'Located right in Dak Lak coffee capital, harnessing the rich red basalt soil with advanced processing lines to preserve authentic aroma and elevate Vietnamese Robusta globally.',
+    keyFocus: 'Nhà máy hiện đại tọa lạc tại KCN Hòa Phú, Buôn Ma Thuột; chuyên sâu chế biến dòng Robusta đặc sản Tây Nguyên, bảo tồn trọn vẹn hương vị nồng nàn và tinh hoa từ dải đất đỏ bazan màu mỡ.',
+    keyFocusEn: 'Modern processing facility in Hoa Phu IP, Buon Ma Thuot; dedicated to premium Central Highlands specialty Robusta, preserving authentic aroma and basalt soil heritage.',
+    tags: ['Nhà máy KCN Hòa Phú, BMT', 'Robusta Đặc sản Đắk Lắk', 'Tinh hoa Đất đỏ Bazan'],
+    tagsEn: ['Hoa Phu IP Facility, BMT', 'Specialty Dak Lak Robusta', 'Basalt Soil Heritage'],
     stats: [
       { label: 'Vị trí', labelEn: 'Location', value: 'KCN Hòa Phú' },
       { label: 'Dòng sản phẩm', labelEn: 'Products', value: 'Robusta Đặc sản' },
@@ -190,6 +206,10 @@ const FEATURED_ENTERPRISES = [
     philosophyEn: 'Professionalism – Prestige – Borderless Connection',
     highlight: 'Cầu nối xúc tiến thương mại quốc tế uy tín trong hệ sinh thái Minh Đăng Group, chuyên nghiệp hóa chuỗi xuất nhập khẩu và kết nối nông sản Tây Nguyên đến các thị trường tiêu thụ quốc tế.',
     highlightEn: 'A trusted international trade bridge within Minh Dang Group, professionalizing the import-export supply chain and connecting Central Highlands produce globally.',
+    keyFocus: 'Cầu nối thương mại quốc tế uy tín trong hệ sinh thái, chuyên nghiệp hóa chuỗi cung ứng xuất nhập khẩu nông sản và mở rộng kênh phân phối đến các thị trường tiêu chuẩn cao toàn cầu.',
+    keyFocusEn: 'Trusted international trade gateway within the ecosystem, professionalizing agri import-export supply chains and expanding distribution to high-standard global markets.',
+    tags: ['Thương mại Nông sản Quốc tế', 'Chuỗi cung ứng XNK', 'Kết nối Không biên giới'],
+    tagsEn: ['International Agri-Trade', 'Import-Export Supply Chain', 'Borderless Connection'],
     stats: [
       { label: 'Lĩnh vực', labelEn: 'Sector', value: 'XNK Nông sản' },
       { label: 'Mạng lưới', labelEn: 'Network', value: 'Quốc tế' },
@@ -212,6 +232,10 @@ const FEATURED_ENTERPRISES = [
     philosophyEn: 'Efficient Circulation – Supply Chain Connectivity',
     highlight: 'Phát triển hạ tầng cảng thủy nội địa hiện đại, tối ưu hóa quy trình lưu thông và giảm thiểu chi phí logistics cho hàng hóa nông sản trong chuỗi giá trị xuất nhập khẩu.',
     highlightEn: 'Developing modern inland port infrastructure, optimizing circulation processes, and reducing logistics costs for agricultural produce in the export supply chain.',
+    keyFocus: 'Khai thác cảng thủy nội địa và mạng lưới logistics tổng hợp tại Tây Ninh; kết nối vận tải thủy - bộ thông suốt, giảm thiểu chi phí lưu thông và nâng cao năng lực cạnh tranh cho nông sản xuất khẩu.',
+    keyFocusEn: 'Operating modern inland port and logistics hub in Tay Ninh; seamlessly connecting inland waterway & road freight to cut transit costs and boost export competitiveness.',
+    tags: ['Cảng thủy nội địa hiện đại', 'Logistics Nông sản tổng hợp', 'Tối ưu Chi phí Chuỗi'],
+    tagsEn: ['Modern Inland Port', 'Integrated Agri-Logistics', 'Transit Cost Optimization'],
     stats: [
       { label: 'Hạ tầng', labelEn: 'Infra', value: 'Cảng thủy nội địa' },
       { label: 'Vị trí', labelEn: 'Location', value: 'Tây Ninh' },
@@ -234,6 +258,10 @@ const FEATURED_ENTERPRISES = [
     philosophyEn: 'Portfolio Diversification – Sustainable Value',
     highlight: 'Cung ứng nguồn hồ tiêu Tây Nguyên tiêu chuẩn cao cho thị trường trong nước và quốc tế, song song khai thác các cơ hội bất động sản tạo nền tảng tăng trưởng vững chắc dài hạn.',
     highlightEn: 'Supplying high-standard Central Highlands pepper to domestic and foreign markets, alongside real estate investment opportunities for long-term growth.',
+    keyFocus: 'Kết hợp song hành hai trụ cột: cung ứng hồ tiêu Tây Nguyên tiêu chuẩn cao cho thị trường trong nước & xuất khẩu, đồng thời khai thác cơ hội đầu tư bất động sản tạo đòn bẩy phát triển dài hạn.',
+    keyFocusEn: 'Dual-pillar strategy: supplying high-grade Central Highlands pepper for domestic & export markets, alongside real estate investments to drive sustainable long-term value.',
+    tags: ['Cung ứng Hồ tiêu Xuất khẩu', 'Đầu tư & Bất động sản', 'Tăng trưởng Đa dạng hóa'],
+    tagsEn: ['Export Pepper Supply', 'Real Estate Investment', 'Diversified Growth'],
     stats: [
       { label: 'Sản phẩm chính', labelEn: 'Main Product', value: 'Hồ tiêu chất lượng' },
       { label: 'Mảng bổ trợ', labelEn: 'Addition', value: 'Bất động sản' },
@@ -1104,13 +1132,14 @@ export const Home = () => {
                       </div>
                     </div>
 
-                    {/* Cột Phải: Thống kê & Kết nối */}
+                    {/* Cột Phải: Thống kê, Trọng tâm chiến lược & Nút kết nối */}
                     <div className="daklak-enterprise-right">
-                      <div style={{ fontSize: '0.85rem', color: '#D5A33F', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div className="daklak-enterprise-right-header">
                         <i className="ti ti-chart-arrows-vertical" />
-                        <span>{currentLang === 'en' ? 'KEY HIGHLIGHTS' : 'CHỈ SỐ TIÊU BIỂU'}</span>
+                        <span>{currentLang === 'en' ? 'KEY HIGHLIGHTS & STRATEGY' : 'CHỈ SỐ & TRỌNG TÂM CHIẾN LƯỢC'}</span>
                       </div>
 
+                      {/* 3 Khối chỉ số chính */}
                       <div className="daklak-enterprise-stats-grid">
                         {enterprise.stats.map((st, sIdx) => (
                           <div key={sIdx} className="daklak-enterprise-stat-box">
@@ -1120,24 +1149,35 @@ export const Home = () => {
                         ))}
                       </div>
 
-                      <div style={{ fontSize: '0.88rem', color: '#E0D5CC', lineHeight: 1.5, background: 'rgba(255, 255, 255, 0.05)', padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                        <i className="ti ti-info-circle" style={{ color: '#F3C562', marginRight: '6px' }} />
-                        {currentLang === 'en'
-                          ? 'Enterprise profile verified under DakLak.today investment & trade promotion directory.'
-                          : 'Hồ sơ doanh nghiệp đã được xác thực trong danh bạ dữ liệu & xúc tiến đầu tư DakLak.today.'}
+                      {/* Khối Trọng tâm Chiến lược & Thế mạnh từ tài liệu */}
+                      <div className="daklak-enterprise-focus-card">
+                        <div className="daklak-enterprise-focus-header">
+                          <i className="ti ti-target-arrow" />
+                          <span>{currentLang === 'en' ? 'Strategic Direction & Value' : 'Định hướng trọng tâm & Giá trị'}</span>
+                        </div>
+                        <p className="daklak-enterprise-focus-text">
+                          {currentLang === 'en' ? enterprise.keyFocusEn : enterprise.keyFocus}
+                        </p>
+                        <div className="daklak-enterprise-tags-row">
+                          {(currentLang === 'en' ? enterprise.tagsEn : enterprise.tags)?.map((tag, tIdx) => (
+                            <span key={tIdx} className="daklak-enterprise-tag-pill">
+                              <i className="ti ti-check" />
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
 
-                      <div className="daklak-enterprise-indicator">
-                        <span className="daklak-enterprise-count notranslate" translate="no">
-                          {String(enterpriseIndex + 1).padStart(2, '0')} / {String(FEATURED_ENTERPRISES.length).padStart(2, '0')}
-                        </span>
+                      {/* Nút Kết nối Doanh nghiệp */}
+                      <div className="daklak-enterprise-action-wrap">
                         <button
                           type="button"
                           className="daklak-enterprise-btn-connect"
                           onClick={() => scrollToConsult(enterprise.shortName)}
                         >
                           <i className="ti ti-mail-forward" />
-                          <span>{currentLang === 'en' ? 'Connect Enterprise' : 'Kết nối Doanh nghiệp'}</span>
+                          <span>{currentLang === 'en' ? 'Connect with Enterprise' : 'Kết nối & Hợp tác Doanh nghiệp'}</span>
+                          <i className="ti ti-arrow-right" />
                         </button>
                       </div>
                     </div>
@@ -1145,22 +1185,18 @@ export const Home = () => {
                 );
               })()}
 
-              {/* Thumbnails điều hướng nhanh bên dưới */}
-              <div className="daklak-enterprise-thumbnails">
-                {FEATURED_ENTERPRISES.map((ent, tIdx) => {
-                  const isActive = tIdx === enterpriseIndex;
-                  return (
-                    <button
-                      key={ent.id}
-                      type="button"
-                      className={`daklak-enterprise-thumb-item ${isActive ? 'active' : ''}`}
-                      onClick={() => setEnterpriseIndex(tIdx)}
-                    >
-                      <img src={ent.logo} alt={ent.shortName} className="daklak-enterprise-thumb-logo" />
-                      <span>{ent.shortName}</span>
-                    </button>
-                  );
-                })}
+              {/* Chấm phân trang nhẹ nhàng bên dưới thay cho hàng tên doanh nghiệp */}
+              <div className="daklak-enterprise-dots">
+                {FEATURED_ENTERPRISES.map((ent, dIdx) => (
+                  <button
+                    key={ent.id}
+                    type="button"
+                    className={`daklak-enterprise-dot ${dIdx === enterpriseIndex ? 'active' : ''}`}
+                    onClick={() => setEnterpriseIndex(dIdx)}
+                    aria-label={`Chuyển đến ${ent.shortName}`}
+                    title={ent.shortName}
+                  />
+                ))}
               </div>
             </div>
           </div>

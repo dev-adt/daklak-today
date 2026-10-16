@@ -1919,13 +1919,24 @@
 .daklak-enterprise-right {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   background: linear-gradient(135deg, #2A170F 0%, #1A0D07 100%);
-  padding: 30px 26px;
+  padding: 28px 24px;
   border-radius: 18px;
   color: #FFFFFF;
   border: 1px solid rgba(213, 163, 63, 0.35);
   box-shadow: 0 12px 30px rgba(26, 13, 7, 0.28);
+}
+
+.daklak-enterprise-right-header {
+  font-size: 0.84rem;
+  color: #D5A33F;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .daklak-enterprise-stats-grid {
@@ -1938,7 +1949,7 @@
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(213, 163, 63, 0.22);
   border-radius: 12px;
-  padding: 14px 8px;
+  padding: 12px 8px;
   text-align: center;
 }
 
@@ -1957,90 +1968,120 @@
   letter-spacing: 0.4px;
 }
 
-.daklak-enterprise-indicator {
+/* Khối Trọng tâm Chiến lược & Thế mạnh */
+.daklak-enterprise-focus-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(213, 163, 63, 0.2);
+  border-radius: 14px;
+  padding: 14px 16px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 16px;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.daklak-enterprise-count {
-  font-size: 0.9rem;
+.daklak-enterprise-focus-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: #D5A33F;
-  letter-spacing: 1.2px;
+  color: #F3C562;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.daklak-enterprise-focus-text {
+  font-size: 0.87rem;
+  line-height: 1.55;
+  color: #E8DDD5;
+  margin: 0;
+}
+
+.daklak-enterprise-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.daklak-enterprise-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(213, 163, 63, 0.12);
+  border: 1px solid rgba(213, 163, 63, 0.3);
+  color: #F8E3B6;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 12px;
+}
+
+.daklak-enterprise-tag-pill i {
+  font-size: 11px;
+  color: #48BB78;
+}
+
+.daklak-enterprise-action-wrap {
+  display: flex;
+  margin-top: 2px;
 }
 
 .daklak-enterprise-btn-connect {
+  width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 8px;
   background: linear-gradient(135deg, #A84524 0%, #7A3E1D 100%);
   color: #FFFFFF !important;
   text-decoration: none;
   font-weight: 700;
-  font-size: 0.88rem;
-  padding: 9px 18px;
-  border-radius: 8px;
-  border: 1px solid rgba(213, 163, 63, 0.45);
-  transition: all 0.2s ease;
+  font-size: 0.92rem;
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(213, 163, 63, 0.45);
+  transition: all 0.25s ease;
   cursor: pointer;
+  box-shadow: 0 4px 15px rgba(168, 69, 36, 0.35);
 }
 
 .daklak-enterprise-btn-connect:hover {
-  background: linear-gradient(135deg, #B94E2B 0%, #A84524 100%);
+  background: linear-gradient(135deg, #BD4E29 0%, #8E4822 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(168, 69, 36, 0.45);
+  box-shadow: 0 6px 20px rgba(168, 69, 36, 0.55);
+  border-color: #F3C562;
 }
 
-/* Thumbnails bar */
-.daklak-enterprise-thumbnails {
+/* Chấm phân trang nhẹ nhàng */
+.daklak-enterprise-dots {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-top: 26px;
-  flex-wrap: wrap;
-}
-
-.daklak-enterprise-thumb-item {
-  display: flex;
-  align-items: center;
   gap: 8px;
-  background: #FFFFFF;
-  border: 1.5px solid rgba(213, 163, 63, 0.28);
-  padding: 7px 15px;
-  border-radius: 30px;
+  margin-top: 24px;
+}
+
+.daklak-enterprise-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(122, 62, 29, 0.22);
+  border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: #55443B;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  padding: 0;
 }
 
-.daklak-enterprise-thumb-item:hover {
-  border-color: #D5A33F;
-  color: #A84524;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(168, 69, 36, 0.12);
+.daklak-enterprise-dot:hover {
+  background: rgba(168, 69, 36, 0.55);
+  transform: scale(1.15);
 }
 
-.daklak-enterprise-thumb-item.active {
-  background: linear-gradient(135deg, #3B2417 0%, #26160E 100%);
-  color: #F3C562;
-  border-color: #D5A33F;
-  box-shadow: 0 4px 14px rgba(59, 36, 23, 0.25);
-}
-
-.daklak-enterprise-thumb-logo {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #FFFFFF;
+.daklak-enterprise-dot.active {
+  width: 30px;
+  background: linear-gradient(90deg, #D5A33F 0%, #A84524 100%);
+  box-shadow: 0 2px 8px rgba(168, 69, 36, 0.28);
 }
 
 @media (max-width: 960px) {
