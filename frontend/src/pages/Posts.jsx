@@ -8,6 +8,18 @@ import SEOHead from '../components/SEOHead';
 import { CATEGORIES_DATA, ALL_CATEGORIES, getSubcategoriesByCategory, getCategoryLabel, getSubCategoryLabel } from '../constants/categories';
 import { fetchJsonWithTimeout } from '../utils/api';
 
+// Trích xuất tóm tắt an toàn tuyệt đối tránh lỗi null/undefined crash ErrorBoundary
+const getPostExcerpt = (p, maxLen = 120) => {
+  if (!p) return '';
+  if (p.summary && typeof p.summary === 'string' && p.summary.trim()) {
+    return p.summary.trim();
+  }
+  if (p.body && typeof p.body === 'string') {
+    return p.body.replace(/<[^>]*>/g, '').substring(0, maxLen).trim();
+  }
+  return '';
+};
+
 export const Posts = () => {
   const { role, token } = useAuth();
   const navigate = useNavigate();
@@ -41,8 +53,12 @@ export const Posts = () => {
   const [selectedCategory, setSelectedCategory] = useState(() => {
     let cat = searchParams.get('category') || '';
     if (cat) {
-      const match = CATEGORIES_DATA.find(c => c.name === cat || c.id === cat || c.name.toLowerCase().startsWith(cat.trim().toLowerCase()));
-      if (match) return match.name;
+      const match = CATEGORIES_DATA.find(c => {
+        const cName = typeof c === 'object' && c ? c.name : c;
+        const cId = typeof c === 'object' && c ? c.id : '';
+        return cName === cat || cId === cat || (typeof cName === 'string' && cName.toLowerCase().startsWith(cat.trim().toLowerCase()));
+      });
+      if (match) return typeof match === 'object' && match ? match.name : match;
     }
     return cat;
   });
@@ -56,11 +72,11 @@ export const Posts = () => {
     let cat = searchParams.get('category') || '';
     if (cat) {
       const match = categoriesList.find(c => {
-        const name = typeof c === 'object' ? c.name : c;
-        const id = typeof c === 'object' ? c.id : '';
-        return name === cat || id === cat || name.toLowerCase().startsWith(cat.trim().toLowerCase());
+        const name = typeof c === 'object' && c ? c.name : c;
+        const id = typeof c === 'object' && c ? c.id : '';
+        return name === cat || id === cat || (typeof name === 'string' && name.toLowerCase().startsWith(cat.trim().toLowerCase()));
       });
-      if (match) cat = typeof match === 'object' ? match.name : match;
+      if (match) cat = typeof match === 'object' && match ? match.name : match;
     }
     const subCat = searchParams.get('sub_category') || searchParams.get('subCategory') || '';
     setSelectedCategory(cat);
@@ -138,11 +154,15 @@ export const Posts = () => {
 
   // Filters logic
   const filteredPosts = posts.filter(p => {
-    const q = searchQuery.toLowerCase();
-    const matchesSearch = !searchQuery || 
-      p.title.toLowerCase().includes(q) || 
-      (p.company_name && p.company_name.toLowerCase().includes(q)) ||
-      (p.summary && p.summary.toLowerCase().includes(q));
+    if (!p) return false;
+    const title = typeof p.title === 'string' ? p.title : '';
+    const compName = typeof p.company_name === 'string' ? p.company_name : '';
+    const summary = typeof p.summary === 'string' ? p.summary : '';
+    const q = (searchQuery || '').toLowerCase();
+    const matchesSearch = !q || 
+      title.toLowerCase().includes(q) || 
+      compName.toLowerCase().includes(q) ||
+      summary.toLowerCase().includes(q);
       
     const matchesTier = !selectedTier || p.company_tier === selectedTier;
     const matchesType = !selectedType || p.type === selectedType;
@@ -255,13 +275,13 @@ export const Posts = () => {
                     <span style={{ fontSize: '10px', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#000', padding: '3px 8px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 800, marginBottom: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <i className="ti ti-crown"></i> {t('tier_platinum_partner')}
                     </span>
-                    <h2 style={{ fontFamily: 'var(--font-title)', fontSize: '20px', fontWeight: 700, color: '#fff', margin: '0 0 8px', lineHeight: 1.3 }}>{p.title}</h2>
-                    <p style={{ fontSize: '13px', color: '#B5CFEC', margin: '0 0 15px', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.summary || p.body.replace(/<[^>]*>/g, '').substring(0, 150)}</p>
+                    <h2 style={{ fontFamily: 'var(--font-title)', fontSize: '20px', fontWeight: 700, color: '#fff', margin: '0 0 8px', lineHeight: 1.3 }}>{p.title || 'Tin tiêu biểu'}</h2>
+                    <p style={{ fontSize: '13px', color: '#B5CFEC', margin: '0 0 15px', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{getPostExcerpt(p, 150)}</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                        <button onClick={() => navigate('/posts/' + (p.slug || p.id))} className="btn btn-primary" style={{ fontSize: '12px', padding: '8px 18px' }}>
                         {t('btn_read_more')} <i className="ti ti-arrow-right"></i>
                       </button>
-                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>{p.company_name}</span>
+                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>{p.company_name || ''}</span>
                     </div>
                   </div>
                 </div>
@@ -340,8 +360,10 @@ export const Posts = () => {
             >
               <option value="">🏷️ {currentLang === 'en' ? 'All sectors' : 'Tất cả lĩnh vực'}</option>
               {(selectedCategory 
-                ? ((categoriesList.find(c => (typeof c === 'object' ? c.name : c) === selectedCategory)?.subcategories || []).map(s => typeof s === 'string' ? s : (s?.name || '')))
-                : categoriesList.flatMap(c => (c.subcategories || []).map(s => typeof s === 'string' ? s : (s?.name || '')))
+                ? ((Array.isArray(categoriesList.find(c => (typeof c === 'object' ? c?.name : c) === selectedCategory)?.subcategories)
+                    ? categoriesList.find(c => (typeof c === 'object' ? c?.name : c) === selectedCategory).subcategories
+                    : []).map(s => typeof s === 'string' ? s : (s?.name || '')))
+                : categoriesList.flatMap(c => (Array.isArray(c?.subcategories) ? c.subcategories : []).map(s => typeof s === 'string' ? s : (s?.name || '')))
               ).filter(Boolean).map(subName => {
                 const sVal = typeof subName === 'object' ? (subName.name || '') : subName;
                 return (
@@ -473,13 +495,15 @@ export const Posts = () => {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {currentPosts.map((p) => {
+              if (!p) return null;
               const dateStr = p.created_at ? new Date(p.created_at).toLocaleDateString('vi-VN') : '11/06/2026';
-              const hasValidListImg = p.image_url && p.image_url !== 'null' && p.image_url !== 'undefined' && p.image_url.trim() !== '';
-              const pImg = hasValidListImg ? p.image_url : demoImages[p.id % demoImages.length];
+              const hasValidListImg = p.image_url && typeof p.image_url === 'string' && p.image_url !== 'null' && p.image_url !== 'undefined' && p.image_url.trim() !== '';
+              const pImg = hasValidListImg ? p.image_url : demoImages[Math.abs(Number(p.id) || 0) % demoImages.length];
               const isPlat = p.company_tier === 'Platinum';
               const isGld = p.company_tier === 'Gold';
-              const avatarColors = getInitialsColors(p.company_name);
-              const initials = p.company_name ? p.company_name.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'HV';
+              const compName = typeof p.company_name === 'string' ? p.company_name : '';
+              const avatarColors = getInitialsColors(compName);
+              const initials = compName ? compName.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'HV';
 
               return (
                 <div className="glass-card" key={p.id} style={{ position: 'relative', overflow: 'hidden', transition: 'transform 0.2s, border-color 0.2s', border: p.is_featured === 1 ? '1px solid rgba(245,158,11,0.3)' : '1px solid var(--border-strong)' }}>
@@ -497,12 +521,12 @@ export const Posts = () => {
                     <div style={{ width: '130px', height: '100px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, border: '1px solid var(--border)' }}>
                       <img 
                         src={pImg} 
-                        alt={p.title} 
+                        alt={p.title || 'Bài viết'} 
                         loading="lazy" 
                         decoding="async" 
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = demoImages[p.id % demoImages.length];
+                          e.target.src = demoImages[Math.abs(Number(p.id) || 0) % demoImages.length];
                         }}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                       />
@@ -514,7 +538,7 @@ export const Posts = () => {
                         {/* Member avatar & details line */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                           <div className="av-circle" style={{ width: '22px', height: '22px', fontSize: '9px', background: avatarColors.bg, color: avatarColors.fg, fontWeight: 600 }}>{initials}</div>
-                          <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)' }}>{p.company_name}</span>
+                          <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)' }}>{compName}</span>
                           <span style={{ 
                             fontSize: '8.5px', 
                             background: isPlat ? 'rgba(245,158,11,0.15)' : isGld ? 'rgba(245,158,11,0.1)' : 'var(--surface-0)', 
@@ -530,8 +554,8 @@ export const Posts = () => {
                         </div>
 
                         {/* Title */}
-                        <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '15px', fontWeight: 650, color: 'var(--text-primary)', margin: '0 0 6px', lineHeight: 1.4 }}>{p.title}</h3>
-                        <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0 0 10px', lineHeight: 1.5 }}>{p.summary || p.body.replace(/<[^>]*>/g, '').substring(0, 120)}</p>
+                        <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '15px', fontWeight: 650, color: 'var(--text-primary)', margin: '0 0 6px', lineHeight: 1.4 }}>{p.title || 'Tin đăng'}</h3>
+                        <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0 0 10px', lineHeight: 1.5 }}>{getPostExcerpt(p, 120)}</p>
                       </div>
 
                       {/* Tag & classification */}

@@ -59,7 +59,12 @@ class ErrorBoundary extends React.Component {
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button
                 type="button"
-                onClick={() => window.location.reload()}
+                onClick={() => {
+                  try {
+                    localStorage.removeItem('dnvn_cached_posts');
+                  } catch (e) {}
+                  window.location.reload();
+                }}
                 style={{
                   padding: '10px 20px',
                   backgroundColor: '#1E63E9',
