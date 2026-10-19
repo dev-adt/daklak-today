@@ -14,16 +14,16 @@ export const brandConfig = {
   companyLegalName: 'Cổng thông tin, Dữ liệu & Xúc tiến Đầu tư Đắk Lắk',
   partnerLegalName: 'Công ty Cổ phần ADT Quốc tế',
   
-  // Slogan & Định vị
-  slogan: 'Cổng thông tin, dữ liệu và kết nối đầu tư Đắk Lắk',
-  tagline: 'Từ đất bazan đến cơ hội toàn cầu — Khám phá, Kết nối, Đầu tư & Trí tuệ Nhân tạo',
-  description: 'Nền tảng số kết nối con người, doanh nghiệp, sản phẩm, du lịch, dữ liệu và cơ hội đầu tư của tỉnh Đắk Lắk trong kỷ nguyên số và AI.',
+  // Slogan & Định vị theo tài liệu thiết kế mới
+  slogan: 'Khám phá • Kết nối • Phát triển',
+  tagline: 'Đắk Lắk – Từ đại ngàn đến biển xanh',
+  description: 'Nền tảng thông tin, khám phá địa phương và kết nối cơ hội kinh doanh Đắk Lắk.',
   
   // Tên miền & Đường dẫn
   domain: 'daklak.today',
-  demoDomain: 'demo.daklak.today',
+  demoDomain: 'dev.daklak.today',
   baseUrl: 'https://daklak.today',
-  demoUrl: 'https://demo.daklak.today',
+  demoUrl: 'https://dev.daklak.today',
   apiBaseUrl: '/api',
 
   // Nhận diện hình ảnh & Logo
@@ -33,29 +33,30 @@ export const brandConfig = {
     icon: '/logo_icon.svg',
     alt: 'DakLak.today Logo',
     favicon: '/favicon.svg',
-    defaultThumbnail: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
+    defaultThumbnail: '/images/daklak/daklak_doi_ca_phe.jpg',
     fallbackCompanyLogo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80'
   },
 
-  // Hệ màu chủ đạo Tây Nguyên & Đất đỏ Bazan (Tây Nguyên Coffee & Bazan Earth Palette)
+  // Hệ màu chuẩn theo tài liệu Thiết kế giao diện Daklak.docx
   colors: {
-    primary: '#7A3E1D',       // Nâu đỏ Bazan đặc trưng
-    primaryHover: '#5D3727',  // Nâu cà phê đậm hover
-    primaryDark: '#3B2417',   // Nâu hạt cà phê rang
-    primaryLight: '#F7F1E8',  // Kem ấm ánh bazan
-    secondary: '#1F5A3A',     // Xanh đại ngàn Tây Nguyên
-    accent: '#D5A33F',        // Vàng đồng cồng chiêng
-    accentGlow: 'rgba(213, 163, 63, 0.4)',
-    gold: '#D5A33F',          // Vàng cồng chiêng
-    goldLight: '#F3C562',     // Vàng sáng
-    goldGlow: 'rgba(213, 163, 63, 0.35)',
-    bazanRed: '#A84524',      // Đỏ đất Bazan nhiệt huyết
-    bazanBrown: '#7A3E1D',    // Nâu Bazan
-    coffee: '#3B2417',        // Nâu hạt cà phê
-    forestGreen: '#1F5A3A',   // Xanh rừng đại ngàn
-    cream: '#F7F1E8',         // Kem cát bazan nhạt
-    darkBg: '#26160E',
-    darkCard: '#3B2417'
+    forestGreen: '#16734A',   // Xanh đại ngàn (Màu chủ đạo, nút hành động)
+    coffeeOrange: '#E99035',  // Cam cà phê (Điểm nhấn, nội dung nổi bật)
+    oceanBlue: '#168BC3',     // Xanh biển (Du lịch, kinh tế biển)
+    creamBg: '#FAF8F2',       // Trắng kem (Nền trang, tạo cảm giác thoáng)
+    charcoalDark: '#25312D',  // Than đậm (Tiêu đề và nội dung)
+    primary: '#16734A',
+    primaryHover: '#125C3A',
+    primaryDark: '#0E462C',
+    primaryLight: '#FAF8F2',
+    secondary: '#168BC3',
+    accent: '#E99035',
+    accentGlow: 'rgba(233, 144, 53, 0.4)',
+    gold: '#E99035',
+    bazanBrown: '#7A3E1D',
+    coffee: '#3B2417',
+    cream: '#FAF8F2',
+    darkBg: '#1C2421',
+    darkCard: '#25312D'
   },
 
   // Trợ lý Trí tuệ Nhân tạo (AI Assistant)
