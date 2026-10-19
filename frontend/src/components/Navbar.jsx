@@ -182,8 +182,7 @@ export const Navbar = () => {
       <style>{`
         /* Reset and enforce immunity from any external styles */
         .dnvn-navbar-header {
-          position: -webkit-sticky !important;
-          position: sticky !important;
+          position: fixed !important;
           top: 0 !important;
           left: 0 !important;
           right: 0 !important;
@@ -195,6 +194,12 @@ export const Navbar = () => {
           width: 100% !important;
           max-width: 100vw !important;
           box-sizing: border-box !important;
+        }
+
+        .dnvn-navbar-spacer {
+          height: 72px;
+          width: 100%;
+          flex-shrink: 0;
         }
 
         .dnvn-header-container {
@@ -446,6 +451,9 @@ export const Navbar = () => {
             padding: 0 14px !important;
             min-height: 62px !important;
           }
+          .dnvn-navbar-spacer {
+            height: 62px !important;
+          }
           .dnvn-mobile-toggle {
             display: flex !important;
           }
@@ -467,6 +475,9 @@ export const Navbar = () => {
           .dnvn-header-container {
             padding: 0 10px !important;
             min-height: 56px !important;
+          }
+          .dnvn-navbar-spacer {
+            height: 56px !important;
           }
           .dnvn-brand-subtitle {
             display: none !important;
@@ -1121,6 +1132,7 @@ export const Navbar = () => {
           </div>
         )}
       </header>
+      <div className="dnvn-navbar-spacer" aria-hidden="true" />
     </>
   );
 };

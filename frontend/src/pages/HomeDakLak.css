@@ -2223,7 +2223,6 @@
   background-color: var(--gt-bg);
   color: var(--gt-dark);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
 /* ==============================================================================
