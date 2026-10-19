@@ -283,6 +283,90 @@ const PARTNER_COMPANIES = [
   { id: 7, name: 'MD Homes', logo: '/images/companies/md-homes.png' }
 ];
 
+// Danh sách điểm đến nổi bật (Globe Trekker layout)
+const TOP_DESTINATIONS = [
+  {
+    id: 1,
+    title: 'Thác Dray Nur Hùng Vĩ',
+    titleEn: 'Majestic Dray Nur Waterfall',
+    location: 'Krông Ana, Đắk Lắk',
+    locationEn: 'Krong Ana, Dak Lak',
+    image: '/images/daklak/daklak_thac_dray_nur.jpg',
+    category: 'waterfalls',
+    link: '/posts?category=Khám%20phá%20Đắk%20Lắk'
+  },
+  {
+    id: 2,
+    title: 'Đồi Cà Phê Buôn Ma Thuột',
+    titleEn: 'Buon Ma Thuot Coffee Highlands',
+    location: 'Cư M’gar & TP. Buôn Ma Thuột',
+    locationEn: 'Cu Mgar & Buon Ma Thuot',
+    image: '/images/daklak/daklak_doi_ca_phe.jpg',
+    category: 'coffee',
+    link: '/posts?category=Cà%20phê%20Đắk%20Lắk'
+  },
+  {
+    id: 3,
+    title: 'Không Gian Văn Hóa Cồng Chiêng',
+    titleEn: 'Gong Cultural Heritage (UNESCO)',
+    location: 'Buôn Đôn & Buôn AKô Dhông',
+    locationEn: 'Buon Don & Ako Dhong',
+    image: '/images/daklak/daklak_cong_chieng.jpg',
+    category: 'culture',
+    link: '/posts?category=Văn%20hóa%20Đắk%20Lắk'
+  },
+  {
+    id: 4,
+    title: 'Hành Lang Rừng Nối Biển',
+    titleEn: 'Highland-To-Coast Corridor',
+    location: 'Cao tốc Buôn Ma Thuột - Duyên Hải',
+    locationEn: 'Expressway Buon Ma Thuot - Coast',
+    image: '/images/daklak/daklak_bien_ganh_da_dia.jpg',
+    category: 'ocean',
+    link: '/posts?category=Khám%20phá%20Đắk%20Lắk'
+  },
+  {
+    id: 5,
+    title: 'Hồ Lắk & Nhà Rông Ê Đê',
+    titleEn: 'Lake Lak & Ede Longhouse',
+    location: 'Huyện Lắk, Đắk Lắk',
+    locationEn: 'Lak District, Dak Lak',
+    image: '/images/daklak/daklak_nha_rong_ede.jpg',
+    category: 'culture',
+    link: '/posts?category=Văn%20hóa%20Đắk%20Lắk'
+  },
+  {
+    id: 6,
+    title: 'Thưởng Thức Cà Phê Đặc Sản',
+    titleEn: 'Specialty Coffee Roastery',
+    location: 'Bảo tàng Cà phê, TP. Buôn Ma Thuột',
+    locationEn: 'Coffee Museum, Buon Ma Thuot',
+    image: '/images/daklak/daklak_ca_phe.jpg',
+    category: 'coffee',
+    link: '/posts?category=Cà%20phê%20Đắk%20Lắk'
+  },
+  {
+    id: 7,
+    title: 'Lễ Hội Truyền Thống Đại Ngàn',
+    titleEn: 'Highland Traditional Festivals',
+    location: 'Các buôn làng Tây Nguyên',
+    locationEn: 'Central Highland Villages',
+    image: '/images/daklak/daklak_le_hoi_nha_rong.jpg',
+    category: 'culture',
+    link: '/posts?category=Văn%20hóa%20Đắk%20Lắk'
+  },
+  {
+    id: 8,
+    title: 'Hạ Tầng Logistics & Trung Tâm ICD',
+    titleEn: 'Inland Port & Logistics Hub',
+    location: 'Cụm Công Nghiệp & Logistics Đắk Lắk',
+    locationEn: 'Industrial & Logistics Complex',
+    image: '/images/daklak/daklak_dau_tu_logistics.jpg',
+    category: 'ocean',
+    link: '/posts?category=Đầu%20tư%20&%20Dự%20án'
+  }
+];
+
 export const Home = () => {
   const { role, user, token } = useAuth();
   let storedMemberUser = null;
@@ -301,6 +385,12 @@ export const Home = () => {
   // Search State & Scope
   const [searchQuery, setSearchQuery] = useState('');
   const [searchScope, setSearchScope] = useState('all');
+
+  // Top Destinations Tab Filter (Globe Trekker layout)
+  const [activeDestTab, setActiveDestTab] = useState('all');
+  const filteredDestinations = activeDestTab === 'all'
+    ? TOP_DESTINATIONS.slice(0, 4)
+    : TOP_DESTINATIONS.filter(d => d.category === activeDestTab).concat(TOP_DESTINATIONS.filter(d => d.category !== activeDestTab)).slice(0, 4);
 
   // FAQ Accordion State
   const [activeFaq, setActiveFaq] = useState(0);
@@ -919,113 +1009,68 @@ export const Home = () => {
 
       <main id="main-content">
         {/* ========================================================
-            SECTION 1: HERO MAGAZINE - PHONG CÁCH TẠP CHÍ HIỆN ĐẠI
-            Kết hợp The Global Wire + Globe Trekker + Nền tảng Doanh nghiệp
+            SECTION 1: HERO GLOBE TREKKER - THIẾT KẾ TINH TẾ, THOÁNG ĐÃNG
             ======================================================== */}
-        <section className="daklak-hero-magazine" id="home">
-          <div className="daklak-container">
-            <div className="magazine-hero-grid">
-              {/* Left Column: Brand, Slogan, Vision & Search */}
-              <div className="magazine-hero-text">
-                <div className="magazine-badge">
-                  <i className="ti ti-sparkles" />
-                  <span>{brandConfig.brandName} • {brandConfig.slogan}</span>
-                </div>
+        <section className="gt-hero-section" id="home">
+          <div className="gt-hero-bg-map" />
+          <div className="gt-hero-container">
+            {/* Left Column: Heading, Subtitle & Action */}
+            <div className="gt-hero-left">
+              <h1 className="gt-hero-title">
+                {currentLang === 'en' ? 'Discover Dak Lak' : 'Khám Phá Đắk Lắk'}<br />
+                <span className="gt-hero-highlight">
+                  {currentLang === 'en' ? 'Hidden' : 'Đại Ngàn'}
+                  <svg className="gt-highlight-curve" viewBox="0 0 180 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 14C45 4 135 4 176 14" stroke="#E99035" strokeWidth="4" strokeLinecap="round" />
+                  </svg>
+                </span> {currentLang === 'en' ? 'Wonders' : 'Kỳ Vĩ'}
+              </h1>
 
-                <h1 className="magazine-hero-title">
-                  ĐẮK LẮK <br />
-                  <span>TỪ ĐẠI NGÀN ĐẾN BIỂN XANH</span>
-                </h1>
+              <p className="gt-hero-desc">
+                {currentLang === 'en'
+                  ? 'Find unique moments and majestic natural wonders across the Buon Ma Thuot coffee capital, mythical waterfalls, and timeless indigenous gong heritage.'
+                  : 'Trải nghiệm những khoảnh khắc nguyên sơ và hùng vĩ giữa thủ phủ cà phê Buôn Ma Thuột, thác nước Dray Nur kỳ ảo, văn hóa cồng chiêng ngàn đời và những hành trình bất tận.'}
+              </p>
 
-                <p className="magazine-hero-desc">
-                  {currentLang === 'en'
-                    ? 'Discover the coffee capital, rich indigenous gong culture and majestic waterfalls; connect with high-value agricultural value chains, inland logistics, and sustainable investment opportunities.'
-                    : 'Khám phá thủ phủ cà phê, kiệt tác văn hóa cồng chiêng và thiên nhiên kỳ vĩ; kết nối chuỗi giá trị nông sản chất lượng cao, hạ tầng logistics cảng cạn và cơ hội đầu tư bền vững.'}
-                </p>
-
-                {/* Quick Search */}
-                <form className="magazine-search-form" onSubmit={handleSearchSubmit}>
-                  <i className="ti ti-search magazine-search-icon" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={currentLang === 'en' ? 'Search coffee, tourism, investment projects...' : 'Tìm cà phê, điểm đến du lịch, dự án đầu tư, doanh nghiệp...'}
-                  />
-                  <button type="submit" className="magazine-search-btn">
-                    <span>{currentLang === 'en' ? 'Search' : 'Tìm kiếm'}</span>
-                    <i className="ti ti-arrow-right" />
-                  </button>
-                </form>
-
-                {/* Actions Buttons */}
-                <div className="magazine-hero-actions">
-                  <a href="#kham-pha-chu-de" className="btn-daklak-primary">
-                    <i className="ti ti-compass" />
-                    <span>{currentLang === 'en' ? 'Explore 4 Pillars' : 'Khám phá 4 Trụ cột'}</span>
-                  </a>
-                  <button onClick={() => scrollToConsult()} className="btn-daklak-gold">
-                    <i className="ti ti-briefcase" />
-                    <span>{currentLang === 'en' ? 'Investment Hub' : 'Kết nối đầu tư'}</span>
-                  </button>
-                  <Link to="/ai-chat" className="btn-daklak-outline">
-                    <i className="ti ti-robot" />
-                    <span>{currentLang === 'en' ? 'AI Assistant' : 'Hỏi Trợ lý AI'}</span>
-                  </Link>
-                </div>
-
-                {/* Stat pills */}
-                <div className="magazine-stat-row">
-                  <div className="magazine-stat-item">
-                    <span className="stat-num">535.000+</span>
-                    <span className="stat-label">{currentLang === 'en' ? 'Tons coffee / year' : 'Tấn cà phê / năm'}</span>
-                  </div>
-                  <div className="magazine-stat-item">
-                    <span className="stat-num">UNESCO</span>
-                    <span className="stat-label">{currentLang === 'en' ? 'Gong Heritage' : 'Văn hóa Cồng Chiêng'}</span>
-                  </div>
-                  <div className="magazine-stat-item">
-                    <span className="stat-num">130+ km</span>
-                    <span className="stat-label">{currentLang === 'en' ? 'High-speed Corridor' : 'Cao tốc BMT - Biển'}</span>
-                  </div>
+              <div className="gt-hero-action-row">
+                <a href="#top-destinations" className="gt-btn-primary">
+                  <span>{currentLang === 'en' ? 'Plan your trip' : 'Lên lịch trình khám phá'}</span>
+                </a>
+                <div className="gt-flight-trail">
+                  <svg className="gt-flight-svg" viewBox="0 0 140 40" fill="none">
+                    <path d="M5 25 C40 45, 80 5, 125 22" stroke="#E99035" strokeWidth="2.5" strokeDasharray="6 6" fill="none" />
+                    <polygon points="125,22 135,16 131,28" fill="#E99035" />
+                  </svg>
                 </div>
               </div>
+            </div>
 
-              {/* Right Column: Visual Magazine Collage with authentic Dak Lak photos */}
-              <div className="daklak-hero-collage">
-                <div className="collage-card collage-card-large" onClick={() => navigate('/posts?category=Cà%20phê%20Đắk%20Lắk')}>
-                  <img src="/images/daklak/daklak_doi_ca_phe.jpg" alt="Đồi Cà Phê Tây Nguyên" />
-                  <div className="collage-card-overlay">
-                    <span className="collage-card-badge">Thủ Phủ Cà Phê</span>
-                    <h4>Đại Ngàn Bazan Màu Mỡ</h4>
-                    <p>Chuỗi giá trị nông sản vươn tầm toàn cầu</p>
+            {/* Right Column: Signature 3-Photo Staggered Composition */}
+            <div className="gt-hero-visuals">
+              <div className="gt-photo-group">
+                {/* Card 1: Tall Vertical Photo on Left */}
+                <div className="gt-photo-card tall" onClick={() => navigate('/posts?category=Khám%20phá%20Đắk%20Lắk')}>
+                  <img src="/images/daklak/daklak_thac_dray_nur.jpg" alt="Thác Dray Nur Hùng Vĩ" />
+                </div>
+
+                {/* Cards 2 & 3: Stack on Right */}
+                <div className="gt-photo-right-col">
+                  <div className="gt-photo-card medium" onClick={() => navigate('/posts?category=Cà%20phê%20Đắk%20Lắk')}>
+                    <img src="/images/daklak/daklak_doi_ca_phe.jpg" alt="Đồi Cà Phê Buôn Ma Thuột" />
+                  </div>
+                  <div className="gt-photo-card medium" onClick={() => navigate('/posts?category=Văn%20hóa%20Đắk%20Lắk')}>
+                    <img src="/images/daklak/daklak_cong_chieng.jpg" alt="Không Gian Văn Hóa Cồng Chiêng" />
                   </div>
                 </div>
 
-                <div className="collage-subgrid">
-                  <div className="collage-card" onClick={() => navigate('/posts?category=Khám%20phá%20Đắk%20Lắk')}>
-                    <img src="/images/daklak/daklak_thac_dray_nur.jpg" alt="Thác Dray Nur" />
-                    <div className="collage-card-overlay">
-                      <span className="collage-card-badge">Kỳ Quan Thiên Nhiên</span>
-                      <h4>Thác Dray Nur Hùng Vĩ</h4>
-                    </div>
-                  </div>
+                {/* Vintage Circular Travel Stamp Badge */}
+                <div className="gt-stamp-badge">
+                  <i className="ti ti-compass" />
+                </div>
 
-                  <div className="collage-card" onClick={() => navigate('/posts?category=Văn%20hóa%20Đắk%20Lắk')}>
-                    <img src="/images/daklak/daklak_cong_chieng.jpg" alt="Văn Hóa Cồng Chiêng" />
-                    <div className="collage-card-overlay">
-                      <span className="collage-card-badge">Di Sản UNESCO</span>
-                      <h4>Không Gian Cồng Chiêng</h4>
-                    </div>
-                  </div>
-
-                  <div className="collage-card collage-card-wide" onClick={() => navigate('/posts?category=Khám%20phá%20Đắk%20Lắk')}>
-                    <img src="/images/daklak/daklak_bien_ganh_da_dia.jpg" alt="Kết Nối Rừng Và Biển" />
-                    <div className="collage-card-overlay">
-                      <span className="collage-card-badge">Hành Lang Kinh Tế</span>
-                      <h4>Từ Đại Ngàn Tây Nguyên Vươn Ra Biển Lớn</h4>
-                    </div>
-                  </div>
+                {/* Airplane Badge */}
+                <div className="gt-plane-badge">
+                  <i className="ti ti-plane" />
                 </div>
               </div>
             </div>
@@ -1033,98 +1078,74 @@ export const Home = () => {
         </section>
 
         {/* ========================================================
-            SECTION 2: 4 TRỤ CỘT KHÁM PHÁ THEO CHỦ ĐỀ (THEMATIC DISCOVERY)
-            Phong cách Globe Trekker + Kinh Tế Xúc Tiến
+            SECTION 2: TOP DESTINATIONS (TOP ĐIỂM ĐẾN)
             ======================================================== */}
-        <section className="thematic-section" id="kham-pha-chu-de">
-          <div className="daklak-container">
-            <div className="daklak-section-header" style={{ marginBottom: '32px' }}>
-              <span className="daklak-section-badge">
-                <i className="ti ti-compass" style={{ marginRight: '6px' }} />
-                {currentLang === 'en' ? 'Thematic Discovery' : 'Khám Phá Theo Chủ Đề'}
-              </span>
-              <h2 className="daklak-section-title">
-                {currentLang === 'en' ? '4 Strategic Pillars of Dak Lak' : '4 Trụ Cột Phát Triển & Trải Nghiệm'}
-              </h2>
-              <p className="daklak-section-desc">
-                {currentLang === 'en'
-                  ? 'Dive into local coffee heritage, ecotourism routes connecting mountains to the sea, vibrant indigenous culture, and forward-looking economic investments.'
-                  : 'Trải nghiệm trọn vẹn bản sắc vùng đất: Từ nông sản chủ lực, hành trình du lịch đại ngàn nối biển xanh, đến văn hóa cồng chiêng ngàn đời và tiềm năng xúc tiến đầu tư tương lai.'}
-              </p>
+        <section className="gt-dest-section" id="top-destinations">
+          <div className="gt-dest-container">
+            <div className="gt-dest-header">
+              <div className="gt-dest-header-left">
+                <h2 className="gt-section-title">
+                  {currentLang === 'en' ? 'Top Destinations' : 'Top Điểm Đến'}
+                </h2>
+                <div className="gt-dest-tabs">
+                  <button 
+                    className={`gt-filter-pill ${activeDestTab === 'all' ? 'active' : ''}`}
+                    onClick={() => setActiveDestTab('all')}
+                  >
+                    {currentLang === 'en' ? 'Popular' : 'Phổ biến'}
+                  </button>
+                  <button 
+                    className={`gt-filter-pill ${activeDestTab === 'waterfalls' ? 'active' : ''}`}
+                    onClick={() => setActiveDestTab('waterfalls')}
+                  >
+                    {currentLang === 'en' ? 'Waterfalls & Forest' : 'Thác nước & Rừng'}
+                  </button>
+                  <button 
+                    className={`gt-filter-pill ${activeDestTab === 'coffee' ? 'active' : ''}`}
+                    onClick={() => setActiveDestTab('coffee')}
+                  >
+                    {currentLang === 'en' ? 'Coffee Capital' : 'Thủ phủ Cà phê'}
+                  </button>
+                  <button 
+                    className={`gt-filter-pill ${activeDestTab === 'culture' ? 'active' : ''}`}
+                    onClick={() => setActiveDestTab('culture')}
+                  >
+                    {currentLang === 'en' ? 'Culture & Gong' : 'Văn hóa & Cồng chiêng'}
+                  </button>
+                  <button 
+                    className={`gt-filter-pill ${activeDestTab === 'ocean' ? 'active' : ''}`}
+                    onClick={() => setActiveDestTab('ocean')}
+                  >
+                    {currentLang === 'en' ? 'To the Sea' : 'Nối biển Duyên hải'}
+                  </button>
+                </div>
+              </div>
+              <Link to="/posts?category=Khám%20phá%20Đắk%20Lắk" className="gt-dest-view-all">
+                <span>{currentLang === 'en' ? 'Explore all destinations' : 'Xem tất cả điểm đến'}</span>
+                <i className="ti ti-arrow-right" />
+              </Link>
             </div>
 
-            <div className="thematic-grid">
-              {/* Pillar 1 */}
-              <div className="thematic-card" onClick={() => navigate('/posts?category=Cà%20phê%20Đắk%20Lắk')}>
-                <div className="thematic-card-img-wrap">
-                  <img src="/images/daklak/daklak_ca_phe.jpg" alt="Cà Phê & Nông Sản" />
-                  <span className="thematic-badge">Trụ cột 01</span>
-                </div>
-                <div className="thematic-card-body">
-                  <div className="thematic-card-icon-title">
-                    <span className="thematic-icon">☕</span>
-                    <h3>Cà Phê & Nông Sản Giá Trị Cao</h3>
+            <div className="gt-dest-grid">
+              {filteredDestinations.map((dest) => (
+                <div 
+                  key={dest.id} 
+                  className="gt-dest-card" 
+                  onClick={() => navigate(dest.link)}
+                >
+                  <div className="gt-dest-img-wrap">
+                    <img src={dest.image} alt={dest.title} />
                   </div>
-                  <p>
-                    Buôn Ma Thuột – Thủ phủ cà phê thế giới, kết hợp hồ tiêu, sầu riêng OCOP và các chuỗi chế biến sâu vươn ra thị trường quốc tế.
-                  </p>
-                  <span className="thematic-link">Khám phá chuyên đề →</span>
-                </div>
-              </div>
-
-              {/* Pillar 2 */}
-              <div className="thematic-card" onClick={() => navigate('/posts?category=Khám%20phá%20Đắk%20Lắk')}>
-                <div className="thematic-card-img-wrap">
-                  <img src="/images/daklak/daklak_thac_dray_nur.jpg" alt="Biển & Du Lịch" />
-                  <span className="thematic-badge">Trụ cột 02</span>
-                </div>
-                <div className="thematic-card-body">
-                  <div className="thematic-card-icon-title">
-                    <span className="thematic-icon">🌊</span>
-                    <h3>Biển & Du Lịch Sinh Thái Trải Nghiệm</h3>
+                  <div className="gt-dest-info">
+                    <h3 className="gt-dest-name">
+                      {currentLang === 'en' ? dest.titleEn : dest.title}
+                    </h3>
+                    <p className="gt-dest-location">
+                      {currentLang === 'en' ? dest.locationEn : dest.location}
+                    </p>
                   </div>
-                  <p>
-                    Thác Dray Nur, Hồ Lắk, Vườn quốc gia Yok Đôn cùng hành lang kết nối cao tốc đưa du khách từ đại ngàn hùng vĩ tới duyên hải biển xanh.
-                  </p>
-                  <span className="thematic-link">Khám phá điểm đến →</span>
                 </div>
-              </div>
-
-              {/* Pillar 3 */}
-              <div className="thematic-card" onClick={() => navigate('/posts?category=Văn%20hóa%20Đắk%20Lắk')}>
-                <div className="thematic-card-img-wrap">
-                  <img src="/images/daklak/daklak_cong_chieng.jpg" alt="Văn Hóa Bản Địa" />
-                  <span className="thematic-badge">Trụ cột 03</span>
-                </div>
-                <div className="thematic-card-body">
-                  <div className="thematic-card-icon-title">
-                    <span className="thematic-icon">🥁</span>
-                    <h3>Văn Hóa Bản Địa & Con Người</h3>
-                  </div>
-                  <p>
-                    Kiệt tác di sản phi vật thể Cồng chiêng Tây Nguyên, nhà rông Ê-đê, kho tàng sử thi Đam San và lòng hiếu khách nồng hậu.
-                  </p>
-                  <span className="thematic-link">Tìm hiểu di sản →</span>
-                </div>
-              </div>
-
-              {/* Pillar 4 */}
-              <div className="thematic-card" onClick={() => navigate('/posts?category=Đầu%20tư%20&%20Dự%20án')}>
-                <div className="thematic-card-img-wrap">
-                  <img src="/images/daklak/daklak_dau_tu_logistics.jpg" alt="Đầu Tư & Hợp Tác" />
-                  <span className="thematic-badge">Trụ cột 04</span>
-                </div>
-                <div className="thematic-card-body">
-                  <div className="thematic-card-icon-title">
-                    <span className="thematic-icon">🚀</span>
-                    <h3>Đầu Tư, Hạ Tầng & Logistics Tương Lai</h3>
-                  </div>
-                  <p>
-                    Cảng cạn ICD, trung tâm logistics nông sản, hạ tầng giao thông kết nối vùng và chính sách ưu đãi xúc tiến đầu tư bền vững.
-                  </p>
-                  <span className="thematic-link">Cơ hội đầu tư →</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>

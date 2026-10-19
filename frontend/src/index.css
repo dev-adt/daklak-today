@@ -38,8 +38,8 @@ html, body {
 
 :root {
   /* Fonts */
-  --font-title: 'Be Vietnam Pro', 'Outfit', system-ui, -apple-system, sans-serif;
-  --font-body: 'Be Vietnam Pro', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-title: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
 
   /* DakLak Bazan, Coffee & Gong Gold Tokens */
   --primary-coffee: #3B2417;
