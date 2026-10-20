@@ -761,7 +761,7 @@ export const AIChat = () => {
                 filteredSessions.map((s) => {
                   const isActive = s.session_id === currentSessionId;
                   const title = s.title ? (s.title.length > 25 ? s.title.slice(0, 25) + '...' : s.title) : t('new_chat_session_title');
-                  const dateLabel = formatTimestamp(s.last_activity);
+                  const dateLabel = getFriendlyDate(s.last_activity);
                   return (
                     <div 
                       key={s.session_id} 
