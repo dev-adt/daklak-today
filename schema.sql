@@ -288,9 +288,13 @@ CREATE TABLE IF NOT EXISTS chat_logs (
   id            INT AUTO_INCREMENT PRIMARY KEY,
   session_id    VARCHAR(100) NOT NULL,
   member_id     INT          DEFAULT NULL,
-  user_message  TEXT         NOT NULL,
-  bot_reply     TEXT         NOT NULL,
-  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  role          VARCHAR(20)  NOT NULL DEFAULT 'user',
+  content       LONGTEXT     NOT NULL,
+  provider      VARCHAR(50)  DEFAULT NULL,
+  model         VARCHAR(100) DEFAULT NULL,
+  tokens_in     INT          DEFAULT 0,
+  tokens_out    INT          DEFAULT 0,
+  created_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_session (session_id),
   INDEX idx_member (member_id)
 ) ENGINE=InnoDB COMMENT='Lịch sử trò chuyện với AI Bot';

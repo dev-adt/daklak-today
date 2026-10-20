@@ -423,12 +423,54 @@ db.query(`
       ) ENGINE=InnoDB COMMENT='Lịch sử chat AI'
     `);
 
-    // Thêm cột member_id vào chat_logs để phân tách lịch sử chat theo tài khoản
+    // Thêm các cột cần thiết vào chat_logs để tương thích cấu trúc lưu trữ hội thoại
     const [chatCols] = await db.query("SHOW COLUMNS FROM chat_logs LIKE 'member_id'");
     if (!chatCols.length) {
       await db.query("ALTER TABLE chat_logs ADD COLUMN member_id INT DEFAULT NULL AFTER session_id");
       await db.query("ALTER TABLE chat_logs ADD INDEX idx_member (member_id)");
       console.log('✅ Đã thêm cột member_id vào bảng chat_logs');
+    }
+
+    const [roleCols] = await db.query("SHOW COLUMNS FROM chat_logs LIKE 'role'");
+    if (!roleCols.length) {
+      await db.query("ALTER TABLE chat_logs ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user' AFTER member_id");
+      console.log('✅ Đã thêm cột role vào bảng chat_logs');
+    }
+
+    const [contentCols] = await db.query("SHOW COLUMNS FROM chat_logs LIKE 'content'");
+    if (!contentCols.length) {
+      await db.query("ALTER TABLE chat_logs ADD COLUMN content LONGTEXT DEFAULT NULL AFTER role");
+      try {
+        const [oldMsgCols] = await db.query("SHOW COLUMNS FROM chat_logs LIKE 'user_message'");
+        if (oldMsgCols.length) {
+          await db.query("UPDATE chat_logs SET content = user_message WHERE content IS NULL");
+        }
+      } catch {}
+      console.log('✅ Đã thêm cột content vào bảng chat_logs');
+    }
+
+    const [providerCols] = await db.query("SHOW COLUMNS FROM chat_logs LIKE 'provider'");
+    if (!providerCols.length) {
+      await db.query("ALTER TABLE chat_logs ADD COLUMN provider VARCHAR(50) DEFAULT NULL AFTER content");
+      console.log('✅ Đã thêm cột provider vào bảng chat_logs');
+    }
+
+    const [modelCols] = await db.query("SHOW COLUMNS FROM chat_logs LIKE 'model'");
+    if (!modelCols.length) {
+      await db.query("ALTER TABLE chat_logs ADD COLUMN model VARCHAR(100) DEFAULT NULL AFTER provider");
+      console.log('✅ Đã thêm cột model vào bảng chat_logs');
+    }
+
+    const [tokensInCols] = await db.query("SHOW COLUMNS FROM chat_logs LIKE 'tokens_in'");
+    if (!tokensInCols.length) {
+      await db.query("ALTER TABLE chat_logs ADD COLUMN tokens_in INT DEFAULT 0 AFTER model");
+      console.log('✅ Đã thêm cột tokens_in vào bảng chat_logs');
+    }
+
+    const [tokensOutCols] = await db.query("SHOW COLUMNS FROM chat_logs LIKE 'tokens_out'");
+    if (!tokensOutCols.length) {
+      await db.query("ALTER TABLE chat_logs ADD COLUMN tokens_out INT DEFAULT 0 AFTER tokens_in");
+      console.log('✅ Đã thêm cột tokens_out vào bảng chat_logs');
     }
 
     const [deadlineCols] = await db.query("SHOW COLUMNS FROM posts LIKE 'deadline'");
