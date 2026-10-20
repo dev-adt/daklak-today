@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import SEOHead from '../components/SEOHead';
 import { getCategoryLabel } from '../constants/categories';
+import './PostDetail.css';
 
 export const PostDetail = () => {
   const { id } = useParams();
@@ -314,23 +315,23 @@ export const PostDetail = () => {
 
       <Navbar />
 
-      <main style={{ flex: 1, padding: '2.5rem 1.5rem 5rem' }}>
-        <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
+      <main className="post-detail-main">
+        <div className="post-detail-container">
           
           {/* Breadcrumbs */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '1.5rem', textAlign: 'left' }}>
-            <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>{currentLang === 'en' ? 'Home' : 'Trang chủ'}</Link>
+          <div className="post-detail-breadcrumbs">
+            <Link to="/">{currentLang === 'en' ? 'Home' : 'Trang chủ'}</Link>
             <i className="ti ti-chevron-right" style={{ fontSize: '10px' }}></i>
-            <Link to="/posts" style={{ color: 'inherit', textDecoration: 'none' }}>{currentLang === 'en' ? 'Business Opportunities' : 'Bảng tin cơ hội'}</Link>
+            <Link to="/posts">{currentLang === 'en' ? 'Business Opportunities' : 'Bảng tin cơ hội'}</Link>
             <i className="ti ti-chevron-right" style={{ fontSize: '10px' }}></i>
-            <span style={{ color: 'var(--text-primary)' }}>{post.title}</span>
+            <span>{post.title}</span>
           </div>
 
-          {/* Full Width Single Column Layout */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', textAlign: 'left' }}>
+          {/* Single Column Reading Layout */}
+          <div className="post-detail-column">
             
             {/* Cover Image */}
-            <div style={{ width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--surface-0)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="post-detail-cover-frame">
               <img 
                 src={imgUrl} 
                 alt={post.title} 
@@ -338,26 +339,26 @@ export const PostDetail = () => {
                   e.target.onerror = null;
                   e.target.src = demoImages[post.id % demoImages.length];
                 }}
-                style={{ width: '100%', height: 'auto', maxHeight: '720px', objectFit: 'contain', display: 'block' }} 
+                className="post-detail-cover-img"
               />
             </div>
 
             {/* Title & Meta Info */}
-            <div className="glass-card" style={{ padding: '28px 32px', position: 'relative' }}>
+            <div className="glass-card post-detail-title-card">
               {post.is_featured === 1 && (
-                <span style={{ position: 'absolute', top: '20px', right: '20px', fontSize: '10.5px', background: 'rgba(245, 158, 11, 0.15)', color: 'var(--amber)', border: '1px solid rgba(245,158,11,0.3)', padding: '4px 10px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 700 }}>
+                <span style={{ position: 'absolute', top: '24px', right: '24px', fontSize: '10.5px', background: 'rgba(245, 158, 11, 0.15)', color: 'var(--amber)', border: '1px solid rgba(245,158,11,0.3)', padding: '4px 10px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 700 }}>
                   {t('badge_featured')} <i className="ti ti-star-filled"></i>
                 </span>
               )}
               
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '14px', alignItems: 'center' }}>
                 <span style={{ fontSize: '11px', background: 'rgba(2, 132, 199, 0.08)', color: 'var(--primary-dark)', border: '1px solid rgba(2, 132, 199, 0.15)', padding: '3px 10px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
                   {post.type === 'offer' ? t('type_offer') : post.type === 'demand' ? t('type_demand') : post.type === 'cooperate' ? t('type_cooperate') : (post.type || t('type_general_news'))}
                 </span>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{getCategoryLabel(post.category, currentLang) || t('category_default')}</span>
+                <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>{getCategoryLabel(post.category, currentLang) || t('category_default')}</span>
               </div>
 
-              <h1 style={{ fontFamily: 'var(--font-title)', fontSize: '32px', color: 'var(--text-primary)', fontWeight: 700, lineHeight: '1.4', margin: '0 0 14px' }}>
+              <h1 className="post-detail-title">
                 {isTranslated ? translatedTitle : post.title}
               </h1>
               
@@ -416,22 +417,15 @@ export const PostDetail = () => {
 
             {/* Summary / Lead Paragraph */}
             {post.summary && (
-              <div className="glass-card" style={{ padding: '24px 32px', background: 'var(--surface-0)', borderColor: 'var(--border-strong)' }}>
-                <p style={{ fontSize: '15.5px', fontWeight: 500, color: 'var(--primary-dark)', margin: 0, lineHeight: '1.7' }}>
+              <div className="glass-card post-detail-lead-card">
+                <p className="post-detail-lead-text">
                   {isTranslated ? translatedSummary : post.summary}
                 </p>
               </div>
             )}
 
             {/* Main Content Body */}
-            <div className="glass-card" style={{ padding: '36px 32px' }}>
-              {/* Đoạn mở đầu tóm tắt bài viết */}
-              {post.summary && (
-                <div style={{ fontSize: '16px', color: 'var(--text-primary)', lineHeight: '1.7', fontWeight: 500, marginBottom: '24px', paddingBottom: '18px', borderBottom: '1px dashed var(--border)' }}>
-                  {isTranslated ? (translatedSummary || post.summary) : post.summary}
-                </div>
-              )}
-
+            <div className="glass-card post-detail-body-card">
               {/* Nội dung chi tiết bài viết: mở công khai cho tất cả người đọc */}
               <div 
                 className="post-html-body"
@@ -447,52 +441,7 @@ export const PostDetail = () => {
                     return raw;
                   })()
                 }}
-                style={{
-                  fontSize: '16px',
-                  color: 'var(--text-secondary)',
-                  lineHeight: '1.8',
-                  textAlign: 'left',
-                }}
               />
-              <style>{`
-                .post-html-body iframe {
-                  width: 100% !important;
-                  max-width: 100% !important;
-                  aspect-ratio: 16 / 9;
-                  min-height: 480px;
-                  height: auto;
-                  border-radius: 12px;
-                  border: none;
-                  margin: 20px 0;
-                  box-shadow: 0 12px 30px -5px rgba(0,0,0,0.12);
-                  display: block;
-                }
-                .post-html-body video {
-                  width: 100% !important;
-                  max-width: 100% !important;
-                  max-height: 520px;
-                  border-radius: 12px;
-                  margin: 20px 0;
-                  box-shadow: 0 12px 30px -5px rgba(0,0,0,0.15);
-                  background: #000;
-                  display: block;
-                }
-                .post-html-body img {
-                  max-width: 100% !important;
-                  border-radius: 8px;
-                  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-                }
-                @media (max-width: 1024px) {
-                  .post-html-body iframe {
-                    min-height: 380px;
-                  }
-                }
-                @media (max-width: 640px) {
-                  .post-html-body iframe {
-                    min-height: 260px;
-                  }
-                }
-              `}</style>
 
               {/* Hashtags / Từ khóa hiển thị đẹp mắt cuối bài viết */}
               {post.tags && (
@@ -525,7 +474,7 @@ export const PostDetail = () => {
             </div>
 
             {/* Bottom Horizontal Card: Author & Contact Details */}
-            <div className="glass-card" style={{ padding: '28px 32px', marginTop: '10px' }}>
+            <div className="glass-card post-detail-author-card">
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '24px' }}>
                 
                 {/* Left: Author Info */}
