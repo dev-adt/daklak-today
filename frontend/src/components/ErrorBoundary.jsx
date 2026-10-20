@@ -56,6 +56,26 @@ class ErrorBoundary extends React.Component {
             <p style={{ fontSize: '13.5px', color: '#64748B', lineHeight: '1.6', marginBottom: '1.5rem' }}>
               Trang web gặp sự cố nhỏ khi tải giao diện. Bạn có thể nhấn nút dưới đây để tải lại trang hoặc quay lại trang chủ.
             </p>
+            {this.state.error && (
+              <details style={{ textAlign: 'left', marginBottom: '1.25rem', fontSize: '12px', color: '#64748B' }}>
+                <summary style={{ cursor: 'pointer', color: '#DC2626', fontWeight: 600, marginBottom: '6px' }}>
+                  Xem chi tiết kỹ thuật
+                </summary>
+                <pre style={{
+                  background: '#F1F5F9',
+                  color: '#991B1B',
+                  padding: '10px',
+                  borderRadius: '6px',
+                  overflowX: 'auto',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  fontSize: '11px',
+                  lineHeight: '1.4'
+                }}>
+                  {String(this.state.error?.stack || this.state.error?.message || this.state.error)}
+                </pre>
+              </details>
+            )}
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button
                 type="button"

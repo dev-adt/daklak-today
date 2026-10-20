@@ -468,41 +468,6 @@ export const Home = () => {
     setPartnerIndex(prev => prev + 1);
   };
 
-  // Hiệu ứng cuộn lướt (Scroll Reveal) mờ dần khi đến và lướt đi — 0% CPU lag nhờ IntersectionObserver gốc
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-revealed');
-          } else {
-            // Khi cuộn ra khỏi tầm nhìn, bỏ class để khi lướt lại có hiệu ứng mờ dần và hiện lại
-            entry.target.classList.remove('is-revealed');
-          }
-        });
-      },
-      {
-        threshold: 0.08,
-        rootMargin: '0px 0px -30px 0px'
-      }
-    );
-
-    const observeAll = () => {
-      const elements = document.querySelectorAll('.scroll-reveal');
-      elements.forEach((el) => observer.observe(el));
-    };
-
-    observeAll();
-    const t1 = setTimeout(observeAll, 300);
-    const t2 = setTimeout(observeAll, 1000);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      observer.disconnect();
-    };
-  }, [latestPosts, filteredDestinations, featuredMembers, eventsList]);
-
   // Form Tư vấn & Hợp tác đầu tư (POST /api/leads)
   const [formData, setFormData] = useState({
     fullName: '',
@@ -658,6 +623,43 @@ export const Home = () => {
     fetchHomeData();
     return () => { isMounted = false; };
   }, []);
+
+  // Hiệu ứng cuộn lướt (Scroll Reveal) mờ dần khi đến và lướt đi — 0% CPU lag nhờ IntersectionObserver gốc
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed');
+          } else {
+            // Khi cuộn ra khỏi tầm nhìn, bỏ class để khi lướt lại có hiệu ứng mờ dần và hiện lại
+            entry.target.classList.remove('is-revealed');
+          }
+        });
+      },
+      {
+        threshold: 0.08,
+        rootMargin: '0px 0px -30px 0px'
+      }
+    );
+
+    const observeAll = () => {
+      const elements = document.querySelectorAll('.scroll-reveal');
+      elements.forEach((el) => observer.observe(el));
+    };
+
+    observeAll();
+    const t1 = setTimeout(observeAll, 300);
+    const t2 = setTimeout(observeAll, 1000);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      observer.disconnect();
+    };
+  }, [latestPosts, filteredDestinations, featuredMembers, eventsList]);
 
   // Xử lý Tìm kiếm
   const handleSearchSubmit = (e) => {
