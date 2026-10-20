@@ -1012,7 +1012,11 @@ export const Home = () => {
             SECTION 1: HERO GLOBE TREKKER - THIẾT KẾ TINH TẾ, THOÁNG ĐÃNG
             ======================================================== */}
         <section className="gt-hero-section" id="home">
-          <div className="gt-hero-bg-map" />
+          {/* Lightweight Ambient Glow Orbs */}
+          <div className="gt-hero-ambient-glow orb-1" aria-hidden="true" />
+          <div className="gt-hero-ambient-glow orb-2" aria-hidden="true" />
+          <div className="gt-hero-bg-map" aria-hidden="true" />
+
           <div className="gt-hero-container">
             {/* Left Column: Heading, Subtitle & Action */}
             <div className="gt-hero-left">
@@ -1033,7 +1037,15 @@ export const Home = () => {
               </p>
 
               <div className="gt-hero-action-row">
-                <a href="#top-destinations" className="gt-btn-primary">
+                <a 
+                  href="#top-destinations" 
+                  className="gt-btn-primary"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.getElementById('top-destinations');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   <span>{currentLang === 'en' ? 'Plan your trip' : 'Lên lịch trình khám phá'}</span>
                 </a>
                 <div className="gt-flight-trail">
@@ -1074,6 +1086,25 @@ export const Home = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Interactive Scroll Down Indicator */}
+          <div className="gt-scroll-down-wrap">
+            <a
+              href="#top-destinations"
+              className="gt-scroll-down-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById('top-destinations');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              aria-label={currentLang === 'en' ? 'Scroll down to explore' : 'Cuộn xuống khám phá'}
+            >
+              <span>{currentLang === 'en' ? 'Scroll to explore' : 'Cuộn xuống khám phá'}</span>
+              <div className="gt-scroll-mouse">
+                <span className="gt-scroll-wheel" />
+              </div>
+            </a>
           </div>
         </section>
 
