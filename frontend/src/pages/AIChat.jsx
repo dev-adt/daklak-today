@@ -28,6 +28,8 @@ export const AIChat = () => {
     }
     return saved;
   });
+  const [showMobileHistory, setShowMobileHistory] = useState(false);
+  const [showMobileConfig, setShowMobileConfig] = useState(false);
 
   const autoSentRef = useRef(false);
 
@@ -118,6 +120,7 @@ export const AIChat = () => {
 
   // Tải tin nhắn của session được chọn
   const selectSession = async (sessionId) => {
+    setShowMobileHistory(false);
     setCurrentSessionId(sessionId);
     setLoadingHistory(true);
     try {
@@ -141,6 +144,7 @@ export const AIChat = () => {
   }, [messages, sending]);
 
   const newChatSession = () => {
+    setShowMobileHistory(false);
     setCurrentSessionId(generateUUID());
     setMessages([]);
   };
@@ -458,18 +462,84 @@ export const AIChat = () => {
 
         {/* Center: Message Viewport */}
         <div className="chat-main">
-          <div style={{ backgroundColor: 'var(--surface-2)', borderBottom: '1px solid var(--border)', padding: '0 1.25rem', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-            <h1 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-              <i className="ti ti-robot" style={{ color: 'var(--primary)', fontSize: '18px' }}></i> {t('ai_assistant_title')}
-            </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#10B981', background: 'rgba(16,185,129,0.08)', border: '0.5px solid rgba(16,185,129,0.2)', padding: '4px 12px', borderRadius: '99px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulse 2s infinite' }}></span>
-              <span>
-                {user && (user.tier === 'Gold' || user.tier === 'Platinum') && selectedModelOverride 
-                  ? `OpenRouter (${selectedModelOverride.split('/').pop()})` 
-                  : `${aiConfig.provider} (${aiConfig.model})`}
-              </span>
+          <div className="chat-mobile-header" style={{ backgroundColor: 'var(--surface-2)', borderBottom: '1px solid var(--border)', padding: '0 1.25rem', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* Nút Mobile mở Lịch sử & Tạo chat mới */}
+              <div className="mobile-chat-controls">
+                <button
+                  onClick={() => setShowMobileHistory(true)}
+                  style={{
+                    padding: '6px 10px',
+                    background: 'var(--surface-1)',
+                    border: '1px solid var(--border-strong)',
+                    borderRadius: '8px',
+                    color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '11.5px',
+                    fontWeight: 600
+                  }}
+                  title={t('chat_history_title')}
+                >
+                  <i className="ti ti-history" style={{ fontSize: '15px', color: 'var(--primary)' }}></i>
+                  <span>Lịch sử</span>
+                </button>
+                <button
+                  onClick={newChatSession}
+                  style={{
+                    padding: '6px 10px',
+                    background: 'var(--primary)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '11.5px',
+                    fontWeight: 600
+                  }}
+                  title={t('new_chat_btn_tooltip')}
+                >
+                  <i className="ti ti-plus" style={{ fontSize: '14px' }}></i>
+                  <span>Mới</span>
+                </button>
+              </div>
+
+              <h1 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                <i className="ti ti-robot desktop-chat-title-icon" style={{ color: 'var(--primary)', fontSize: '18px' }}></i>
+                <span className="chat-title-text">{t('ai_assistant_title')}</span>
+              </h1>
             </div>
+
+            {/* Clickable AI Model pill / Config trigger */}
+            <button
+              onClick={() => setShowMobileConfig(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '11px',
+                color: '#10B981',
+                background: 'rgba(16,185,129,0.08)',
+                border: '0.5px solid rgba(16,185,129,0.25)',
+                padding: '5px 10px',
+                borderRadius: '99px',
+                cursor: 'pointer',
+                maxWidth: '190px'
+              }}
+              title="Cài đặt mô hình AI / Đổi model"
+            >
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulse 2s infinite', flexShrink: 0 }}></span>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {user && (user.tier === 'Gold' || user.tier === 'Platinum') && selectedModelOverride 
+                  ? selectedModelOverride.split('/').pop() 
+                  : (aiConfig.model || aiConfig.provider)}
+              </span>
+              <i className="ti ti-adjustments-horizontal" style={{ fontSize: '12px', marginLeft: '2px', opacity: 0.85 }}></i>
+            </button>
           </div>
 
           {/* Scrollable Messages Area */}
@@ -640,6 +710,212 @@ export const AIChat = () => {
 
         </div>
       </div>
+
+      {/* Mobile History Drawer */}
+      {showMobileHistory && (
+        <div className="chat-drawer-backdrop" onClick={() => setShowMobileHistory(false)}>
+          <div className="chat-drawer-content" onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontWeight: 700, fontSize: '14.5px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+                <i className="ti ti-history" style={{ color: 'var(--primary)', fontSize: '17px' }}></i>
+                {t('chat_history_title')}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button 
+                  onClick={newChatSession}
+                  style={{ padding: '5px 10px', borderRadius: '6px', background: 'var(--primary)', color: '#fff', border: 'none', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
+                >
+                  <i className="ti ti-plus"></i> {t('new_chat_btn_tooltip')}
+                </button>
+                <button 
+                  onClick={() => setShowMobileHistory(false)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '20px', cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
+                >
+                  <i className="ti ti-x"></i>
+                </button>
+              </div>
+            </div>
+
+            {/* Search */}
+            <div style={{ padding: '12px 14px' }}>
+              <div style={{ position: 'relative' }}>
+                <i className="ti ti-search" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '13px', color: 'var(--text-muted)' }}></i>
+                <input
+                  type="text"
+                  placeholder={t('search_chat_placeholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{ width: '100%', padding: '7px 10px 7px 30px', borderRadius: '8px', background: 'var(--surface-2)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)', fontSize: '12px', outline: 'none' }}
+                />
+              </div>
+            </div>
+
+            {/* Sessions List */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0 10px 10px' }}>
+              {filteredSessions.length === 0 ? (
+                <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>
+                  <i className="ti ti-messages" style={{ fontSize: '20px', display: 'block', margin: '0 auto 6px' }}></i>
+                  {t('no_chat_history')}
+                </div>
+              ) : (
+                filteredSessions.map((s) => {
+                  const isActive = s.session_id === currentSessionId;
+                  const title = s.title ? (s.title.length > 25 ? s.title.slice(0, 25) + '...' : s.title) : t('new_chat_session_title');
+                  const dateLabel = formatTimestamp(s.last_activity);
+                  return (
+                    <div 
+                      key={s.session_id} 
+                      className={`chat-hist-card ${isActive ? 'active' : ''}`}
+                      onClick={() => selectSession(s.session_id)}
+                      style={{ padding: '10px 12px', borderRadius: '8px', marginBottom: '6px', cursor: 'pointer', background: isActive ? 'var(--surface-2)' : 'transparent', border: isActive ? '1px solid var(--primary)' : '1px solid transparent' }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '6px' }}>
+                        <div style={{ fontSize: '12.5px', fontWeight: isActive ? 600 : 500, color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {title}
+                        </div>
+                        <button
+                          onClick={(e) => deleteSession(e, s.session_id)}
+                          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px' }}
+                          title={t('delete_chat_tooltip')}
+                        >
+                          <i className="ti ti-trash" style={{ fontSize: '12px' }}></i>
+                        </button>
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginTop: '3px' }}>
+                        {dateLabel}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Suggested Topics in mobile drawer */}
+            <div style={{ padding: '12px', borderTop: '1px solid var(--border)', background: 'var(--surface-2)' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>{t('label_topics')}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <button className="chat-topic-btn" onClick={() => { setShowMobileHistory(false); handleSend(t('ai_suggestion_1_val')); }}><i className="ti ti-briefcase" style={{ color: 'var(--neon-cyan)' }}></i> &nbsp;{t('topic_business')}</button>
+                <button className="chat-topic-btn" onClick={() => { setShowMobileHistory(false); handleSend(t('ai_suggestion_2_val')); }}><i className="ti ti-chart-line" style={{ color: 'var(--neon-cyan)' }}></i> &nbsp;{t('topic_investment')}</button>
+                <button className="chat-topic-btn" onClick={() => { setShowMobileHistory(false); handleSend(t('ai_suggestion_3_val')); }}><i className="ti ti-users" style={{ color: 'var(--neon-cyan)' }}></i> &nbsp;{t('topic_connection')}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Model Selection & Config Sheet */}
+      {showMobileConfig && (
+        <div className="chat-drawer-backdrop" onClick={() => setShowMobileConfig(false)}>
+          <div className="chat-sheet-content" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+              <div style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <i className="ti ti-settings" style={{ color: 'var(--primary)' }}></i>
+                {t('ai_config_title')}
+              </div>
+              <button 
+                onClick={() => setShowMobileConfig(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '20px', cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
+              >
+                <i className="ti ti-x"></i>
+              </button>
+            </div>
+
+            {/* Status */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '10px', background: 'var(--surface-2)', marginBottom: '14px' }}>
+              <span style={{ fontSize: '12.5px', color: 'var(--text-secondary)' }}>Trạng thái:</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: '#10B981' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }}></span>
+                {t('status_online')}
+              </span>
+            </div>
+
+            {/* Model Selection */}
+            {user && (user.tier === 'Gold' || user.tier === 'Platinum') ? (
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ fontSize: '12px', color: 'var(--text-primary)', display: 'block', marginBottom: '8px', fontWeight: 600 }}>
+                  <i className="ti ti-crown" style={{ color: 'var(--amber)', marginRight: '6px' }}></i>
+                  {t('premium_model_label')(user.tier)}
+                </label>
+                <select
+                  value={selectedModelOverride}
+                  onChange={(e) => handleModelOverrideChange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    background: 'var(--surface-2)',
+                    border: '1px solid var(--border-strong)',
+                    color: 'var(--text-primary)',
+                    fontSize: '13px',
+                    outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="">{t('system_default_model')} ({aiConfig.provider} {aiConfig.model})</option>
+                  <option value="gemini-1.5-flash">Google Gemini 1.5 Flash (Tốc độ cao)</option>
+                  <option value="gemini-2.0-flash">Google Gemini 2.0 Flash (Thông minh)</option>
+                  <option value="openai/gpt-4o-mini">OpenAI GPT-4o Mini (OpenRouter)</option>
+                  <option value="deepseek/deepseek-chat">DeepSeek V3 (OpenRouter)</option>
+                  <option value="deepseek/deepseek-r1">DeepSeek R1 (OpenRouter)</option>
+                  <option value="anthropic/claude-3-5-sonnet">Claude 3.5 Sonnet (OpenRouter)</option>
+                </select>
+              </div>
+            ) : (
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: '1.5', padding: '10px', background: 'var(--surface-2)', borderRadius: '8px' }}>
+                {t('free_model_desc')}
+                <div style={{ marginTop: '6px', color: 'var(--amber)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <i className="ti ti-crown"></i> {t('upgrade_to_change_models')}
+                </div>
+              </div>
+            )}
+
+            {/* Suggested Actions */}
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                <i className="ti ti-sparkles" style={{ color: 'var(--primary)', marginRight: '4px' }}></i>
+                {t('suggested_actions_title')}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div 
+                  className="chat-panel-item" 
+                  onClick={() => { setShowMobileConfig(false); handleSend(t('suggested_action_1_title') + ' ' + t('category_default')); }}
+                  style={{ padding: '8px 12px', borderRadius: '8px', background: 'var(--surface-2)', cursor: 'pointer', display: 'flex', gap: '10px', alignItems: 'center' }}
+                >
+                  <i className="ti ti-user-plus" style={{ color: 'var(--primary)', fontSize: '18px' }}></i>
+                  <div>
+                    <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)' }}>{t('suggested_action_1_title')}</div>
+                    <div style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>{t('suggested_action_1_desc')}</div>
+                  </div>
+                </div>
+
+                <div 
+                  className="chat-panel-item" 
+                  onClick={() => { setShowMobileConfig(false); handleSend(t('suggested_action_2_title')); }}
+                  style={{ padding: '8px 12px', borderRadius: '8px', background: 'var(--surface-2)', cursor: 'pointer', display: 'flex', gap: '10px', alignItems: 'center' }}
+                >
+                  <i className="ti ti-calendar" style={{ color: 'var(--primary)', fontSize: '18px' }}></i>
+                  <div>
+                    <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)' }}>{t('suggested_action_2_title')}</div>
+                    <div style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>{t('suggested_action_2_desc')}</div>
+                  </div>
+                </div>
+
+                <div 
+                  className="chat-panel-item" 
+                  onClick={() => { setShowMobileConfig(false); handleSend(t('suggested_action_3_title')); }}
+                  style={{ padding: '8px 12px', borderRadius: '8px', background: 'var(--surface-2)', cursor: 'pointer', display: 'flex', gap: '10px', alignItems: 'center' }}
+                >
+                  <i className="ti ti-building-handshake" style={{ color: 'var(--primary)', fontSize: '18px' }}></i>
+                  <div>
+                    <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)' }}>{t('suggested_action_3_title')}</div>
+                    <div style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>{t('suggested_action_3_desc')}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
