@@ -468,6 +468,41 @@ export const Home = () => {
     setPartnerIndex(prev => prev + 1);
   };
 
+  // Hiệu ứng cuộn lướt (Scroll Reveal) mờ dần khi đến và lướt đi — 0% CPU lag nhờ IntersectionObserver gốc
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed');
+          } else {
+            // Khi cuộn ra khỏi tầm nhìn, bỏ class để khi lướt lại có hiệu ứng mờ dần và hiện lại
+            entry.target.classList.remove('is-revealed');
+          }
+        });
+      },
+      {
+        threshold: 0.08,
+        rootMargin: '0px 0px -30px 0px'
+      }
+    );
+
+    const observeAll = () => {
+      const elements = document.querySelectorAll('.scroll-reveal');
+      elements.forEach((el) => observer.observe(el));
+    };
+
+    observeAll();
+    const t1 = setTimeout(observeAll, 300);
+    const t2 = setTimeout(observeAll, 1000);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      observer.disconnect();
+    };
+  }, [latestPosts, filteredDestinations, featuredMembers, eventsList]);
+
   // Form Tư vấn & Hợp tác đầu tư (POST /api/leads)
   const [formData, setFormData] = useState({
     fullName: '',
@@ -1012,14 +1047,15 @@ export const Home = () => {
             SECTION 1: HERO GLOBE TREKKER - THIẾT KẾ TINH TẾ, THOÁNG ĐÃNG
             ======================================================== */}
         <section className="gt-hero-section" id="home">
-          {/* Lightweight Ambient Glow Orbs */}
+          {/* Lightweight Ambient Glow Orbs with Prominent Breathing Pulse */}
           <div className="gt-hero-ambient-glow orb-1" aria-hidden="true" />
           <div className="gt-hero-ambient-glow orb-2" aria-hidden="true" />
+          <div className="gt-hero-ambient-glow orb-3" aria-hidden="true" />
           <div className="gt-hero-bg-map" aria-hidden="true" />
 
           <div className="gt-hero-container">
-            {/* Left Column: Heading, Subtitle & Action */}
-            <div className="gt-hero-left">
+            {/* Left Column: Heading, Subtitle & Action (Enters from Left) */}
+            <div className="gt-hero-left scroll-reveal scroll-reveal-left">
               <h1 className="gt-hero-title">
                 {currentLang === 'en' ? 'Discover Dak Lak' : 'Khám Phá Đắk Lắk'}<br />
                 <span className="gt-hero-highlight">
@@ -1057,8 +1093,8 @@ export const Home = () => {
               </div>
             </div>
 
-            {/* Right Column: Signature 3-Photo Staggered Composition */}
-            <div className="gt-hero-visuals">
+            {/* Right Column: Signature 3-Photo Staggered Composition (Enters from Right) */}
+            <div className="gt-hero-visuals scroll-reveal scroll-reveal-right">
               <div className="gt-photo-group">
                 {/* Card 1: Tall Vertical Photo on Left */}
                 <div className="gt-photo-card tall" onClick={() => navigate('/posts?category=Khám%20phá%20Đắk%20Lắk')}>
@@ -1089,7 +1125,7 @@ export const Home = () => {
           </div>
 
           {/* Interactive Scroll Down Indicator */}
-          <div className="gt-scroll-down-wrap">
+          <div className="gt-scroll-down-wrap scroll-reveal scroll-reveal-up">
             <a
               href="#top-destinations"
               className="gt-scroll-down-btn"
@@ -1113,7 +1149,7 @@ export const Home = () => {
             ======================================================== */}
         <section className="gt-dest-section" id="top-destinations">
           <div className="gt-dest-container">
-            <div className="gt-dest-header">
+            <div className="gt-dest-header scroll-reveal scroll-reveal-down">
               <div className="gt-dest-header-left">
                 <h2 className="gt-section-title">
                   {currentLang === 'en' ? 'Top Destinations' : 'Top Điểm Đến'}
@@ -1158,25 +1194,29 @@ export const Home = () => {
             </div>
 
             <div className="gt-dest-grid">
-              {filteredDestinations.map((dest) => (
-                <div 
-                  key={dest.id} 
-                  className="gt-dest-card" 
-                  onClick={() => navigate(dest.link)}
-                >
-                  <div className="gt-dest-img-wrap">
-                    <img src={dest.image} alt={dest.title} />
+              {filteredDestinations.map((dest, idx) => {
+                const animDir = idx % 2 === 0 ? 'scroll-reveal-left' : 'scroll-reveal-right';
+                const staggerClass = `stagger-${(idx % 4) + 1}`;
+                return (
+                  <div 
+                    key={dest.id} 
+                    className={`gt-dest-card scroll-reveal ${animDir} ${staggerClass}`}
+                    onClick={() => navigate(dest.link)}
+                  >
+                    <div className="gt-dest-img-wrap">
+                      <img src={dest.image} alt={dest.title} />
+                    </div>
+                    <div className="gt-dest-info">
+                      <h3 className="gt-dest-name">
+                        {currentLang === 'en' ? dest.titleEn : dest.title}
+                      </h3>
+                      <p className="gt-dest-location">
+                        {currentLang === 'en' ? dest.locationEn : dest.location}
+                      </p>
+                    </div>
                   </div>
-                  <div className="gt-dest-info">
-                    <h3 className="gt-dest-name">
-                      {currentLang === 'en' ? dest.titleEn : dest.title}
-                    </h3>
-                    <p className="gt-dest-location">
-                      {currentLang === 'en' ? dest.locationEn : dest.location}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -1187,7 +1227,7 @@ export const Home = () => {
             ======================================================== */}
         <section className="news-spotlight-section" id="tin-tuc-tieu-diem">
           <div className="daklak-container">
-            <div className="spotlight-header">
+            <div className="spotlight-header scroll-reveal scroll-reveal-down">
               <div>
                 <span className="daklak-section-badge">
                   <i className="ti ti-news" style={{ marginRight: '6px' }} />
@@ -1205,9 +1245,9 @@ export const Home = () => {
 
             {/* Layout dạng tạp chí hiện đại: 1 bài Lead Story lớn bên trái + Feed tin mới bên phải */}
             <div className="spotlight-main-grid">
-              {/* Lead Story */}
+              {/* Lead Story (Enters from Left) */}
               {latestPosts.length > 0 && (
-                <div className="spotlight-lead-card" onClick={() => navigate(`/posts/${latestPosts[0].slug || latestPosts[0].id}`)}>
+                <div className="spotlight-lead-card scroll-reveal scroll-reveal-left" onClick={() => navigate(`/posts/${latestPosts[0].slug || latestPosts[0].id}`)}>
                   <div className="spotlight-lead-img-wrap">
                     <img
                       src={latestPosts[0].image_url || '/images/daklak/daklak_doi_ca_phe.jpg'}
@@ -1243,8 +1283,8 @@ export const Home = () => {
                 </div>
               )}
 
-              {/* Feed tin mới bên phải (4 bài tiếp theo) */}
-              <div className="spotlight-feed-list">
+              {/* Feed tin mới bên phải (Enters from Right) */}
+              <div className="spotlight-feed-list scroll-reveal scroll-reveal-right">
                 <div className="spotlight-feed-header">
                   <h4><i className="ti ti-bolt" /> Cập nhật mới nhất</h4>
                   <span className="feed-counter">{latestPosts.length} bài viết</span>
@@ -1715,7 +1755,7 @@ export const Home = () => {
             ======================================================== */}
         <section className="daklak-section" style={{ backgroundColor: 'var(--cream-alt)' }}>
           <div className="daklak-container">
-            <div className="daklak-section-header">
+            <div className="daklak-section-header scroll-reveal scroll-reveal-down">
               <span className="daklak-section-badge">{currentLang === 'en' ? 'Natural Advantages' : 'Thế Mạnh Nổi Bật'}</span>
               <h2 className="daklak-section-title">
                 {currentLang === 'en' ? 'Convergence of Coffee, Culture & the Great Highlands' : 'Đắk Lắk – Hội Tụ Cà Phê, Văn Hóa & Đại Ngàn Tây Nguyên'}
@@ -1728,8 +1768,8 @@ export const Home = () => {
             </div>
 
             <div className="strengths-grid">
-              {/* Strength 1 */}
-              <div className="strength-card">
+              {/* Strength 1 (From Left) */}
+              <div className="strength-card scroll-reveal scroll-reveal-left stagger-1">
                 <div className="strength-img-box">
                   <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80" alt="Cà phê Đắk Lắk" />
                   <span className="strength-tag">{currentLang === 'en' ? 'Strategic Commodity' : 'Trụ cột Kinh tế'}</span>
@@ -1741,8 +1781,8 @@ export const Home = () => {
                 </div>
               </div>
 
-              {/* Strength 2 */}
-              <div className="strength-card">
+              {/* Strength 2 (From Up) */}
+              <div className="strength-card scroll-reveal scroll-reveal-up stagger-2">
                 <div className="strength-img-box">
                   <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Văn hóa Du lịch" />
                   <span className="strength-tag" style={{ background: 'rgba(31, 90, 58, 0.9)' }}>{currentLang === 'en' ? 'Living Heritage' : 'Di sản Sống'}</span>
@@ -1754,8 +1794,8 @@ export const Home = () => {
                 </div>
               </div>
 
-              {/* Strength 3 */}
-              <div className="strength-card">
+              {/* Strength 3 (From Up) */}
+              <div className="strength-card scroll-reveal scroll-reveal-up stagger-3">
                 <div className="strength-img-box">
                   <img src="https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&w=800&q=80" alt="Năng lượng tái tạo" />
                   <span className="strength-tag" style={{ background: 'rgba(213, 163, 63, 0.9)', color: '#26160E' }}>{currentLang === 'en' ? 'Clean Energy' : 'Năng Lượng Xanh'}</span>
@@ -1767,8 +1807,8 @@ export const Home = () => {
                 </div>
               </div>
 
-              {/* Strength 4 */}
-              <div className="strength-card">
+              {/* Strength 4 (From Right) */}
+              <div className="strength-card scroll-reveal scroll-reveal-right stagger-4">
                 <div className="strength-img-box">
                   <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80" alt="Không gian phát triển" />
                   <span className="strength-tag" style={{ background: 'rgba(122, 62, 29, 0.9)' }}>{currentLang === 'en' ? 'Urban Hub' : 'Đô Thị Trung Tâm'}</span>
@@ -1788,7 +1828,7 @@ export const Home = () => {
             ======================================================== */}
         <section className="daklak-section">
           <div className="daklak-container">
-            <div className="daklak-section-header">
+            <div className="daklak-section-header scroll-reveal scroll-reveal-down">
               <span className="daklak-section-badge">{currentLang === 'en' ? 'Architecture' : 'Kiến Trúc Nền Tảng'}</span>
               <h2 className="daklak-section-title">
                 {currentLang === 'en' ? 'From Information Portal to Investment Platform' : 'Từ Trang Thông Tin Đến Nền Tảng Kết Nối Đầu Tư'}
@@ -1801,8 +1841,8 @@ export const Home = () => {
             </div>
 
             <div className="layers-grid">
-              {/* Layer 1: Media */}
-              <div className="layer-card">
+              {/* Layer 1: Media (From Left) */}
+              <div className="layer-card scroll-reveal scroll-reveal-left stagger-1">
                 <span className="layer-badge">1. MEDIA • Truyền thông</span>
                 <h3>{currentLang === 'en' ? 'Media & Storytelling' : 'Tin Tức & Kể Chuyện Địa Phương'}</h3>
                 <ul>
@@ -1813,8 +1853,8 @@ export const Home = () => {
                 </ul>
               </div>
 
-              {/* Layer 2: Data */}
-              <div className="layer-card layer-data">
+              {/* Layer 2: Data (From Up) */}
+              <div className="layer-card layer-data scroll-reveal scroll-reveal-up stagger-2">
                 <span className="layer-badge">2. DATA • Cơ sở dữ liệu</span>
                 <h3>{currentLang === 'en' ? 'Structured Data Assets' : 'Dữ Liệu Doanh Nghiệp & Dự Án'}</h3>
                 <ul>
@@ -1825,8 +1865,8 @@ export const Home = () => {
                 </ul>
               </div>
 
-              {/* Layer 3: Platform */}
-              <div className="layer-card layer-platform">
+              {/* Layer 3: Platform (From Right) */}
+              <div className="layer-card layer-platform scroll-reveal scroll-reveal-right stagger-3">
                 <span className="layer-badge">3. PLATFORM • Nền tảng số</span>
                 <h3>{currentLang === 'en' ? 'Smart Connection Platform' : 'Kết Nối Đầu Tư & AI Matching'}</h3>
                 <ul>
@@ -1845,7 +1885,7 @@ export const Home = () => {
             ======================================================== */}
         <section className="daklak-section dark" id="coffee">
           <div className="daklak-container">
-            <div className="daklak-section-header">
+            <div className="daklak-section-header scroll-reveal scroll-reveal-down">
               <span className="daklak-section-badge">{currentLang === 'en' ? 'Brand Pillar' : 'Trụ Cột Bản Sắc'}</span>
               <h2 className="daklak-section-title">
                 {currentLang === 'en' ? 'Coffee — The Core Brand Pillar of DakLak.today' : 'Cà Phê — Trụ Cột Thương Hiệu Của DakLak.today'}
@@ -1859,7 +1899,7 @@ export const Home = () => {
 
             <div className="coffee-grid">
               {/* Timeline 4 Chặng */}
-              <div className="coffee-timeline">
+              <div className="coffee-timeline scroll-reveal scroll-reveal-left">
                 <div className="coffee-step">
                   <div className="coffee-step-number">01</div>
                   <div className="coffee-step-content">
@@ -1894,7 +1934,7 @@ export const Home = () => {
               </div>
 
               {/* Case Study & Chuỗi giá trị */}
-              <div className="coffee-case-box">
+              <div className="coffee-case-box scroll-reveal scroll-reveal-right">
                 <h3>☕ {currentLang === 'en' ? 'Value Chain Case Study' : 'Điển Hình Chuỗi Giá Trị Cà Phê'}</h3>
                 
                 <div className="coffee-case-highlight">
@@ -1926,7 +1966,7 @@ export const Home = () => {
             ======================================================== */}
         <section className="daklak-section" style={{ backgroundColor: '#F3ECE1' }}>
           <div className="daklak-container">
-            <div className="daklak-section-header" style={{ marginBottom: '30px' }}>
+            <div className="daklak-section-header scroll-reveal scroll-reveal-down" style={{ marginBottom: '30px' }}>
               <span className="daklak-section-badge">{currentLang === 'en' ? 'Regional Indicators' : 'Dữ Liệu Kinh Tế'}</span>
               <h2 className="daklak-section-title">
                 {currentLang === 'en' ? 'Dak Lak by Verified Data' : 'Đắk Lắk Bằng Những Con Số Biết Nói'}
@@ -1939,37 +1979,37 @@ export const Home = () => {
             </div>
 
             <div className="data-stats-grid">
-              <div className="data-stat-card">
+              <div className="data-stat-card scroll-reveal scroll-reveal-up stagger-1">
                 <div className="data-stat-num">213.000+</div>
                 <div className="data-stat-label">Hécta Cà phê</div>
                 <div className="data-stat-sub">Thủ phủ lớn nhất Việt Nam</div>
               </div>
 
-              <div className="data-stat-card">
+              <div className="data-stat-card scroll-reveal scroll-reveal-up stagger-2">
                 <div className="data-stat-num">560.000+</div>
                 <div className="data-stat-label">Tấn Sản lượng/Năm</div>
                 <div className="data-stat-sub">Cung ứng hơn 30% sản lượng cả nước</div>
               </div>
 
-              <div className="data-stat-card">
+              <div className="data-stat-card scroll-reveal scroll-reveal-up stagger-3">
                 <div className="data-stat-num">1,6+ Tỷ $</div>
                 <div className="data-stat-label">Kim ngạch Xuất khẩu</div>
                 <div className="data-stat-sub">Tăng trưởng bền vững 14%/năm</div>
               </div>
 
-              <div className="data-stat-card">
+              <div className="data-stat-card scroll-reveal scroll-reveal-up stagger-4">
                 <div className="data-stat-num">12.500+</div>
                 <div className="data-stat-label">Doanh nghiệp</div>
                 <div className="data-stat-sub">Cộng đồng hội viên năng động</div>
               </div>
 
-              <div className="data-stat-card">
+              <div className="data-stat-card scroll-reveal scroll-reveal-up stagger-5">
                 <div className="data-stat-num">50+</div>
                 <div className="data-stat-label">Dự án Kêu gọi Đầu tư</div>
                 <div className="data-stat-sub">Quy hoạch quỹ đất sạch 2026-2030</div>
               </div>
 
-              <div className="data-stat-card">
+              <div className="data-stat-card scroll-reveal scroll-reveal-up stagger-6">
                 <div className="data-stat-num">38,7%</div>
                 <div className="data-stat-label">Độ che phủ Rừng</div>
                 <div className="data-stat-sub">Lợi thế hấp thụ Carbon & Tín chỉ ESG</div>
@@ -1987,7 +2027,7 @@ export const Home = () => {
             ======================================================== */}
         <section className="daklak-section">
           <div className="daklak-container">
-            <div className="daklak-section-header">
+            <div className="daklak-section-header scroll-reveal scroll-reveal-down">
               <span className="daklak-section-badge">{currentLang === 'en' ? 'Verified Directory' : 'Hội Viên Tiêu Biểu'}</span>
               <h2 className="daklak-section-title">
                 {currentLang === 'en' ? 'Leading Enterprises & Ecosystem Partners' : 'Cộng Đồng Doanh Nghiệp Đắk Lắk'}
@@ -2000,8 +2040,8 @@ export const Home = () => {
             </div>
 
             <div className={`members-grid count-${Math.min(4, featuredMembers.length || 3)}`}>
-              {featuredMembers.map((m) => (
-                <div key={m.id} className="member-card">
+              {featuredMembers.map((m, mIdx) => (
+                <div key={m.id} className={`member-card scroll-reveal scroll-reveal-up stagger-${(mIdx % 3) + 1}`}>
                   <div className="member-card-header">
                     <img 
                       src={m.logo_url || 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80'} 
@@ -2031,7 +2071,7 @@ export const Home = () => {
               ))}
             </div>
 
-            <div style={{ textAlign: 'center', marginTop: '35px' }}>
+            <div className="scroll-reveal scroll-reveal-up" style={{ textAlign: 'center', marginTop: '35px' }}>
               <Link to="/members" className="btn-daklak-primary">
                 <i className="ti ti-address-book" />
                 <span>{currentLang === 'en' ? 'Explore Full Enterprise Directory' : 'Tra cứu Danh bạ Toàn bộ Doanh nghiệp'}</span>
@@ -2045,7 +2085,7 @@ export const Home = () => {
             ======================================================== */}
         <section className="daklak-section" id="su-kien" style={{ backgroundColor: '#26160E', color: '#FFF' }}>
           <div className="daklak-container">
-            <div className="daklak-section-header">
+            <div className="daklak-section-header scroll-reveal scroll-reveal-down">
               <span className="daklak-section-badge" style={{ background: 'rgba(213, 163, 63, 0.2)', color: 'var(--gong-gold)', borderColor: 'var(--gong-gold)' }}>
                 {currentLang === 'en' ? 'Upcoming Forum' : 'Sự Kiện Trọng Điểm'}
               </span>
@@ -2060,7 +2100,7 @@ export const Home = () => {
             </div>
 
             {eventsList && eventsList.length > 0 && (
-              <div className="featured-event-box">
+              <div className="featured-event-box scroll-reveal scroll-reveal-scale">
                 <div>
                   <span style={{ display: 'inline-block', background: 'var(--bazan-red)', color: '#FFF', padding: '4px 12px', borderRadius: '14px', fontSize: '0.78rem', fontWeight: '800', marginBottom: '14px' }}>
                     SỰ KIỆN TIÊU ĐIỂM
@@ -2113,7 +2153,7 @@ export const Home = () => {
             ======================================================== */}
         <section className="daklak-section" style={{ backgroundColor: 'var(--cream-alt)' }}>
           <div className="daklak-container">
-            <div className="daklak-section-header">
+            <div className="daklak-section-header scroll-reveal scroll-reveal-down">
               <span className="daklak-section-badge">{currentLang === 'en' ? 'Membership' : 'Gia Nhập Mạng Lưới'}</span>
               <h2 className="daklak-section-title">
                 {currentLang === 'en' ? 'Flexible Membership Packages' : 'Lựa Chọn Gói Tham Gia Phù Hợp'}
@@ -2127,7 +2167,7 @@ export const Home = () => {
 
             <div className="tiers-grid">
               {/* Tier 1 */}
-              <div className="tier-card">
+              <div className="tier-card scroll-reveal scroll-reveal-left">
                 <div>
                   <span className="tier-badge">CƠ BẢN</span>
                   <h3 className="tier-title">Khám Phá</h3>
@@ -2145,7 +2185,7 @@ export const Home = () => {
               </div>
 
               {/* Tier 2 */}
-              <div className="tier-card featured">
+              <div className="tier-card featured scroll-reveal scroll-reveal-up stagger-1">
                 <div>
                   <span className="tier-badge" style={{ background: 'var(--bazan-red)', color: '#FFF' }}>PHỔ BIẾN NHẤT</span>
                   <h3 className="tier-title">Doanh Nghiệp Kết Nối</h3>
@@ -2164,7 +2204,7 @@ export const Home = () => {
               </div>
 
               {/* Tier 3 */}
-              <div className="tier-card">
+              <div className="tier-card scroll-reveal scroll-reveal-up stagger-2">
                 <div>
                   <span className="tier-badge" style={{ background: 'rgba(213, 163, 63, 0.2)', color: '#B3832B' }}>CAO CẤP</span>
                   <h3 className="tier-title">Doanh Nghiệp Tiêu Biểu</h3>
@@ -2183,7 +2223,7 @@ export const Home = () => {
               </div>
 
               {/* Tier 4 */}
-              <div className="tier-card">
+              <div className="tier-card scroll-reveal scroll-reveal-right">
                 <div>
                   <span className="tier-badge" style={{ background: 'rgba(31, 90, 58, 0.2)', color: 'var(--forest-green)' }}>CHIẾN LƯỢC</span>
                   <h3 className="tier-title">Nhà Đầu Tư Chiến Lược</h3>
@@ -2208,7 +2248,7 @@ export const Home = () => {
             ======================================================== */}
         <section className="daklak-section">
           <div className="daklak-container">
-            <div className="daklak-section-header">
+            <div className="daklak-section-header scroll-reveal scroll-reveal-down">
               <span className="daklak-section-badge">{currentLang === 'en' ? 'FAQ' : 'Hỏi & Đáp'}</span>
               <h2 className="daklak-section-title">
                 {currentLang === 'en' ? 'Frequently Asked Questions' : 'Câu Hỏi Thường Gặp'}
@@ -2220,7 +2260,7 @@ export const Home = () => {
               </p>
             </div>
 
-            <div className="faq-list">
+            <div className="faq-list scroll-reveal scroll-reveal-left">
               {faqs.map((faq, index) => {
                 const isOpen = activeFaq === index;
                 const questionId = `faq-q-${index}`;
@@ -2259,10 +2299,10 @@ export const Home = () => {
             ======================================================== */}
         <section className="daklak-section" id="tu-van" style={{ backgroundColor: '#F0E6DC' }}>
           <div className="daklak-container">
-            <div className="daklak-section-header">
+            <div className="daklak-section-header scroll-reveal scroll-reveal-down">
               <span className="daklak-section-badge">{currentLang === 'en' ? 'Consultation & Partnership' : 'Đăng Ký Tư Vấn'}</span>
               <h2 className="daklak-section-title">
-                {currentLang === 'en' ? 'Partner with DakLak.today' : 'Đăng Ký Tư Vấn & Kết Nối Hợp Tác Đầu Tư'}
+                {currentLang === 'en' ? 'Partner with DakLak.today' : 'Đăng Ký Tư Vấn & Kết Nối HỢP Tác Đầu Tư'}
               </h2>
               <p className="daklak-section-desc">
                 {currentLang === 'en'
@@ -2271,7 +2311,7 @@ export const Home = () => {
               </p>
             </div>
 
-            <div className="consult-form-box">
+            <div className="consult-form-box scroll-reveal scroll-reveal-right">
               {formSubmitted ? (
                 <div style={{ textAlign: 'center', padding: '30px 10px' }}>
                   <div style={{ fontSize: '3rem', color: 'var(--forest-green)', marginBottom: '14px' }}>✓</div>
@@ -2436,13 +2476,13 @@ export const Home = () => {
             ======================================================== */}
         <section className="daklak-partners-section" id="doi-tac">
           <div className="daklak-container">
-            <h2 className="daklak-partners-title">
+            <h2 className="daklak-partners-title scroll-reveal scroll-reveal-down">
               {currentLang === 'en' ? 'OUR PARTNERS' : 'ĐỐI TÁC CỦA CHÚNG TÔI'}
             </h2>
-            <div className="daklak-partners-underline" />
+            <div className="daklak-partners-underline scroll-reveal scroll-reveal-scale" />
 
             <div
-              className="daklak-partners-carousel-container"
+              className="daklak-partners-carousel-container scroll-reveal scroll-reveal-up"
               onMouseEnter={() => setIsPartnerHovered(true)}
               onMouseLeave={() => setIsPartnerHovered(false)}
             >

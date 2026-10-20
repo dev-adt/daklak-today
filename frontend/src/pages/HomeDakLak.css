@@ -2289,45 +2289,98 @@
   padding: 56px 0 42px;
 }
 
-/* Ambient Glow Orbs - Ultra-lightweight CSS only (zero CPU/GPU lag) */
+/* Ambient Glow Orbs - Prominent Breathing & Pulsing (Sáng bừng lên rồi mờ dần liên tục) */
 .gt-hero-ambient-glow {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
   z-index: 1;
-  filter: blur(85px);
-  -webkit-filter: blur(85px);
-  will-change: transform;
+  will-change: transform, opacity, filter;
 }
 
 .gt-hero-ambient-glow.orb-1 {
-  top: -60px;
-  right: 5%;
-  width: 520px;
-  height: 520px;
-  background: radial-gradient(circle, rgba(233, 144, 53, 0.18) 0%, rgba(243, 197, 98, 0.08) 50%, transparent 75%);
-  animation: gtAmbientFloat1 14s ease-in-out infinite alternate;
+  top: -80px;
+  right: 2%;
+  width: 580px;
+  height: 580px;
+  background: radial-gradient(circle, rgba(233, 144, 53, 0.48) 0%, rgba(245, 158, 11, 0.3) 35%, rgba(251, 191, 36, 0.14) 65%, transparent 80%);
+  filter: blur(65px);
+  -webkit-filter: blur(65px);
+  animation: gtGlowBreathe1 5.5s ease-in-out infinite alternate;
 }
 
 .gt-hero-ambient-glow.orb-2 {
-  bottom: 0px;
-  left: 3%;
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(circle, rgba(22, 115, 74, 0.14) 0%, rgba(31, 90, 58, 0.05) 50%, transparent 75%);
-  animation: gtAmbientFloat2 16s ease-in-out infinite alternate;
+  bottom: -40px;
+  left: 1%;
+  width: 540px;
+  height: 540px;
+  background: radial-gradient(circle, rgba(22, 115, 74, 0.42) 0%, rgba(16, 185, 129, 0.25) 35%, rgba(5, 150, 105, 0.1) 65%, transparent 80%);
+  filter: blur(68px);
+  -webkit-filter: blur(68px);
+  animation: gtGlowBreathe2 6.5s ease-in-out infinite alternate;
 }
 
-@keyframes gtAmbientFloat1 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-25px, 20px) scale(1.06); }
-  100% { transform: translate(15px, -15px) scale(0.96); }
+.gt-hero-ambient-glow.orb-3 {
+  top: 15%;
+  left: 38%;
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.38) 0%, rgba(251, 191, 36, 0.18) 45%, transparent 75%);
+  filter: blur(72px);
+  -webkit-filter: blur(72px);
+  animation: gtGlowBreathe3 4.8s ease-in-out infinite alternate;
 }
 
-@keyframes gtAmbientFloat2 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(20px, -20px) scale(1.05); }
-  100% { transform: translate(-15px, 15px) scale(0.95); }
+/* Keyframes: Nhịp thở ánh sáng (sáng lên rõ nét rồi mờ dần mượt mà liên tục) */
+@keyframes gtGlowBreathe1 {
+  0% {
+    opacity: 0.32;
+    transform: translate3d(0, 0, 0) scale(0.9);
+    filter: blur(70px);
+  }
+  50% {
+    opacity: 0.88;
+    transform: translate3d(-25px, 20px, 0) scale(1.18);
+    filter: blur(52px);
+  }
+  100% {
+    opacity: 0.32;
+    transform: translate3d(15px, -15px, 0) scale(0.92);
+    filter: blur(68px);
+  }
+}
+
+@keyframes gtGlowBreathe2 {
+  0% {
+    opacity: 0.28;
+    transform: translate3d(0, 0, 0) scale(0.92);
+    filter: blur(75px);
+  }
+  50% {
+    opacity: 0.82;
+    transform: translate3d(25px, -20px, 0) scale(1.15);
+    filter: blur(55px);
+  }
+  100% {
+    opacity: 0.28;
+    transform: translate3d(-15px, 15px, 0) scale(0.94);
+    filter: blur(72px);
+  }
+}
+
+@keyframes gtGlowBreathe3 {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(1.22);
+  }
+  100% {
+    opacity: 0.2;
+    transform: scale(0.88);
+  }
 }
 
 /* Subtle faint background map */
@@ -3276,6 +3329,62 @@
   .gt-dest-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/* ==============================================================================
+   SCROLL REVEAL & TRANSITION SYSTEM (GPU-ACCELERATED, 0% CPU LAG)
+   Hỗ trợ xuất hiện từ trái sang, phải sang, trên xuống, dưới lên
+   Tự động mờ dần khi lướt đến và lướt đi
+   ============================================================================== */
+.scroll-reveal {
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Các hướng xuất hiện ban đầu */
+.scroll-reveal-left {
+  transform: translate3d(-50px, 0, 0);
+}
+
+.scroll-reveal-right {
+  transform: translate3d(50px, 0, 0);
+}
+
+.scroll-reveal-down {
+  transform: translate3d(0, -40px, 0);
+}
+
+.scroll-reveal-up {
+  transform: translate3d(0, 45px, 0);
+}
+
+.scroll-reveal-scale {
+  transform: scale(0.92);
+}
+
+/* Trạng thái khi phần tử lướt vào tầm nhìn (active/visible) */
+.scroll-reveal.is-revealed {
+  opacity: 1 !important;
+  transform: translate3d(0, 0, 0) scale(1) !important;
+}
+
+/* Stagger Delays cho các item liền kề */
+.stagger-1 { transition-delay: 0.08s !important; }
+.stagger-2 { transition-delay: 0.16s !important; }
+.stagger-3 { transition-delay: 0.24s !important; }
+.stagger-4 { transition-delay: 0.32s !important; }
+.stagger-5 { transition-delay: 0.40s !important; }
+.stagger-6 { transition-delay: 0.48s !important; }
+
+/* Tối ưu khi người dùng bật chế độ giảm chuyển động trong hệ điều hành */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
 
