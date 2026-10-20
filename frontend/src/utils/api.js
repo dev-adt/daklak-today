@@ -110,7 +110,7 @@ export const FALLBACK_EVENTS = [
     title: 'Lễ hội Cà phê Buôn Ma Thuột — Tôn vinh Hạt ngọc Bazan & Kết nối Giao thương Toàn cầu',
     slug: 'le-hoi-ca-phe-buon-ma-thuot-2026',
     short_desc: 'Sự kiện văn hóa kinh tế tầm vóc quốc tế kết nối hơn 500 nhà xuất nhập khẩu, chuyên gia rang xay và nhà đầu tư trong chuỗi giá trị cà phê.',
-    event_date: new Date(Date.now() + 86400000 * 18).toISOString(),
+    event_date: new Date(Date.now() + 86400000 * 18 + 3600000 * 5).toISOString(),
     location: 'Quảng trường 10/3 & Bảo tàng Thế giới Cà phê, TP. Buôn Ma Thuột, Đắk Lắk',
     organizer: 'Ban Tổ chức Lễ hội Cà phê & DakLak.today',
     image_url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
@@ -124,7 +124,7 @@ export const FALLBACK_EVENTS = [
     title: 'Diễn đàn Xúc tiến Đầu tư Nông nghiệp Công nghệ cao & Logistics Tây Nguyên 2026',
     slug: 'dien-dan-xuc-tien-dau-tu-nong-nghiep-cnc-logistics-tay-nguyen',
     short_desc: 'Đối thoại trực tiếp giữa Lãnh đạo tỉnh, tổ chức tài chính, quỹ đầu tư ESG và cộng đồng doanh nghiệp về cơ chế tiếp cận đất đai và ưu đãi đầu tư.',
-    event_date: new Date(Date.now() + 86400000 * 28).toISOString(),
+    event_date: new Date(Date.now() + 86400000 * 28 + 3600000 * 3).toISOString(),
     location: 'Trung tâm Hội nghị Tỉnh Đắk Lắk, TP. Buôn Ma Thuột',
     organizer: 'Trung tâm Xúc tiến Đầu tư & ADT Group',
     image_url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80',
@@ -132,6 +132,34 @@ export const FALLBACK_EVENTS = [
     price: 0,
     remaining_tickets: 180,
     registered_count: 120
+  },
+  {
+    id: 'fb-evt-3',
+    title: 'Hội nghị Kết nối Cung Cầu Nông sản Đặc sản & OCOP Đắk Lắk 2026',
+    slug: 'hoi-nghi-ket-noi-cung-cau-nong-san-dac-san-ocop-dak-lak-2026',
+    short_desc: 'Kết nối trực tiếp hơn 150 đơn vị phân phối, hệ thống bán lẻ và sàn thương mại điện tử với các HTX, doanh nghiệp sản xuất nông sản chất lượng cao.',
+    event_date: new Date(Date.now() + 86400000 * 38 + 3600000 * 2).toISOString(),
+    location: 'Khách sạn Mường Thanh Luxury Buôn Ma Thuột, Đắk Lắk',
+    organizer: 'Sở Công Thương Đắk Lắk & BizHub',
+    image_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80',
+    is_paid: 0,
+    price: 0,
+    remaining_tickets: 220,
+    registered_count: 180
+  },
+  {
+    id: 'fb-evt-4',
+    title: 'Diễn đàn Chuyển đổi số & Ứng dụng Trí tuệ Nhân tạo AI cho Doanh nghiệp Nông sản',
+    slug: 'dien-dan-chuyen-doi-so-va-ai-cho-doanh-nghiep-nong-san',
+    short_desc: 'Tối ưu hóa chi phí vận hành, tự động hóa chuỗi cung ứng và xúc tiến thương mại đa kênh với giải pháp Trợ lý AI chuyên sâu.',
+    event_date: new Date(Date.now() + 86400000 * 48 + 3600000 * 6).toISOString(),
+    location: 'Tòa nhà Viettel / VNPT Đắk Lắk, TP. Buôn Ma Thuột',
+    organizer: 'Hiệp hội Doanh nghiệp Tỉnh Đắk Lắk & ADT Group',
+    image_url: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80',
+    is_paid: 1,
+    price: 200000,
+    remaining_tickets: 95,
+    registered_count: 65
   }
 ];
 

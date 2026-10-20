@@ -1047,7 +1047,491 @@
   margin-top: 4px;
 }
 
-/* --- EVENT & COUNTDOWN SECTION --- */
+/* --- EVENT & COUNTDOWN SECTION (LAYOUT DOANHNGHIEPVN.TODAY — BẢN SẮC ĐẮK LẮK) --- */
+.daklak-home-events-section {
+  padding: 65px 0 60px;
+  background: var(--cream, #FBF8F3);
+  position: relative;
+}
+
+/* Header */
+.daklak-events-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 28px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.daklak-events-header-left {
+  max-width: 740px;
+}
+
+.daklak-events-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--gong-gold, #D5A33F);
+  background: rgba(213, 163, 63, 0.12);
+  border: 1px solid rgba(213, 163, 63, 0.3);
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.daklak-events-title {
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: var(--primary-coffee, #2C1810);
+  line-height: 1.25;
+  margin: 0 0 8px;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+}
+
+.daklak-events-desc {
+  font-size: 0.95rem;
+  color: var(--text-muted, #6B5E55);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.daklak-events-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--primary-coffee, #2C1810);
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #FFF;
+  border: 1px solid rgba(44, 24, 16, 0.12);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.daklak-events-view-all:hover {
+  color: var(--bazan-red, #8B2500);
+  border-color: var(--gong-gold, #D5A33F);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(44, 24, 16, 0.08);
+}
+
+/* Hero Event Card (2 Cột: Trái thông tin + Countdown, Phải Banner ảnh) */
+.daklak-event-hero-card {
+  background: linear-gradient(135deg, #24140D 0%, #1A0D07 100%);
+  border-radius: 22px;
+  border: 1.5px solid rgba(213, 163, 63, 0.35);
+  box-shadow: 0 20px 48px rgba(36, 20, 13, 0.22);
+  display: grid;
+  grid-template-columns: 1.28fr 0.92fr;
+  overflow: hidden;
+  margin-bottom: 28px;
+  position: relative;
+}
+
+.daklak-event-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 12% 25%, rgba(213, 163, 63, 0.09) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.daklak-event-hero-content {
+  padding: 38px 42px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.daklak-event-hero-tags {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.daklak-hero-tag.highlight {
+  background: linear-gradient(135deg, #A83218 0%, #831D08 100%);
+  color: #FFF;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(168, 50, 24, 0.4);
+}
+
+.daklak-hero-tag.fee {
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFF;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.daklak-event-hero-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  color: #E2D7CF;
+  font-weight: 500;
+}
+
+.daklak-event-hero-title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #FFF;
+  margin: 0 0 10px;
+}
+
+.daklak-event-hero-title a {
+  color: #FFF;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.daklak-event-hero-title a:hover {
+  color: var(--gong-gold, #D5A33F);
+}
+
+.daklak-event-hero-desc {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #C8B9AE;
+  margin: 0 0 22px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Hero Countdown */
+.daklak-event-hero-countdown-block {
+  margin-bottom: 22px;
+}
+
+.daklak-countdown-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--gong-gold, #D5A33F);
+  margin-bottom: 10px;
+}
+
+.daklak-event-countdown-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.daklak-event-countdown-unit {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(213, 163, 63, 0.28);
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-width: 62px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(4px);
+}
+
+.daklak-event-countdown-num {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #FFFFFF;
+  line-height: 1.1;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+}
+
+.daklak-event-countdown-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #D1C5BC;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+/* Hero Footer */
+.daklak-event-hero-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+}
+
+.daklak-event-hero-location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #E2D7CF;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daklak-event-hero-location i {
+  color: var(--gong-gold, #D5A33F);
+  font-size: 1.1rem;
+}
+
+.btn-daklak-event-register {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #D5A33F 0%, #B88628 100%);
+  color: #23120B;
+  font-weight: 800;
+  font-size: 0.88rem;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(213, 163, 63, 0.35);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.btn-daklak-event-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(213, 163, 63, 0.45);
+  background: linear-gradient(135deg, #E2B352 0%, #C9932E 100%);
+}
+
+/* Poster Image */
+.daklak-event-hero-image-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+}
+
+.daklak-event-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.daklak-event-hero-img-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(36, 20, 13, 0.55) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+/* Sub-events 3-Card Grid */
+.daklak-event-sub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.daklak-event-sub-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  border: 1px solid rgba(44, 24, 16, 0.08);
+  box-shadow: 0 6px 20px rgba(44, 24, 16, 0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.28s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.daklak-event-sub-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 28px rgba(44, 24, 16, 0.1);
+  border-color: rgba(213, 163, 63, 0.45);
+}
+
+.daklak-event-sub-thumb-wrap {
+  position: relative;
+  width: 100%;
+  height: 175px;
+  overflow: hidden;
+  background: #2C1810;
+}
+
+.daklak-event-sub-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.daklak-event-sub-card:hover .daklak-event-sub-img {
+  transform: scale(1.05);
+}
+
+.daklak-event-sub-price-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--primary-coffee, #2C1810);
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(4px);
+}
+
+.daklak-event-sub-body {
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.daklak-event-sub-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted, #7A6A60);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.daklak-event-sub-time i {
+  color: var(--bazan-red, #8B2500);
+}
+
+.daklak-event-sub-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.4;
+  margin: 0 0 8px;
+  color: var(--primary-coffee, #2C1810);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.daklak-event-sub-title a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.daklak-event-sub-title a:hover {
+  color: var(--bazan-red, #8B2500);
+}
+
+.daklak-event-sub-desc {
+  font-size: 0.86rem;
+  color: #6E5D53;
+  line-height: 1.5;
+  margin: 0 0 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+.daklak-event-sub-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(44, 24, 16, 0.06);
+}
+
+.daklak-event-sub-loc {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: #8A7A70;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 65%;
+}
+
+.daklak-event-sub-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--primary-coffee, #2C1810);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.daklak-event-sub-link:hover {
+  color: var(--bazan-red, #8B2500);
+  transform: translateX(3px);
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .daklak-event-hero-card {
+    grid-template-columns: 1fr;
+  }
+  .daklak-event-hero-image-wrap {
+    min-height: 240px;
+    order: -1;
+  }
+  .daklak-event-hero-content {
+    padding: 26px 22px;
+  }
+  .daklak-event-sub-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 960px) {
+  .daklak-event-sub-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Legacy fallback styles if referenced */
 .featured-event-box {
   background: linear-gradient(135deg, var(--primary-coffee) 0%, #22120B 100%);
   color: var(--white);

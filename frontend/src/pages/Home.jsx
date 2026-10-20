@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/LanguageContext';
@@ -11,68 +11,92 @@ import { getCategoryLabel } from '../constants/categories';
 import { fetchJsonWithTimeout, FALLBACK_POSTS, FALLBACK_EVENTS, FALLBACK_MEMBERS } from '../utils/api';
 import './HomeDakLak.css';
 
-// Sub-component đếm ngược sự kiện trang chủ độc lập
-// Tách biệt state để KHÔNG kích hoạt re-render toàn bộ 15 section của trang chủ mỗi giây
-const HomeEventCountdown = React.memo(({ eventDate }) => {
-  const [timeLeft, setTimeLeft] = useState(() => {
-    if (!eventDate) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-    let dateStr = String(eventDate).trim();
+// Helper format ngày giờ cho sự kiện (Ví dụ: 13:30 Thứ Năm, 22/10/2026)
+const formatEventDateTime = (dateVal) => {
+  if (!dateVal) return '';
+  try {
+    let dateStr = String(dateVal).trim();
     if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2})?$/.test(dateStr)) {
       dateStr = dateStr.replace(' ', 'T') + '+07:00';
     }
-    const diff = new Date(dateStr).getTime() - Date.now();
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateVal);
+    const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    const dayName = dayNames[d.getDay()];
+    const dateFormatted = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    return `${timeStr} ${dayName}, ${dateFormatted}`;
+  } catch (e) {
+    return String(dateVal);
+  }
+};
+
+// Helper format giá vé sự kiện
+const formatEventPrice = (evt) => {
+  if (!evt || !evt.is_paid || !evt.price || Number(evt.price) === 0) {
+    return 'Miễn phí';
+  }
+  return `${Number(evt.price).toLocaleString('vi-VN')} đ`;
+};
+
+// Sub-component đếm ngược sự kiện trang chủ độc lập
+// Tách biệt state để KHÔNG kích hoạt re-render toàn bộ 15 section của trang chủ mỗi giây
+const HomeEventCountdown = React.memo(({ eventDate }) => {
+  const calculateTimeLeft = (date) => {
+    if (!date) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    let dateStr = String(date).trim();
+    if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2})?$/.test(dateStr)) {
+      dateStr = dateStr.replace(' ', 'T') + '+07:00';
+    }
+    const target = new Date(dateStr).getTime();
+    if (isNaN(target)) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    const diff = target - Date.now();
     if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-    return {
-      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-      hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-      minutes: Math.floor((diff / 1000 / 60) % 60),
-      seconds: Math.floor((diff / 1000) % 60)
-    };
-  });
+
+    const totalSeconds = Math.floor(diff / 1000);
+    const days = Math.floor(totalSeconds / (3600 * 24));
+    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return { days, hours, minutes, seconds };
+  };
+
+  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(eventDate));
 
   useEffect(() => {
     if (!eventDate) return;
     const timer = setInterval(() => {
-      try {
-        let dateStr = String(eventDate).trim();
-        if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2})?$/.test(dateStr)) {
-          dateStr = dateStr.replace(' ', 'T') + '+07:00';
-        }
-        const diff = new Date(dateStr).getTime() - Date.now();
-        if (diff > 0) {
-          setTimeLeft({
-            days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-            hours: Math.floor((diff % (1000 * 60 * 60)) % 24),
-            minutes: Math.floor((diff / 1000 / 60) % 60),
-            seconds: Math.floor((diff / 1000) % 60)
-          });
-        } else {
-          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        }
-      } catch (e) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      }
+      setTimeLeft(calculateTimeLeft(eventDate));
     }, 1000);
     return () => clearInterval(timer);
   }, [eventDate]);
 
   return (
-    <div className="countdown-timer-grid">
-      <div className="countdown-timer-unit">
-        <div className="countdown-timer-num notranslate" translate="no">{String(timeLeft.days).padStart(2, '0')}</div>
-        <div className="countdown-timer-label">Ngày</div>
+    <div className="daklak-event-countdown-grid">
+      <div className="daklak-event-countdown-unit">
+        <span className="daklak-event-countdown-num notranslate" translate="no">
+          {String(timeLeft.days).padStart(2, '0')}
+        </span>
+        <span className="daklak-event-countdown-label">NGÀY</span>
       </div>
-      <div className="countdown-timer-unit">
-        <div className="countdown-timer-num notranslate" translate="no">{String(timeLeft.hours).padStart(2, '0')}</div>
-        <div className="countdown-timer-label">Giờ</div>
+      <div className="daklak-event-countdown-unit">
+        <span className="daklak-event-countdown-num notranslate" translate="no">
+          {String(timeLeft.hours).padStart(2, '0')}
+        </span>
+        <span className="daklak-event-countdown-label">GIỜ</span>
       </div>
-      <div className="countdown-timer-unit">
-        <div className="countdown-timer-num notranslate" translate="no">{String(timeLeft.minutes).padStart(2, '0')}</div>
-        <div className="countdown-timer-label">Phút</div>
+      <div className="daklak-event-countdown-unit">
+        <span className="daklak-event-countdown-num notranslate" translate="no">
+          {String(timeLeft.minutes).padStart(2, '0')}
+        </span>
+        <span className="daklak-event-countdown-label">PHÚT</span>
       </div>
-      <div className="countdown-timer-unit">
-        <div className="countdown-timer-num notranslate" translate="no">{String(timeLeft.seconds).padStart(2, '0')}</div>
-        <div className="countdown-timer-label">Giây</div>
+      <div className="daklak-event-countdown-unit">
+        <span className="daklak-event-countdown-num notranslate" translate="no">
+          {String(timeLeft.seconds).padStart(2, '0')}
+        </span>
+        <span className="daklak-event-countdown-label">GIÂY</span>
       </div>
     </div>
   );
@@ -398,14 +422,23 @@ export const Home = () => {
   // Investment Projects Filter State
   const [selectedSector, setSelectedSector] = useState('all');
 
-  // State Slider Doanh nghiệp tiêu biểu (7 công ty từ file docx)
+  // State Slider Doanh nghiệp tiêu biểu (7 công ty từ file docx, tự động cuộn mỗi 5s, dừng khi hover)
   const [enterpriseIndex, setEnterpriseIndex] = useState(0);
+  const [isEnterpriseHovered, setIsEnterpriseHovered] = useState(false);
   const handlePrevEnterprise = () => {
     setEnterpriseIndex(prev => (prev - 1 + FEATURED_ENTERPRISES.length) % FEATURED_ENTERPRISES.length);
   };
   const handleNextEnterprise = () => {
     setEnterpriseIndex(prev => (prev + 1) % FEATURED_ENTERPRISES.length);
   };
+
+  useEffect(() => {
+    if (isEnterpriseHovered) return;
+    const interval = setInterval(() => {
+      setEnterpriseIndex(prev => (prev + 1) % FEATURED_ENTERPRISES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isEnterpriseHovered]);
 
   // State Slider Đối tác của chúng tôi (4 logo, tự động chuyển mỗi 1s, dừng khi hover)
   const [partnerIndex, setPartnerIndex] = useState(PARTNER_COMPANIES.length);
@@ -1036,6 +1069,22 @@ export const Home = () => {
     }
   ];
 
+  // Dữ liệu sự kiện cho bố cục mới (1 Sự kiện Tiêu điểm Hero + 3 Sự kiện phụ)
+  const heroEvent = (eventsList && eventsList.length > 0) ? eventsList[0] : FALLBACK_EVENTS[0];
+  const subEvents = useMemo(() => {
+    const list = (eventsList && eventsList.length > 1) ? eventsList.slice(1, 4) : [];
+    const needed = 3 - list.length;
+    if (needed > 0) {
+      for (const fb of FALLBACK_EVENTS) {
+        if (list.length >= 3) break;
+        if (fb.id !== heroEvent?.id && !list.some(x => x.id === fb.id || x.title === fb.title)) {
+          list.push(fb);
+        }
+      }
+    }
+    return list;
+  }, [eventsList, heroEvent]);
+
   return (
     <div className="daklak-home">
       <SEOHead 
@@ -1378,7 +1427,11 @@ export const Home = () => {
             </div>
 
             {/* Slider Container */}
-            <div className="daklak-enterprise-slider-wrapper">
+            <div
+              className="daklak-enterprise-slider-wrapper"
+              onMouseEnter={() => setIsEnterpriseHovered(true)}
+              onMouseLeave={() => setIsEnterpriseHovered(false)}
+            >
               {/* Nút lướt Trái */}
               <button
                 type="button"
@@ -1517,6 +1570,162 @@ export const Home = () => {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            BLOCK: HOẠT ĐỘNG TRỌNG ĐIỂM - SỰ KIỆN SẮP DIỄN RA
+            (Bố cục tham khảo DoanhNghiepVN.Today, màu sắc bản sắc Đắk Lắk)
+            ======================================================== */}
+        <section className="daklak-home-events-section" id="su-kien">
+          <div className="daklak-container">
+            {/* Header: Hoạt động trọng điểm / Sự kiện sắp diễn ra */}
+            <div className="daklak-events-header">
+              <div className="daklak-events-header-left">
+                <span className="daklak-events-badge">
+                  <i className="ti ti-flame" style={{ marginRight: '5px' }} />
+                  {currentLang === 'en' ? 'Key Activities' : 'HOẠT ĐỘNG TRỌNG ĐIỂM'}
+                </span>
+                <h2 className="daklak-events-title">
+                  {currentLang === 'en' ? 'Upcoming Events' : 'SỰ KIỆN SẮP DIỄN RA'}
+                </h2>
+                <p className="daklak-events-desc">
+                  {currentLang === 'en'
+                    ? 'Explore key forums, business trade summits, and networking events connecting you with investors and market leaders.'
+                    : 'Cập nhật các hội thảo, tọa đàm và chương trình kết nối giúp doanh nghiệp tiếp cận thông tin, chuyên gia và cơ hội hợp tác kinh doanh.'}
+                </p>
+              </div>
+              <div className="daklak-events-header-right">
+                <Link to="/events" className="daklak-events-view-all">
+                  <span>{currentLang === 'en' ? 'View all events' : 'Xem tất cả sự kiện'}</span>
+                  <i className="ti ti-arrow-right" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Event Hero Card */}
+            {heroEvent && (
+              <div className="daklak-event-hero-card">
+                <div className="daklak-event-hero-content">
+                  {/* Tags row */}
+                  <div className="daklak-event-hero-tags">
+                    <span className="daklak-hero-tag highlight">
+                      <i className="ti ti-sparkles" />
+                      {currentLang === 'en' ? 'Featured Event' : 'SỰ KIỆN NỔI BẬT'}
+                    </span>
+                    <span className="daklak-hero-tag fee">
+                      {formatEventPrice(heroEvent)}
+                    </span>
+                    <span className="daklak-event-hero-time">
+                      <i className="ti ti-clock" />
+                      {formatEventDateTime(heroEvent.event_date)}
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="daklak-event-hero-title">
+                    <Link to={`/events/${heroEvent.id}`}>
+                      {heroEvent.title}
+                    </Link>
+                  </h3>
+
+                  {/* Short description */}
+                  <p className="daklak-event-hero-desc">
+                    {heroEvent.short_desc || heroEvent.description}
+                  </p>
+
+                  {/* Countdown Timer */}
+                  <div className="daklak-event-hero-countdown-block">
+                    <div className="daklak-countdown-title">
+                      <i className="ti ti-hourglass-empty" />
+                      <span>{currentLang === 'en' ? 'Event starts in' : 'SỰ KIỆN BẮT ĐẦU SAU'}</span>
+                    </div>
+                    <HomeEventCountdown eventDate={heroEvent.event_date} />
+                  </div>
+
+                  {/* Footer Row: Location & CTA */}
+                  <div className="daklak-event-hero-footer">
+                    <div className="daklak-event-hero-location" title={heroEvent.location || 'TP. Buôn Ma Thuột, Đắk Lắk'}>
+                      <i className="ti ti-map-pin" />
+                      <span>{heroEvent.location || 'TP. Buôn Ma Thuột, Đắk Lắk'}</span>
+                    </div>
+
+                    <div className="daklak-event-hero-actions">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenRegisterModal(heroEvent)}
+                        className="btn-daklak-event-register"
+                      >
+                        <span>{currentLang === 'en' ? 'Details & Register' : 'Xem chi tiết & Đăng ký'}</span>
+                        <i className="ti ti-arrow-right" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Poster Image */}
+                <div className="daklak-event-hero-image-wrap">
+                  <img
+                    src={heroEvent.image_url || heroEvent.poster_url || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80'}
+                    alt={heroEvent.title}
+                    className="daklak-event-hero-img"
+                    onError={(e) => {
+                      e.target.src = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80';
+                    }}
+                  />
+                  <div className="daklak-event-hero-img-overlay" />
+                </div>
+              </div>
+            )}
+
+            {/* Sub-Events 3-Card Grid */}
+            {subEvents.length > 0 && (
+              <div className="daklak-event-sub-grid">
+                {subEvents.map((evt, idx) => (
+                  <div key={evt.id || idx} className="daklak-event-sub-card">
+                    <div className="daklak-event-sub-thumb-wrap">
+                      <img
+                        src={evt.image_url || evt.poster_url || 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80'}
+                        alt={evt.title}
+                        className="daklak-event-sub-img"
+                        onError={(e) => {
+                          e.target.src = 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80';
+                        }}
+                      />
+                      <span className="daklak-event-sub-price-badge">
+                        {formatEventPrice(evt)}
+                      </span>
+                    </div>
+
+                    <div className="daklak-event-sub-body">
+                      <div className="daklak-event-sub-time">
+                        <i className="ti ti-clock" />
+                        <span>{formatEventDateTime(evt.event_date)}</span>
+                      </div>
+
+                      <h4 className="daklak-event-sub-title" title={evt.title}>
+                        <Link to={`/events/${evt.id}`}>{evt.title}</Link>
+                      </h4>
+
+                      <p className="daklak-event-sub-desc">
+                        {evt.short_desc || evt.description}
+                      </p>
+
+                      <div className="daklak-event-sub-footer">
+                        <div className="daklak-event-sub-loc" title={evt.location || 'TP. Buôn Ma Thuột'}>
+                          <i className="ti ti-map-pin" />
+                          <span>{evt.location || 'TP. Buôn Ma Thuột, Đắk Lắk'}</span>
+                        </div>
+                        <Link to={`/events/${evt.id}`} className="daklak-event-sub-link">
+                          <span>{currentLang === 'en' ? 'Details' : 'Chi tiết'}</span>
+                          <i className="ti ti-chevron-right" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -2079,74 +2288,6 @@ export const Home = () => {
                 <span>{currentLang === 'en' ? 'Explore Full Enterprise Directory' : 'Tra cứu Danh bạ Toàn bộ Doanh nghiệp'}</span>
               </Link>
             </div>
-          </div>
-        </section>
-
-        {/* ========================================================
-            SECTION 11: SỰ KIỆN NỔI BẬT & COUNTDOWN (id="su-kien")
-            ======================================================== */}
-        <section className="daklak-section" id="su-kien" style={{ backgroundColor: '#26160E', color: '#FFF' }}>
-          <div className="daklak-container">
-            <div className="daklak-section-header scroll-reveal scroll-reveal-down">
-              <span className="daklak-section-badge" style={{ background: 'rgba(213, 163, 63, 0.2)', color: 'var(--gong-gold)', borderColor: 'var(--gong-gold)' }}>
-                {currentLang === 'en' ? 'Upcoming Forum' : 'Sự Kiện Trọng Điểm'}
-              </span>
-              <h2 className="daklak-section-title" style={{ color: '#FFF' }}>
-                {currentLang === 'en' ? 'Upcoming Events & Trade Summits' : 'Lễ Hội & Diễn Đàn Xúc Tiến Sắp Diễn Ra'}
-              </h2>
-              <p className="daklak-section-desc" style={{ color: '#D1C5BC' }}>
-                {currentLang === 'en'
-                  ? 'Connect directly with government leaders, international trade delegations, and institutional investors.'
-                  : 'Nơi quy tụ các chuyên gia kinh tế, nhà xuất nhập khẩu quốc tế và cơ hội tiếp cận dòng vốn đầu tư trực tiếp.'}
-              </p>
-            </div>
-
-            {eventsList && eventsList.length > 0 && (
-              <div className="featured-event-box scroll-reveal scroll-reveal-scale">
-                <div>
-                  <span style={{ display: 'inline-block', background: 'var(--bazan-red)', color: '#FFF', padding: '4px 12px', borderRadius: '14px', fontSize: '0.78rem', fontWeight: '800', marginBottom: '14px' }}>
-                    SỰ KIỆN TIÊU ĐIỂM
-                  </span>
-                  <h3 style={{ fontSize: '1.6rem', fontWeight: '900', color: '#FFF', marginBottom: '14px', lineHeight: '1.3' }}>
-                    {eventsList[0].title}
-                  </h3>
-                  <p style={{ fontSize: '0.95rem', color: '#E0D4CA', marginBottom: '18px', lineHeight: '1.6' }}>
-                    {eventsList[0].short_desc || eventsList[0].description}
-                  </p>
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', color: '#D1C5BC' }}>
-                    <div>📍 <strong>Địa điểm:</strong> {eventsList[0].location || 'TP. Buôn Ma Thuột, Tỉnh Đắk Lắk'}</div>
-                    <div>🏢 <strong>Đơn vị tổ chức:</strong> {eventsList[0].organizer || 'DakLak.today Platform'}</div>
-                  </div>
-
-                  <div style={{ marginTop: '24px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-                    <button 
-                      onClick={() => handleOpenRegisterModal(eventsList[0])}
-                      className="btn-daklak-gold"
-                    >
-                      <i className="ti ti-ticket" />
-                      <span>{currentLang === 'en' ? 'Get QR Ticket Now' : 'Đăng Ký Vé QR Miễn Phí'}</span>
-                    </button>
-                    <Link to={`/events/${eventsList[0].id}`} className="btn-daklak-outline">
-                      {currentLang === 'en' ? 'Event Details' : 'Xem chi tiết sự kiện'}
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Countdown Timer */}
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '1rem', color: 'var(--gong-gold)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    ⏳ ĐẾM NGƯỢC THỜI GIAN KHAI MẠC
-                  </div>
-
-                  <HomeEventCountdown eventDate={eventsList[0]?.event_date} />
-
-                  <p style={{ fontSize: '0.85rem', color: '#BFAEA2' }}>
-                    Hệ thống cấp vé QR tự động • Quét mã camera điểm danh trong 1 giây
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </section>
 
