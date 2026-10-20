@@ -6,7 +6,7 @@
 }
 
 .post-detail-container {
-  max-width: 880px;
+  max-width: 1080px;
   margin: 0 auto;
 }
 
@@ -62,14 +62,14 @@
 .post-detail-cover-img {
   width: 100%;
   height: auto;
-  max-height: 520px;
+  max-height: 540px;
   object-fit: cover;
   display: block;
 }
 
 /* Base Card Style */
 .post-detail-card {
-  padding: 36px 48px;
+  padding: 38px 48px;
   border-radius: 20px;
   background: #FFFFFF;
   border: 1px solid rgba(122, 62, 29, 0.12);
@@ -89,7 +89,7 @@
 
 .post-detail-title {
   font-family: var(--font-title);
-  font-size: 30px;
+  font-size: 32px;
   color: var(--text-primary, #2C221E);
   font-weight: 800;
   line-height: 1.38;
@@ -135,8 +135,9 @@
 }
 
 .post-html-body p {
-  margin: 0 0 20px 0 !important;
-  line-height: 1.85 !important;
+  margin-top: 0;
+  margin-bottom: 20px;
+  line-height: 1.85;
 }
 
 /* Headings inside content */
@@ -163,7 +164,7 @@
 /* BULLET POINTS & NUMBERED LISTS (THỤT VÀO TRONG BẰNG HOẶC SÂU HƠN VĂN BẢN) */
 .post-html-body ul,
 .post-html-body ol {
-  padding-left: 36px !important;
+  padding-left: 38px !important;
   margin: 18px 0 22px 0 !important;
   list-style-position: outside !important;
 }
@@ -179,21 +180,43 @@
 .post-html-body li {
   margin-bottom: 10px !important;
   line-height: 1.8 !important;
-  padding-left: 6px !important;
+  padding-left: 8px !important;
   color: #4A3B32 !important;
 }
 
-.post-html-body li::marker {
+.post-html-body ul li::marker {
   color: var(--gong-gold, #D5A33F) !important;
-  font-size: 1.1em !important;
+  font-size: 1.15em !important;
+}
+
+.post-html-body ol li::marker {
+  color: var(--gong-gold, #D5A33F) !important;
+  font-weight: 800 !important;
+  font-size: 1.05em !important;
 }
 
 .post-html-body ul ul,
 .post-html-body ol ol,
 .post-html-body ul ol,
 .post-html-body ol ul {
-  padding-left: 24px !important;
+  padding-left: 28px !important;
   margin: 8px 0 10px 0 !important;
+}
+
+/* Word-imported and custom list paragraphs (chữ số 1,2, gạch đầu dòng, mso-list) */
+.post-html-body p[style*="mso-list"],
+.post-html-body p[style*="text-indent:-"],
+.post-html-body p[style*="text-indent: -"],
+.post-html-body p.MsoListParagraph,
+.post-html-body .MsoListParagraph,
+.post-html-body p.post-list-item,
+.post-html-body .post-list-item {
+  margin-left: 38px !important;
+  text-indent: 0 !important;
+  padding-left: 6px !important;
+  margin-top: 8px !important;
+  margin-bottom: 12px !important;
+  line-height: 1.85 !important;
 }
 
 /* Strong / bold tags */

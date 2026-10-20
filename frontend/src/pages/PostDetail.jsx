@@ -438,6 +438,26 @@ export const PostDetail = () => {
                       txt.innerHTML = raw;
                       raw = txt.value;
                     }
+
+                    // Tự động chuẩn hóa thụt lề cho danh sách Word (mso-list) và dạng số 1, 2... hay gạch đầu dòng -, –
+                    try {
+                      raw = raw.replace(/text-indent\s*:\s*-[0-9.]+(pt|px|em)?/gi, 'text-indent:0');
+                      raw = raw.replace(/<p([^>]*)>([\s\S]*?)<\/p>/gi, (match, attrs, inner) => {
+                        if (/mso-list|MsoListParagraph/i.test(attrs) || /text-indent/i.test(attrs)) {
+                          const cleanAttrs = attrs.replace(/text-indent\s*:\s*-[0-9.]+(pt|px|em)?/gi, 'text-indent:0');
+                          return `<p${cleanAttrs} class="post-list-item">${inner}</p>`;
+                        }
+                        const plain = inner.replace(/<[^>]+>/g, '').trim();
+                        // Dạng gạch đầu dòng (- , – , — , • , +) hoặc dạng số theo sau bởi dấu chấm (1. , 2. ) nhưng không phải tiêu đề đậm
+                        if (/^([–—\-•\*\+]|\d+[\.\)])\s+/.test(plain)) {
+                          if (!/^(<b>|<strong>|\d+\.\s+[A-ZÀ-Ỹ0-9\s:?–—\-]{12,})/i.test(inner.trim())) {
+                            return `<p${attrs} class="post-list-item">${inner}</p>`;
+                          }
+                        }
+                        return match;
+                      });
+                    } catch (e) {}
+
                     return raw;
                   })()
                 }}
