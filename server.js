@@ -473,6 +473,17 @@ db.query(`
       console.log('✅ Đã thêm cột tokens_out vào bảng chat_logs');
     }
 
+    try {
+      const [oldCols] = await db.query("SHOW COLUMNS FROM chat_logs LIKE 'user_message'");
+      if (oldCols.length && oldCols[0].Null === 'NO') {
+        await db.query("ALTER TABLE chat_logs MODIFY COLUMN user_message TEXT NULL");
+      }
+      const [oldReplyCols] = await db.query("SHOW COLUMNS FROM chat_logs LIKE 'bot_reply'");
+      if (oldReplyCols.length && oldReplyCols[0].Null === 'NO') {
+        await db.query("ALTER TABLE chat_logs MODIFY COLUMN bot_reply TEXT NULL");
+      }
+    } catch (e) {}
+
     const [deadlineCols] = await db.query("SHOW COLUMNS FROM posts LIKE 'deadline'");
     if (!deadlineCols.length) {
       await db.query("ALTER TABLE posts ADD COLUMN deadline VARCHAR(50) DEFAULT NULL AFTER contact_info");
@@ -4005,11 +4016,23 @@ ${knowledgeText ? `\n${knowledgeText}` : ''}`;
       const sessionId = req.headers['x-session-id'] || 'anonymous';
       const userId = req.authUser.id;
       const lastMsg = messages[messages.length - 1];
-      await db.query('INSERT INTO chat_logs (session_id,member_id,role,content,provider,model,tokens_in,tokens_out) VALUES (?,?,?,?,?,?,?,?)',
-        [sessionId, userId, 'user', lastMsg?.content || '', effectiveProvider, effectiveModel, 0, 0]);
-      await db.query('INSERT INTO chat_logs (session_id,member_id,role,content,provider,model,tokens_in,tokens_out) VALUES (?,?,?,?,?,?,?,?)',
-        [sessionId, userId, 'assistant', result.text, effectiveProvider, effectiveModel, result.usage?.input || 0, result.usage?.output || 0]);
-    } catch {}
+      const userText = lastMsg?.content || '';
+      const aiText = result.text || '';
+
+      await db.query(`
+        INSERT INTO chat_logs (session_id, member_id, role, content, user_message, bot_reply, provider, model, tokens_in, tokens_out) 
+        VALUES (?, ?, 'user', ?, ?, '', ?, ?, 0, 0)
+      `, [sessionId, userId, userText, userText, effectiveProvider, effectiveModel]);
+
+      await db.query(`
+        INSERT INTO chat_logs (session_id, member_id, role, content, user_message, bot_reply, provider, model, tokens_in, tokens_out) 
+        VALUES (?, ?, 'assistant', ?, '', ?, ?, ?, ?, ?)
+      `, [sessionId, userId, aiText, aiText, effectiveProvider, effectiveModel, result.usage?.input || 0, result.usage?.output || 0]);
+      
+      console.log(`✅ Đã lưu hội thoại phiên [${sessionId}] vào chat_logs.`);
+    } catch (dbErr) {
+      console.error('❌ Lỗi khi lưu chat log vào DB:', dbErr.message);
+    }
 
     res.json(result);
   } catch (err) {

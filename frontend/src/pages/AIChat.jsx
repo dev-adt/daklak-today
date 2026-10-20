@@ -97,9 +97,11 @@ export const AIChat = () => {
         setSessions(list);
         
         if (selectFirst) {
-          newChatSession();
-        } else if (list.length === 0) {
-          newChatSession();
+          if (list.length > 0) {
+            selectSession(list[0].session_id);
+          } else {
+            newChatSession();
+          }
         }
       }
     } catch (e) {
