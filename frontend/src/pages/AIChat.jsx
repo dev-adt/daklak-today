@@ -21,7 +21,12 @@ export const AIChat = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [aiConfig, setAiConfig] = useState({ provider: 'Gemini', model: 'gemini-1.5-flash' });
   const [selectedModelOverride, setSelectedModelOverride] = useState(() => {
-    return localStorage.getItem('doson_chat_model_override') || '';
+    const saved = localStorage.getItem('doson_chat_model_override') || '';
+    if (saved.includes('gemini-3') || saved.includes('preview')) {
+      localStorage.removeItem('doson_chat_model_override');
+      return '';
+    }
+    return saved;
   });
 
   const autoSentRef = useRef(false);
@@ -187,8 +192,15 @@ export const AIChat = () => {
       
       const isPremiumTier = user && (user.tier === 'Gold' || user.tier === 'Platinum');
       if (isPremiumTier && selectedModelOverride) {
-        requestProvider = 'openrouter';
-        requestModel = selectedModelOverride;
+        if (selectedModelOverride.startsWith('gemini-')) {
+          requestProvider = 'gemini';
+          requestModel = selectedModelOverride;
+        } else if (selectedModelOverride.startsWith('deepseek/') || selectedModelOverride.startsWith('openai/') || selectedModelOverride.startsWith('anthropic/') || selectedModelOverride.startsWith('google/')) {
+          requestProvider = 'openrouter';
+          requestModel = selectedModelOverride;
+        } else {
+          requestModel = selectedModelOverride;
+        }
       }
 
       const res = await fetch('/api/chat', {
@@ -204,7 +216,16 @@ export const AIChat = () => {
         })
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get('content-type') || '';
+      let data = {};
+      if (contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const rawText = await res.text();
+        const cleanSnippet = rawText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+        throw new Error(`Máy chủ phản hồi HTTP ${res.status}: ${cleanSnippet || res.statusText || 'Lỗi định dạng phản hồi'}`);
+      }
+
       if (!res.ok) {
         throw new Error(data.error || t('error_ai_call'));
       }
@@ -564,11 +585,12 @@ export const AIChat = () => {
                   }}
                 >
                   <option value="">{t('system_default_model')}</option>
-                  <option value="deepseek/deepseek-chat">DeepSeek V3 (Chat)</option>
-                  <option value="deepseek/deepseek-r1">DeepSeek R1 (Suy luận)</option>
-                  <option value="openai/gpt-4o">OpenAI GPT-4o</option>
-                  <option value="anthropic/claude-opus-4">Claude Opus 4</option>
-                  <option value="google/gemini-3-flash-preview">Gemini 3 Flash</option>
+                  <option value="gemini-1.5-flash">Google Gemini 1.5 Flash (Tốc độ cao)</option>
+                  <option value="gemini-2.0-flash">Google Gemini 2.0 Flash (Thông minh)</option>
+                  <option value="openai/gpt-4o-mini">OpenAI GPT-4o Mini (OpenRouter)</option>
+                  <option value="deepseek/deepseek-chat">DeepSeek V3 (OpenRouter)</option>
+                  <option value="deepseek/deepseek-r1">DeepSeek R1 (OpenRouter)</option>
+                  <option value="anthropic/claude-3-5-sonnet">Claude 3.5 Sonnet (OpenRouter)</option>
                 </select>
               </div>
             ) : (

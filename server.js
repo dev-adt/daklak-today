@@ -3738,6 +3738,35 @@ app.delete('/api/chat/session/:sessionId', anyAuthMiddleware, async (req, res) =
   }
 });
 
+// Helper phân tích an toàn phản hồi từ AI Provider (tránh crash JSON khi gặp HTML/Cloudflare 403/500/502)
+async function safeParseApiResponse(response, providerName) {
+  const contentType = response.headers.get('content-type') || '';
+  const text = await response.text();
+  
+  let json = null;
+  if (contentType.includes('application/json')) {
+    try {
+      json = JSON.parse(text);
+    } catch (e) {}
+  }
+  
+  if (!response.ok) {
+    if (json && json.error) {
+      const errMsg = typeof json.error === 'string' ? json.error : (json.error.message || JSON.stringify(json.error));
+      throw new Error(`[${providerName} - Lỗi ${response.status}] ${errMsg}`);
+    }
+    const cleanSnippet = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+    throw new Error(`[${providerName} - Lỗi ${response.status}] ${cleanSnippet || response.statusText || 'Máy chủ AI trả về trang HTML thay vì JSON'}`);
+  }
+  
+  if (!json) {
+    const cleanSnippet = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 150);
+    throw new Error(`[${providerName}] Phản hồi không phải JSON: ${cleanSnippet || text.slice(0, 100)}`);
+  }
+  
+  return json;
+}
+
 app.post('/api/chat', anyAuthMiddleware, async (req, res) => {
   // Kiểm tra hội viên phải được phê duyệt
   if (req.authUser.type === 'member' && req.authUser.status !== 'approved') {
@@ -3769,6 +3798,35 @@ app.post('/api/chat', anyAuthMiddleware, async (req, res) => {
     }
     return getAPIKey(prov);
   };
+
+  // Tự động nhận diện API Key & Smart Routing Fallback
+  let effectiveProvider = String(provider).toLowerCase();
+  let effectiveModel = String(model).trim();
+
+  const geminiKey = getRequestKey('gemini');
+  const openrouterKey = getRequestKey('openrouter');
+
+  // Nếu request gọi OpenRouter nhưng không có OpenRouter Key hoặc key OpenRouter lại là Gemini Key (AIzaSy)
+  if (effectiveProvider === 'openrouter') {
+    if (openrouterKey && openrouterKey.startsWith('AIzaSy')) {
+      console.log('🔄 Phát hiện API Key Google Gemini (AIzaSy) được lưu cho OpenRouter, tự động chuyển tuyến sang Google Gemini.');
+      effectiveProvider = 'gemini';
+    } else if (!openrouterKey && geminiKey) {
+      console.log('🔄 Không có OpenRouter Key nhưng có sẵn Gemini Key, tự động chuyển tuyến sang Google Gemini.');
+      effectiveProvider = 'gemini';
+    }
+  }
+
+  // Chuẩn hóa tên model khi gọi Google Gemini
+  if (effectiveProvider === 'gemini') {
+    effectiveModel = effectiveModel.replace(/^google\//, '');
+    if (effectiveModel.includes('gemini-3') || effectiveModel.includes('preview')) {
+      effectiveModel = 'gemini-1.5-flash';
+    }
+    if (!effectiveModel || effectiveModel === 'gemini') {
+      effectiveModel = 'gemini-1.5-flash';
+    }
+  }
 
   // Lấy context hội viên từ DB cho AI
   let memberContext = system || '';
@@ -3815,83 +3873,84 @@ ${knowledgeText ? `\n${knowledgeText}` : ''}`;
   try {
     let result;
 
-    if (provider === 'anthropic') {
+    if (effectiveProvider === 'anthropic') {
       const activeKey = getRequestKey('anthropic');
       if (!activeKey) throw new Error('Chưa cấu hình API Key cho Anthropic.');
       const r = await fetch('https://api.anthropic.com/v1/messages', {
         method : 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': activeKey, 'anthropic-version': '2023-06-01' },
-        body   : JSON.stringify({ model, max_tokens: 1024, system: memberContext, messages }),
+        headers: { 'Content-Type': 'application/json', 'x-api-key': activeKey, 'anthropic-version': '2023-06-01', 'User-Agent': 'DakLakToday/1.0' },
+        body   : JSON.stringify({ model: effectiveModel, max_tokens: 1024, system: memberContext, messages }),
       });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error.message);
+      const d = await safeParseApiResponse(r, 'Anthropic');
       result = { text: d.content?.[0]?.text || '', usage: { input: d.usage?.input_tokens, output: d.usage?.output_tokens } };
     }
-    else if (provider === 'openai') {
+    else if (effectiveProvider === 'openai') {
       const activeKey = getRequestKey('openai');
       if (!activeKey) throw new Error('Chưa cấu hình API Key cho OpenAI.');
       const msgs = [{ role: 'system', content: memberContext }, ...messages];
       const r = await fetch('https://api.openai.com/v1/chat/completions', {
         method : 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + activeKey },
-        body   : JSON.stringify({ model, max_tokens: 1024, messages: msgs }),
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + activeKey, 'User-Agent': 'DakLakToday/1.0' },
+        body   : JSON.stringify({ model: effectiveModel, max_tokens: 1024, messages: msgs }),
       });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error.message);
+      const d = await safeParseApiResponse(r, 'OpenAI');
       result = { text: d.choices?.[0]?.message?.content || '', usage: { input: d.usage?.prompt_tokens, output: d.usage?.completion_tokens } };
     }
-    else if (provider === 'gemini') {
+    else if (effectiveProvider === 'gemini') {
       const activeKey = getRequestKey('gemini');
-      if (!activeKey) throw new Error('Chưa cấu hình API Key cho Gemini.');
+      if (!activeKey) throw new Error('Chưa cấu hình API Key cho Google Gemini. Vui lòng vào trang Quản trị > Cấu hình AI để nhập Gemini API Key.');
       const contents = messages.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${activeKey}`, {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${effectiveModel}:generateContent?key=${activeKey}`, {
         method : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'User-Agent': 'DakLakToday/1.0' },
         body   : JSON.stringify({ system_instruction: { parts: [{ text: memberContext }] }, contents, generationConfig: { maxOutputTokens: 1024 } }),
       });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error.message);
+      const d = await safeParseApiResponse(r, 'Gemini');
       result = { text: d.candidates?.[0]?.content?.parts?.[0]?.text || '', usage: { input: d.usageMetadata?.promptTokenCount, output: d.usageMetadata?.candidatesTokenCount } };
     }
-    else if (provider === 'deepseek') {
+    else if (effectiveProvider === 'deepseek') {
       const activeKey = getRequestKey('deepseek');
       if (!activeKey) throw new Error('Chưa cấu hình API Key cho DeepSeek.');
       const msgs = [{ role: 'system', content: memberContext }, ...messages];
       const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
         method : 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + activeKey },
-        body   : JSON.stringify({ model, max_tokens: 1024, messages: msgs }),
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + activeKey, 'User-Agent': 'DakLakToday/1.0' },
+        body   : JSON.stringify({ model: effectiveModel, max_tokens: 1024, messages: msgs }),
       });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error.message);
+      const d = await safeParseApiResponse(r, 'DeepSeek');
       result = { text: d.choices?.[0]?.message?.content || '', usage: { input: d.usage?.prompt_tokens, output: d.usage?.completion_tokens } };
     }
-    else if (provider === 'openrouter') {
+    else if (effectiveProvider === 'openrouter') {
       const activeKey = getRequestKey('openrouter');
-      if (!activeKey) throw new Error('Chưa cấu hình API Key cho OpenRouter.');
+      if (!activeKey) throw new Error('Chưa cấu hình API Key cho OpenRouter. Nếu bạn đang sử dụng Google Gemini Key (AIzaSy...), vui lòng đổi AI Provider sang Google Gemini trong Quản trị.');
       const msgs = [{ role: 'system', content: memberContext }, ...messages];
       const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method : 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + activeKey, 'HTTP-Referer': process.env.SITE_URL || 'https://bizhub.vn', 'X-Title': 'BizHub AI' },
-        body   : JSON.stringify({ model, max_tokens: 1024, messages: msgs }),
+        headers: { 
+          'Content-Type': 'application/json', 
+          Authorization: 'Bearer ' + activeKey, 
+          'HTTP-Referer': process.env.SITE_URL || 'https://dev.daklak.today', 
+          'X-Title': 'DakLak Today AI',
+          'User-Agent': 'DakLakToday/1.0'
+        },
+        body   : JSON.stringify({ model: effectiveModel, max_tokens: 1024, messages: msgs }),
       });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error.message);
+      const d = await safeParseApiResponse(r, 'OpenRouter');
       result = { text: d.choices?.[0]?.message?.content || '', usage: { input: d.usage?.prompt_tokens, output: d.usage?.completion_tokens } };
     }
-    else if (provider === 'ollama') {
+    else if (effectiveProvider === 'ollama') {
       const base = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
       const msgs = [{ role: 'system', content: memberContext }, ...messages];
       const r = await fetch(`${base}/api/chat`, {
         method : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body   : JSON.stringify({ model, stream: false, messages: msgs }),
+        body   : JSON.stringify({ model: effectiveModel, stream: false, messages: msgs }),
       });
-      const d = await r.json();
+      const d = await safeParseApiResponse(r, 'Ollama');
       result = { text: d.message?.content || '', usage: { input: d.prompt_eval_count, output: d.eval_count } };
     }
     else {
-      return res.status(400).json({ error: `Provider "${provider}" không hỗ trợ.` });
+      return res.status(400).json({ error: `Provider "${effectiveProvider}" không hỗ trợ.` });
     }
 
     // Lưu chat log kèm member_id để phân tách lịch sử
@@ -3900,14 +3959,14 @@ ${knowledgeText ? `\n${knowledgeText}` : ''}`;
       const userId = req.authUser.id;
       const lastMsg = messages[messages.length - 1];
       await db.query('INSERT INTO chat_logs (session_id,member_id,role,content,provider,model,tokens_in,tokens_out) VALUES (?,?,?,?,?,?,?,?)',
-        [sessionId, userId, 'user', lastMsg?.content || '', provider, model, 0, 0]);
+        [sessionId, userId, 'user', lastMsg?.content || '', effectiveProvider, effectiveModel, 0, 0]);
       await db.query('INSERT INTO chat_logs (session_id,member_id,role,content,provider,model,tokens_in,tokens_out) VALUES (?,?,?,?,?,?,?,?)',
-        [sessionId, userId, 'assistant', result.text, provider, model, result.usage?.input || 0, result.usage?.output || 0]);
+        [sessionId, userId, 'assistant', result.text, effectiveProvider, effectiveModel, result.usage?.input || 0, result.usage?.output || 0]);
     } catch {}
 
     res.json(result);
   } catch (err) {
-    console.error(`[${provider}] Error:`, err.message);
+    console.error(`[${effectiveProvider || provider}] Error:`, err.message);
     res.status(500).json({ error: err.message });
   }
 });
