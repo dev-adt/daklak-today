@@ -3752,7 +3752,10 @@ async function safeParseApiResponse(response, providerName) {
   
   if (!response.ok) {
     if (json && json.error) {
-      const errMsg = typeof json.error === 'string' ? json.error : (json.error.message || JSON.stringify(json.error));
+      let errMsg = typeof json.error === 'string' ? json.error : (json.error.message || JSON.stringify(json.error));
+      if (response.status === 401 && errMsg.toLowerCase().includes('user not found')) {
+        errMsg = 'API Key OpenRouter không hợp lệ hoặc đã bị xóa/không tồn tại trên hệ thống OpenRouter (User not found). Vui lòng tạo API Key mới tại openrouter.ai/settings/keys và lưu lại vào .env.';
+      }
       throw new Error(`[${providerName} - Lỗi ${response.status}] ${errMsg}`);
     }
     const cleanSnippet = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
@@ -3923,7 +3926,7 @@ ${knowledgeText ? `\n${knowledgeText}` : ''}`;
     else if (effectiveProvider === 'openrouter') {
       const activeKey = getRequestKey('openrouter');
       if (!activeKey) throw new Error('Chưa cấu hình API Key cho OpenRouter. Nếu bạn đang sử dụng Google Gemini Key (AIzaSy...), vui lòng đổi AI Provider sang Google Gemini trong Quản trị.');
-      const msgs = [{ role: 'system', content: memberContext }, ...messages];
+      const fetchSignal = (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) ? AbortSignal.timeout(25000) : undefined;
       const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method : 'POST',
         headers: { 
@@ -3934,6 +3937,7 @@ ${knowledgeText ? `\n${knowledgeText}` : ''}`;
           'User-Agent': 'DakLakToday/1.0'
         },
         body   : JSON.stringify({ model: effectiveModel, max_tokens: 1024, messages: msgs }),
+        signal : fetchSignal
       });
       const d = await safeParseApiResponse(r, 'OpenRouter');
       result = { text: d.choices?.[0]?.message?.content || '', usage: { input: d.usage?.prompt_tokens, output: d.usage?.completion_tokens } };
@@ -3967,6 +3971,9 @@ ${knowledgeText ? `\n${knowledgeText}` : ''}`;
     res.json(result);
   } catch (err) {
     console.error(`[${effectiveProvider || provider}] Error:`, err.message);
+    if (err.name === 'TimeoutError' || err.name === 'AbortError' || (err.message && err.message.toLowerCase().includes('timeout'))) {
+      return res.status(504).json({ error: 'Quá thời gian chờ phản hồi từ nhà cung cấp AI (quá 25s). Vui lòng thử lại hoặc chọn mô hình khác.' });
+    }
     res.status(500).json({ error: err.message });
   }
 });
