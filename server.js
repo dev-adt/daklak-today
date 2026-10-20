@@ -3968,6 +3968,7 @@ ${knowledgeText ? `\n${knowledgeText}` : ''}`;
     else if (effectiveProvider === 'openrouter') {
       const activeKey = getRequestKey('openrouter');
       if (!activeKey) throw new Error('Chưa cấu hình API Key cho OpenRouter. Nếu bạn đang sử dụng Google Gemini Key (AIzaSy...), vui lòng đổi AI Provider sang Google Gemini trong Quản trị.');
+      const msgs = [{ role: 'system', content: memberContext }, ...messages];
       const fetchSignal = (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) ? AbortSignal.timeout(25000) : undefined;
       const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method : 'POST',
