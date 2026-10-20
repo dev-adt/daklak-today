@@ -2972,6 +2972,32 @@
   box-shadow: 0 14px 30px rgba(233, 144, 53, 0.42);
 }
 
+.gt-btn-secondary {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  color: var(--primary-coffee, #2C1810) !important;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 14px 28px;
+  border-radius: var(--gt-radius-pill);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(122, 62, 29, 0.22);
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(59, 36, 23, 0.08);
+  transition: all 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.gt-btn-secondary:hover {
+  background: #FFFFFF;
+  border-color: var(--gt-orange);
+  color: var(--gt-orange) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(233, 144, 53, 0.2);
+}
+
 .gt-flight-trail {
   display: flex;
   align-items: center;

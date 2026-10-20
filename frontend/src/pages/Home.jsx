@@ -307,87 +307,87 @@ const PARTNER_COMPANIES = [
   { id: 7, name: 'MD Homes', logo: '/images/companies/md-homes.png' }
 ];
 
-// Danh sách điểm đến nổi bật (Globe Trekker layout)
+// Danh sách Trụ cột Đầu tư & Điểm đến Tiêu biểu (Globe Trekker layout)
 const TOP_DESTINATIONS = [
   {
     id: 1,
-    title: 'Thác Dray Nur Hùng Vĩ',
-    titleEn: 'Majestic Dray Nur Waterfall',
-    location: 'Krông Ana, Đắk Lắk',
-    locationEn: 'Krong Ana, Dak Lak',
-    image: '/images/daklak/daklak_thac_dray_nur.jpg',
-    category: 'waterfalls',
-    link: '/posts?category=Khám%20phá%20Đắk%20Lắk'
-  },
-  {
-    id: 2,
-    title: 'Đồi Cà Phê Buôn Ma Thuột',
-    titleEn: 'Buon Ma Thuot Coffee Highlands',
-    location: 'Cư M’gar & TP. Buôn Ma Thuột',
-    locationEn: 'Cu Mgar & Buon Ma Thuot',
+    title: 'Thủ Phủ Cà Phê & Chế Biến Sâu',
+    titleEn: 'Global Coffee Capital & Deep Processing',
+    location: 'TP. Buôn Ma Thuột & Cư M’gar',
+    locationEn: 'Buon Ma Thuot & Cu Mgar',
     image: '/images/daklak/daklak_doi_ca_phe.jpg',
     category: 'coffee',
     link: '/posts?category=Cà%20phê%20Đắk%20Lắk'
   },
   {
+    id: 2,
+    title: 'Cụm Công Nghiệp & Trung Tâm Logistics ICD',
+    titleEn: 'Inland Port & Logistics Infrastructure',
+    location: 'Vành đai Kinh tế Buôn Ma Thuột',
+    locationEn: 'Buon Ma Thuot Economic Ring',
+    image: '/images/daklak/daklak_dau_tu_logistics.jpg',
+    category: 'investment',
+    link: '/posts?category=Đầu%20tư%20&%20Dự%20án'
+  },
+  {
     id: 3,
-    title: 'Không Gian Văn Hóa Cồng Chiêng',
-    titleEn: 'Gong Cultural Heritage (UNESCO)',
-    location: 'Buôn Đôn & Buôn AKô Dhông',
-    locationEn: 'Buon Don & Ako Dhong',
-    image: '/images/daklak/daklak_cong_chieng.jpg',
-    category: 'culture',
-    link: '/posts?category=Văn%20hóa%20Đắk%20Lắk'
+    title: 'Vùng Nông Nghiệp Công Nghệ Cao Ea Kar',
+    titleEn: 'High-Tech Agri Zone & Global Export',
+    location: 'Ea Kar & Krông Pắc, Đắk Lắk',
+    locationEn: 'Ea Kar & Krong Pac, Dak Lak',
+    image: '/images/daklak/daklak_ca_phe.jpg',
+    category: 'agritech',
+    link: '/posts?category=Đầu%20tư%20&%20Dự%20án'
   },
   {
     id: 4,
-    title: 'Hành Lang Rừng Nối Biển',
-    titleEn: 'Highland-To-Coast Corridor',
-    location: 'Cao tốc Buôn Ma Thuột - Duyên Hải',
-    locationEn: 'Expressway Buon Ma Thuot - Coast',
+    title: 'Hành Lang Cao Tốc Buôn Ma Thuột - Khánh Hòa',
+    titleEn: 'Expressway Corridor To Deep Seaports',
+    location: 'Trục Huyết Mạch Kết Nối Cảng Biển',
+    locationEn: 'Arterial Link to International Ports',
     image: '/images/daklak/daklak_bien_ganh_da_dia.jpg',
-    category: 'ocean',
-    link: '/posts?category=Khám%20phá%20Đắk%20Lắk'
+    category: 'investment',
+    link: '/posts?category=Đầu%20tư%20&%20Dự%20án'
   },
   {
     id: 5,
-    title: 'Hồ Lắk & Nhà Rông Ê Đê',
-    titleEn: 'Lake Lak & Ede Longhouse',
-    location: 'Huyện Lắk, Đắk Lắk',
-    locationEn: 'Lak District, Dak Lak',
-    image: '/images/daklak/daklak_nha_rong_ede.jpg',
-    category: 'culture',
-    link: '/posts?category=Văn%20hóa%20Đắk%20Lắk'
+    title: 'Thác Dray Nur Hùng Vĩ & Du Lịch Sinh Thái',
+    titleEn: 'Majestic Dray Nur & Eco-Tourism Belt',
+    location: 'Krông Ana, Đắk Lắk',
+    locationEn: 'Krong Ana, Dak Lak',
+    image: '/images/daklak/daklak_thac_dray_nur.jpg',
+    category: 'tourism',
+    link: '/posts?category=Khám%20phá%20Đắk%20Lắk'
   },
   {
     id: 6,
-    title: 'Thưởng Thức Cà Phê Đặc Sản',
-    titleEn: 'Specialty Coffee Roastery',
-    location: 'Bảo tàng Cà phê, TP. Buôn Ma Thuột',
-    locationEn: 'Coffee Museum, Buon Ma Thuot',
-    image: '/images/daklak/daklak_ca_phe.jpg',
+    title: 'Bảo Tàng Thế Giới Cà Phê & Đô Thị Bản Sắc',
+    titleEn: 'World Coffee Museum & Eco-Urban Hub',
+    location: 'TP. Buôn Ma Thuột, Đắk Lắk',
+    locationEn: 'Buon Ma Thuot, Dak Lak',
+    image: '/images/daklak/daklak_doi_ca_phe.jpg',
     category: 'coffee',
     link: '/posts?category=Cà%20phê%20Đắk%20Lắk'
   },
   {
     id: 7,
-    title: 'Lễ Hội Truyền Thống Đại Ngàn',
-    titleEn: 'Highland Traditional Festivals',
-    location: 'Các buôn làng Tây Nguyên',
-    locationEn: 'Central Highland Villages',
-    image: '/images/daklak/daklak_le_hoi_nha_rong.jpg',
-    category: 'culture',
-    link: '/posts?category=Văn%20hóa%20Đắk%20Lắk'
+    title: 'Tổ Hợp Năng Lượng Tái Tạo & Điện Gió',
+    titleEn: 'Renewable Wind Energy & Green Power',
+    location: 'Ea H\'leo & Krông Búk, Đắk Lắk',
+    locationEn: 'Ea Hleo & Krong Buk, Dak Lak',
+    image: '/images/daklak/daklak_dau_tu_logistics.jpg',
+    category: 'investment',
+    link: '/posts?category=Đầu%20tư%20&%20Dự%20án'
   },
   {
     id: 8,
-    title: 'Hạ Tầng Logistics & Trung Tâm ICD',
-    titleEn: 'Inland Port & Logistics Hub',
-    location: 'Cụm Công Nghiệp & Logistics Đắk Lắk',
-    locationEn: 'Industrial & Logistics Complex',
-    image: '/images/daklak/daklak_dau_tu_logistics.jpg',
-    category: 'ocean',
-    link: '/posts?category=Đầu%20tư%20&%20Dự%20án'
+    title: 'Không Gian Văn Hóa Cồng Chiêng UNESCO',
+    titleEn: 'UNESCO Gong Heritage & Lake Lak Ede Village',
+    location: 'Huyện Lắk & Buôn Đôn, Đắk Lắk',
+    locationEn: 'Lak District & Buon Don, Dak Lak',
+    image: '/images/daklak/daklak_cong_chieng.jpg',
+    category: 'tourism',
+    link: '/posts?category=Văn%20hóa%20Đắk%20Lắk'
   }
 ];
 
@@ -1108,32 +1108,45 @@ export const Home = () => {
             {/* Left Column: Heading, Subtitle & Action (Enters from Left) */}
             <div className="gt-hero-left scroll-reveal scroll-reveal-left">
               <h1 className="gt-hero-title">
-                {currentLang === 'en' ? 'Discover Dak Lak' : 'Khám Phá Đắk Lắk'}<br />
+                {currentLang === 'en' ? 'Dak Lak – Investment Hub' : 'Đắk Lắk – Tâm Điểm Đầu Tư'}<br />
                 <span className="gt-hero-highlight">
-                  {currentLang === 'en' ? 'Hidden' : 'Đại Ngàn'}
+                  {currentLang === 'en' ? 'Economic & Cultural' : 'Kinh Tế & Bản Sắc'}
                   <svg className="gt-highlight-curve" viewBox="0 0 180 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 14C45 4 135 4 176 14" stroke="#E99035" strokeWidth="4" strokeLinecap="round" />
                   </svg>
-                </span> {currentLang === 'en' ? 'Wonders' : 'Kỳ Vĩ'}
+                </span> {currentLang === 'en' ? 'Powerhouse' : 'Tây Nguyên'}
               </h1>
 
               <p className="gt-hero-desc">
                 {currentLang === 'en'
-                  ? 'Find unique moments and majestic natural wonders across the Buon Ma Thuot coffee capital, mythical waterfalls, and timeless indigenous gong heritage.'
-                  : 'Trải nghiệm những khoảnh khắc nguyên sơ và hùng vĩ giữa thủ phủ cà phê Buôn Ma Thuột, thác nước Dray Nur kỳ ảo, văn hóa cồng chiêng ngàn đời và những hành trình bất tận.'}
+                  ? 'Gateway to Central Highlands economic potential: Global coffee capital Buon Ma Thuot, expressway logistics corridors, high-tech agri-processing, and a thriving enterprise ecosystem.'
+                  : 'Cửa ngõ hội tụ tiềm năng kinh tế Tây Nguyên: Thủ phủ cà phê toàn cầu Buôn Ma Thuột, hành lang cao tốc kết nối Duyên hải, vùng nông sản chế biến sâu tỷ đô và hệ sinh thái doanh nghiệp bứt phá.'}
               </p>
 
               <div className="gt-hero-action-row">
                 <a 
-                  href="#top-destinations" 
+                  href="#tin-tuc-tieu-diem" 
                   className="gt-btn-primary"
                   onClick={(e) => {
                     e.preventDefault();
-                    const el = document.getElementById('top-destinations');
+                    const el = document.getElementById('tin-tuc-tieu-diem');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }}
                 >
-                  <span>{currentLang === 'en' ? 'Plan your trip' : 'Lên lịch trình khám phá'}</span>
+                  <i className="ti ti-chart-arrows-vertical" />
+                  <span>{currentLang === 'en' ? 'Investment Opportunities' : 'Cơ Hội Đầu Tư & Tin Tức'}</span>
+                </a>
+                <a 
+                  href="#he-sinh-thai-doanh-nghiep" 
+                  className="gt-btn-secondary"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.getElementById('he-sinh-thai-doanh-nghiep');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  <i className="ti ti-building" />
+                  <span>{currentLang === 'en' ? 'Enterprise Ecosystem' : 'Hệ Sinh Thái Doanh Nghiệp'}</span>
                 </a>
                 <div className="gt-flight-trail">
                   <svg className="gt-flight-svg" viewBox="0 0 140 40" fill="none">
@@ -1203,20 +1216,20 @@ export const Home = () => {
             <div className="gt-dest-header scroll-reveal scroll-reveal-down">
               <div className="gt-dest-header-left">
                 <h2 className="gt-section-title">
-                  {currentLang === 'en' ? 'Top Destinations' : 'Top Điểm Đến'}
+                  {currentLang === 'en' ? 'Key Investment Hubs & Regional Highlights' : 'Trụ Cột Đầu Tư & Điểm Đến Tiêu Biểu'}
                 </h2>
                 <div className="gt-dest-tabs">
                   <button 
                     className={`gt-filter-pill ${activeDestTab === 'all' ? 'active' : ''}`}
                     onClick={() => setActiveDestTab('all')}
                   >
-                    {currentLang === 'en' ? 'Popular' : 'Phổ biến'}
+                    {currentLang === 'en' ? 'All Hubs' : 'Tất cả lĩnh vực'}
                   </button>
                   <button 
-                    className={`gt-filter-pill ${activeDestTab === 'waterfalls' ? 'active' : ''}`}
-                    onClick={() => setActiveDestTab('waterfalls')}
+                    className={`gt-filter-pill ${activeDestTab === 'investment' ? 'active' : ''}`}
+                    onClick={() => setActiveDestTab('investment')}
                   >
-                    {currentLang === 'en' ? 'Waterfalls & Forest' : 'Thác nước & Rừng'}
+                    {currentLang === 'en' ? 'Investment & Logistics' : 'Đầu tư & Logistics'}
                   </button>
                   <button 
                     className={`gt-filter-pill ${activeDestTab === 'coffee' ? 'active' : ''}`}
@@ -1225,21 +1238,21 @@ export const Home = () => {
                     {currentLang === 'en' ? 'Coffee Capital' : 'Thủ phủ Cà phê'}
                   </button>
                   <button 
-                    className={`gt-filter-pill ${activeDestTab === 'culture' ? 'active' : ''}`}
-                    onClick={() => setActiveDestTab('culture')}
+                    className={`gt-filter-pill ${activeDestTab === 'agritech' ? 'active' : ''}`}
+                    onClick={() => setActiveDestTab('agritech')}
                   >
-                    {currentLang === 'en' ? 'Culture & Gong' : 'Văn hóa & Cồng chiêng'}
+                    {currentLang === 'en' ? 'High-Tech Agri' : 'Nông nghiệp CNC'}
                   </button>
                   <button 
-                    className={`gt-filter-pill ${activeDestTab === 'ocean' ? 'active' : ''}`}
-                    onClick={() => setActiveDestTab('ocean')}
+                    className={`gt-filter-pill ${activeDestTab === 'tourism' ? 'active' : ''}`}
+                    onClick={() => setActiveDestTab('tourism')}
                   >
-                    {currentLang === 'en' ? 'To the Sea' : 'Nối biển Duyên hải'}
+                    {currentLang === 'en' ? 'Heritage & Eco-Tourism' : 'Bản sắc & Sinh thái'}
                   </button>
                 </div>
               </div>
-              <Link to="/posts?category=Khám%20phá%20Đắk%20Lắk" className="gt-dest-view-all">
-                <span>{currentLang === 'en' ? 'Explore all destinations' : 'Xem tất cả điểm đến'}</span>
+              <Link to="/posts?category=Đầu%20tư%20&%20Dự%20án" className="gt-dest-view-all">
+                <span>{currentLang === 'en' ? 'Explore all opportunities' : 'Khám phá tất cả cơ hội'}</span>
                 <i className="ti ti-arrow-right" />
               </Link>
             </div>

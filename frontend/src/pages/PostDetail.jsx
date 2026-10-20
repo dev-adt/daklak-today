@@ -18,6 +18,25 @@ export const PostDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // One Click to Discover: Bài viết liên quan
+  const [relatedPosts, setRelatedPosts] = useState([]);
+
+  // One Click to Share: Toast thông báo sao chép
+  const [toastMessage, setToastMessage] = useState('');
+
+  // One Click to Act & Connect Modal
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [actionModalType, setActionModalType] = useState('dossier'); // 'dossier' | 'interest' | 'connect'
+  const [actionForm, setActionForm] = useState({
+    fullName: '',
+    phone: '',
+    email: '',
+    companyName: '',
+    notes: ''
+  });
+  const [actionSubmitting, setActionSubmitting] = useState(false);
+  const [actionSuccess, setActionSuccess] = useState(false);
+
   // Xem chi tiết hội viên đăng tải
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberDetails, setMemberDetails] = useState(null);
@@ -36,6 +55,113 @@ export const PostDetail = () => {
   const [isMemberDescTranslated, setIsMemberDescTranslated] = useState(false);
   const [loadingMemberDescTranslate, setLoadingMemberDescTranslate] = useState(false);
   const [memberTranslateTargetLang, setMemberTranslateTargetLang] = useState(currentLang === 'vi' ? 'en' : currentLang);
+
+  // One Click to Share Handlers
+  const handleCopyLink = () => {
+    const url = window.location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url)
+        .then(() => {
+          setToastMessage(currentLang === 'en' ? 'Article link copied to clipboard!' : 'Đã sao chép liên kết bài viết thành công!');
+          setTimeout(() => setToastMessage(''), 2500);
+        })
+        .catch(() => fallbackCopy(url));
+    } else {
+      fallbackCopy(url);
+    }
+  };
+
+  const fallbackCopy = (text) => {
+    try {
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setToastMessage(currentLang === 'en' ? 'Article link copied to clipboard!' : 'Đã sao chép liên kết bài viết thành công!');
+      setTimeout(() => setToastMessage(''), 2500);
+    } catch (e) {
+      alert(currentLang === 'en' ? 'Article link: ' + text : 'Liên kết bài viết: ' + text);
+    }
+  };
+
+  const handleShareFacebook = () => {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'noopener,noreferrer,width=640,height=560');
+  };
+
+  const handleShareZalo = () => {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://zalo.me/share?url=${url}`, '_blank', 'noopener,noreferrer,width=640,height=560');
+  };
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post ? (isTranslated ? translatedTitle : post.title) : 'DakLak.today',
+          text: post ? (isTranslated ? translatedSummary : post.summary || post.title) : '',
+          url: window.location.href
+        });
+      } catch (e) {}
+    } else {
+      handleCopyLink();
+    }
+  };
+
+  // One Click to Act & Connect Open Modal
+  const openActionModal = (type) => {
+    setActionModalType(type);
+    setActionSuccess(false);
+    setActionForm({
+      fullName: '',
+      phone: '',
+      email: '',
+      companyName: '',
+      notes: ''
+    });
+    setShowActionModal(true);
+  };
+
+  const handleActionSubmit = async (e) => {
+    e.preventDefault();
+    if (!actionForm.fullName || !actionForm.phone || !actionForm.email) {
+      alert(currentLang === 'en' ? 'Please fill in Name, Phone, and Email (*)' : 'Vui lòng điền Họ tên, Số điện thoại và Email (*)');
+      return;
+    }
+    setActionSubmitting(true);
+    try {
+      let leadSubject = '';
+      if (actionModalType === 'dossier') leadSubject = `[1-Click Act] Yêu cầu Hồ sơ Dự án: ${post.title}`;
+      else if (actionModalType === 'interest') leadSubject = `[1-Click Act] Đăng ký Quan tâm Đầu tư: ${post.title}`;
+      else leadSubject = `[1-Click Connect] Kết nối Doanh nghiệp: ${post.company_name || 'Hội viên'} - Bài viết: ${post.title}`;
+
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: actionForm.fullName,
+          phone: actionForm.phone,
+          email: actionForm.email,
+          city: 'Đắk Lắk',
+          companyName: actionForm.companyName || 'Cá nhân / Nhà đầu tư',
+          memberType: actionModalType === 'dossier' ? 'Hồ sơ dự án' : actionModalType === 'interest' ? 'Quan tâm đầu tư' : 'Kết nối doanh nghiệp',
+          notes: `${leadSubject}. Ghi chú: ${actionForm.notes || 'Không có'}`
+        })
+      });
+      if (res.ok) {
+        setActionSuccess(true);
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Có lỗi xảy ra khi gửi thông tin');
+      }
+    } catch (err) {
+      alert('Không thể kết nối máy chủ: ' + err.message);
+    } finally {
+      setActionSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     setIsTranslated(false);
@@ -221,6 +347,28 @@ export const PostDetail = () => {
     fetchPost();
   }, [id, token]);
 
+  // One Click to Discover: Tải các bài viết và cơ hội cùng chuyên đề
+  useEffect(() => {
+    if (!post) return;
+    const fetchRelated = async () => {
+      try {
+        const catQuery = post.category ? `&category=${encodeURIComponent(post.category)}` : '';
+        const res = await fetch(`/api/posts?limit=6${catQuery}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.data)) {
+            const currentIdentifier = post.slug || String(post.id);
+            const filtered = data.data.filter(p => (p.slug || String(p.id)) !== currentIdentifier).slice(0, 3);
+            setRelatedPosts(filtered);
+          }
+        }
+      } catch (err) {
+        console.warn('Lỗi tải bài viết liên quan:', err);
+      }
+    };
+    fetchRelated();
+  }, [post]);
+
   if (loading) {
     return (
       <div className="public-body" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -351,11 +499,17 @@ export const PostDetail = () => {
                 </span>
               )}
               
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '14px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '11px', background: 'rgba(2, 132, 199, 0.08)', color: 'var(--primary-dark)', border: '1px solid rgba(2, 132, 199, 0.15)', padding: '3px 10px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
                   {post.type === 'offer' ? t('type_offer') : post.type === 'demand' ? t('type_demand') : post.type === 'cooperate' ? t('type_cooperate') : (post.type || t('type_general_news'))}
                 </span>
-                <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>{getCategoryLabel(post.category, currentLang) || t('category_default')}</span>
+                <Link 
+                  to={`/posts?category=${encodeURIComponent(post.category || '')}`}
+                  className="post-detail-category-link"
+                  title={currentLang === 'en' ? 'One Click to explore this category' : 'Một nhấp để khám phá chuyên mục này'}
+                >
+                  <i className="ti ti-folder" /> {getCategoryLabel(post.category, currentLang) || t('category_default')}
+                </Link>
               </div>
 
               <h1 className="post-detail-title">
@@ -412,6 +566,29 @@ export const PostDetail = () => {
                   <i className={loadingTranslate ? "ti ti-loader animate-spin" : "ti ti-language"}></i>
                   {loadingTranslate ? '...' : isTranslated ? t('translate_view_original') : t('translate_button')}
                 </button>
+              </div>
+
+              {/* One Click to Share: Thanh chia sẻ nhanh đầu bài */}
+              <div className="post-share-dock">
+                <span className="post-share-label">
+                  <i className="ti ti-share" /> {currentLang === 'en' ? 'Share in 1-Click:' : 'Chia sẻ nhanh 1-Click:'}
+                </span>
+                <div className="post-share-buttons">
+                  <button onClick={handleShareFacebook} className="post-share-btn fb" title="Chia sẻ qua Facebook">
+                    <i className="ti ti-brand-facebook" /> Facebook
+                  </button>
+                  <button onClick={handleShareZalo} className="post-share-btn zalo" title="Chia sẻ qua Zalo">
+                    <span className="zalo-text-icon">Z</span> Zalo
+                  </button>
+                  <button onClick={handleCopyLink} className="post-share-btn copy" title="Sao chép liên kết bài viết">
+                    <i className="ti ti-link" /> {currentLang === 'en' ? 'Copy Link' : 'Sao chép link'}
+                  </button>
+                  {typeof navigator !== 'undefined' && navigator.share && (
+                    <button onClick={handleNativeShare} className="post-share-btn native" title="Chia sẻ trên thiết bị">
+                      <i className="ti ti-device-mobile" /> {currentLang === 'en' ? 'Share' : 'Chia sẻ'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -473,27 +650,81 @@ export const PostDetail = () => {
                     const cleanTag = typeof tag === 'string' ? tag.trim() : String(tag);
                     if (!cleanTag) return null;
                     return (
-                      <span 
+                      <Link 
                         key={idx}
-                        style={{
-                          fontSize: '12px',
-                          color: '#0284c7',
-                          background: 'rgba(2, 132, 199, 0.08)',
-                          border: '1px solid rgba(2, 132, 199, 0.2)',
-                          padding: '3px 10px',
-                          borderRadius: '20px',
-                          fontWeight: 600
-                        }}
+                        to={`/posts?search=${encodeURIComponent(cleanTag.replace(/^#/, ''))}`}
+                        className="post-detail-hashtag-link"
+                        title={currentLang === 'en' ? `Click to explore #${cleanTag.replace(/^#/, '')}` : `Một nhấp để khám phá từ khóa #${cleanTag.replace(/^#/, '')}`}
                       >
                         #{cleanTag.replace(/^#/, '')}
-                      </span>
+                      </Link>
                     );
                   })}
                 </div>
               )}
+
+              {/* One Click to Share: Thanh chia sẻ nhanh cuối bài */}
+              <div className="post-share-dock" style={{ marginTop: '24px' }}>
+                <span className="post-share-label">
+                  <i className="ti ti-share" /> {currentLang === 'en' ? 'Share this article:' : 'Chia sẻ bài viết:'}
+                </span>
+                <div className="post-share-buttons">
+                  <button onClick={handleShareFacebook} className="post-share-btn fb" title="Chia sẻ qua Facebook">
+                    <i className="ti ti-brand-facebook" /> Facebook
+                  </button>
+                  <button onClick={handleShareZalo} className="post-share-btn zalo" title="Chia sẻ qua Zalo">
+                    <span className="zalo-text-icon">Z</span> Zalo
+                  </button>
+                  <button onClick={handleCopyLink} className="post-share-btn copy" title="Sao chép liên kết">
+                    <i className="ti ti-link" /> {currentLang === 'en' ? 'Copy Link' : 'Sao chép link'}
+                  </button>
+                  {typeof navigator !== 'undefined' && navigator.share && (
+                    <button onClick={handleNativeShare} className="post-share-btn native" title="Chia sẻ trên thiết bị">
+                      <i className="ti ti-device-mobile" /> {currentLang === 'en' ? 'Share' : 'Chia sẻ'}
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* Bottom Horizontal Card: Author & Contact Details */}
+            {/* ========================================================
+                ONE CLICK TO ACT: HÀNH ĐỘNG ĐẦU TƯ & HỒ SƠ DỰ ÁN
+                ======================================================== */}
+            <div className="post-action-box">
+              <div className="post-action-box-inner">
+                <div className="post-action-info">
+                  <div className="post-action-badge">
+                    <i className="ti ti-briefcase" /> {currentLang === 'en' ? 'One Click to Act • Investment & Business' : 'Hành Động Đầu Tư 1-Click'}
+                  </div>
+                  <h3 className="post-action-title">
+                    {currentLang === 'en' ? 'Request Project Dossier or Register Investment Interest' : 'Nhận Hồ Sơ Dự Án hoặc Đăng Ký Quan Tâm Đầu Tư'}
+                  </h3>
+                  <p className="post-action-desc">
+                    {currentLang === 'en'
+                      ? 'Interested in business partnerships, agricultural value chains, or investment incentives in Dak Lak? Submit your request in 1 click to receive official dossiers and direct support.'
+                      : 'Độc giả và nhà đầu tư có thể yêu cầu hồ sơ dự án chi tiết, thông tin xúc tiến thương mại hoặc đăng ký quan tâm trực tiếp trong 1 nhấp để được kết nối sớm nhất.'}
+                  </p>
+                </div>
+                <div className="post-action-buttons">
+                  <button 
+                    onClick={() => openActionModal('dossier')} 
+                    className="post-act-btn primary"
+                  >
+                    <i className="ti ti-file-download" />
+                    <span>{currentLang === 'en' ? 'Request Project Dossier' : 'Yêu Cầu Hồ Sơ Dự Án'}</span>
+                  </button>
+                  <button 
+                    onClick={() => openActionModal('interest')} 
+                    className="post-act-btn secondary"
+                  >
+                    <i className="ti ti-chart-pie" />
+                    <span>{currentLang === 'en' ? 'Register Investment Interest' : 'Đăng Ký Quan Tâm'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Horizontal Card: Author & Contact Details (One Click to Connect) */}
             <div className="glass-card post-detail-author-card">
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '24px' }}>
                 
@@ -546,14 +777,26 @@ export const PostDetail = () => {
                   </div>
                 </div>
 
-                {/* Middle: Contact Info */}
+                {/* Middle: Contact Info & One Click to Connect */}
                 <div style={{ flex: '1 1 300px', padding: '0 10px' }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                     {t('contact_info_label')}
                   </div>
-                  <div style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                     <i className="ti ti-info-square" style={{ color: 'var(--primary-dark)' }}></i>
-                    {post.contact_info || (currentLang === 'en' ? 'Contact publisher / editorial board' : 'Liên hệ tác giả / ban biên tập')}
+                    {post.contact_info || (currentLang === 'en' ? 'Contact publisher / editorial board' : 'Ban biên tập & Xúc tiến DakLak.today')}
+                  </div>
+                  
+                  {/* One Click to Connect Actions */}
+                  <div className="post-connect-actions">
+                    {post.contact_info && post.contact_info.replace(/[^0-9]/g, '').length >= 9 && (
+                      <a href={`tel:${post.contact_info.replace(/[^0-9]/g, '')}`} className="post-connect-btn phone" title="Gọi trực tiếp trong 1 nhấp">
+                        <i className="ti ti-phone-call" /> {currentLang === 'en' ? 'Call Directly' : 'Gọi Trực Tiếp'}
+                      </a>
+                    )}
+                    <button onClick={() => openActionModal('connect')} className="post-connect-btn partner" title="Gửi yêu cầu hợp tác trong 1 nhấp">
+                      <i className="ti ti-handshake" /> {currentLang === 'en' ? 'Send Connect Request' : 'Gửi Yêu Cầu Hợp Tác'}
+                    </button>
                   </div>
                 </div>
 
@@ -566,6 +809,58 @@ export const PostDetail = () => {
 
               </div>
             </div>
+
+            {/* ========================================================
+                ONE CLICK TO DISCOVER: CƠ HỘI & THÔNG TIN CÙNG CHUYÊN ĐỀ
+                ======================================================== */}
+            {relatedPosts.length > 0 && (
+              <div className="post-related-section">
+                <div className="post-related-header">
+                  <div>
+                    <span className="post-related-badge">
+                      <i className="ti ti-compass" /> {currentLang === 'en' ? 'One Click to Discover' : 'Một Nhấp Để Khám Phá'}
+                    </span>
+                    <h3 className="post-related-title">
+                      {currentLang === 'en' ? 'Related Articles & Opportunities' : 'Cơ Hội & Thông Tin Cùng Chuyên Đề'}
+                    </h3>
+                  </div>
+                  <Link to="/posts" className="post-related-view-all">
+                    <span>{currentLang === 'en' ? 'View all' : 'Xem tất cả bảng tin'}</span>
+                    <i className="ti ti-arrow-right" />
+                  </Link>
+                </div>
+
+                <div className="post-related-grid">
+                  {relatedPosts.map((item) => (
+                    <Link 
+                      key={item.id || item.slug} 
+                      to={`/posts/${item.slug || item.id}`}
+                      className="post-related-card"
+                    >
+                      <div className="post-related-thumb">
+                        <img 
+                          src={item.image_url || '/images/daklak/daklak_doi_ca_phe.jpg'} 
+                          alt={item.title} 
+                          onError={(e) => { e.target.src = '/images/daklak/daklak_doi_ca_phe.jpg'; }}
+                        />
+                        <span className="post-related-cat">{item.category || 'Tin nổi bật'}</span>
+                      </div>
+                      <div className="post-related-info">
+                        <div className="post-related-date">
+                          <i className="ti ti-calendar" />
+                          <span>{item.created_at ? new Date(item.created_at).toLocaleDateString('vi-VN') : 'Mới'}</span>
+                        </div>
+                        <h4 className="post-related-item-title">{item.title}</h4>
+                        <p className="post-related-summary">{item.summary || item.short_desc || ''}</p>
+                        <span className="post-related-read-cta">
+                          {currentLang === 'en' ? 'Read article →' : 'Đọc bài viết →'}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
           </div>
         </div>
@@ -721,6 +1016,130 @@ export const PostDetail = () => {
               <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-secondary)' }}>
                 {currentLang === 'en' ? 'Member details not found.' : 'Không tìm thấy thông tin hội viên này.'}
               </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification for Link Copy (One Click to Share) */}
+      {toastMessage && (
+        <div className="post-toast-notice">
+          <i className="ti ti-circle-check" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* One Click to Act & Connect Modal */}
+      {showActionModal && (
+        <div className="action-modal-backdrop" onClick={() => setShowActionModal(false)}>
+          <div className="action-modal-card" onClick={(e) => e.stopPropagation()}>
+            <button className="action-modal-close" onClick={() => setShowActionModal(false)}>
+              <i className="ti ti-x" />
+            </button>
+
+            {actionSuccess ? (
+              <div className="action-modal-success">
+                <div className="action-success-icon">
+                  <i className="ti ti-check" />
+                </div>
+                <h3>{currentLang === 'en' ? 'Request Submitted Successfully!' : 'Gửi Yêu Cầu Thành Công!'}</h3>
+                <p>
+                  {actionModalType === 'dossier'
+                    ? (currentLang === 'en' ? 'Project dossier and investment documentation will be delivered to your contact info shortly.' : 'Hồ sơ dự án chi tiết và tài liệu xúc tiến sẽ được gửi tới Email / Số điện thoại của bạn trong thời gian sớm nhất.')
+                    : (currentLang === 'en' ? 'DakLak.today and the enterprise will reach out to you within 24 hours.' : 'Ban xúc tiến đầu tư DakLak.today và đơn vị liên quan sẽ liên hệ trao đổi với bạn trong vòng 24 giờ.')}
+                </p>
+                <button onClick={() => setShowActionModal(false)} className="post-act-btn primary" style={{ marginTop: '20px' }}>
+                  {currentLang === 'en' ? 'Close Window' : 'Đóng cửa sổ'}
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleActionSubmit} className="action-modal-form">
+                <div className="action-modal-header">
+                  <span className="action-modal-badge">
+                    <i className="ti ti-bolt" /> 1-Click Action
+                  </span>
+                  <h3 className="action-modal-heading">
+                    {actionModalType === 'dossier'
+                      ? (currentLang === 'en' ? 'Request Project Dossier' : 'Yêu Cầu Hồ Sơ Dự Án')
+                      : actionModalType === 'interest'
+                      ? (currentLang === 'en' ? 'Register Investment Interest' : 'Đăng Ký Quan Tâm Đầu Tư')
+                      : (currentLang === 'en' ? 'Connect With Enterprise' : 'Gửi Yêu Cầu Kết Nối & Hợp Tác')}
+                  </h3>
+                  <p className="action-modal-sub">
+                    {post.title}
+                  </p>
+                </div>
+
+                <div className="action-modal-body">
+                  <div className="form-group">
+                    <label>{currentLang === 'en' ? 'Full Name (*)' : 'Họ và tên (*)'}</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder={currentLang === 'en' ? 'E.g. Nguyen Van A' : 'Ví dụ: Nguyễn Văn A'}
+                      value={actionForm.fullName}
+                      onChange={(e) => setActionForm(prev => ({ ...prev, fullName: e.target.value }))}
+                    />
+                  </div>
+                  <div className="form-row-2">
+                    <div className="form-group">
+                      <label>{currentLang === 'en' ? 'Phone / Zalo (*)' : 'Số điện thoại / Zalo (*)'}</label>
+                      <input 
+                        type="tel" 
+                        required
+                        placeholder="0912..."
+                        value={actionForm.phone}
+                        onChange={(e) => setActionForm(prev => ({ ...prev, phone: e.target.value }))}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Email (*)</label>
+                      <input 
+                        type="email" 
+                        required
+                        placeholder="investor@company.com"
+                        value={actionForm.email}
+                        onChange={(e) => setActionForm(prev => ({ ...prev, email: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label>{currentLang === 'en' ? 'Organization / Investor' : 'Tên doanh nghiệp / Tổ chức đầu tư'}</label>
+                    <input 
+                      type="text" 
+                      placeholder={currentLang === 'en' ? 'Company name or Individual Investor' : 'Ví dụ: Công ty CP Đầu Tư ABC / Nhà đầu tư cá nhân'}
+                      value={actionForm.companyName}
+                      onChange={(e) => setActionForm(prev => ({ ...prev, companyName: e.target.value }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>{currentLang === 'en' ? 'Specific Requirements / Notes' : 'Nhu cầu cụ thể / Ghi chú'}</label>
+                    <textarea 
+                      rows={3}
+                      placeholder={currentLang === 'en' ? 'Tell us what details or collaboration scope you need...' : 'Ví dụ: Cần hồ sơ quy hoạch chi tiết, chính sách ưu đãi đầu tư, liên kết cung ứng nguyên liệu...'}
+                      value={actionForm.notes}
+                      onChange={(e) => setActionForm(prev => ({ ...prev, notes: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="action-modal-footer">
+                  <button type="button" onClick={() => setShowActionModal(false)} className="btn-cancel">
+                    {currentLang === 'en' ? 'Cancel' : 'Hủy bỏ'}
+                  </button>
+                  <button type="submit" disabled={actionSubmitting} className="btn-submit">
+                    {actionSubmitting ? (
+                      <>
+                        <i className="ti ti-loader animate-spin" /> {currentLang === 'en' ? 'Submitting...' : 'Đang gửi...'}
+                      </>
+                    ) : (
+                      <>
+                        <i className="ti ti-send" /> {currentLang === 'en' ? 'Submit in 1-Click' : 'Gửi Yêu Cầu 1-Click'}
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
             )}
           </div>
         </div>
