@@ -317,7 +317,7 @@ const TOP_DESTINATIONS = [
     locationEn: 'Buon Ma Thuot & Cu Mgar',
     image: '/images/daklak/daklak_doi_ca_phe.jpg',
     category: 'coffee',
-    link: '/posts?category=Cà%20phê%20Đắk%20Lắk'
+    link: `/posts?category=${encodeURIComponent('Nông sản & Cà phê')}`
   },
   {
     id: 2,
@@ -327,7 +327,7 @@ const TOP_DESTINATIONS = [
     locationEn: 'Buon Ma Thuot Economic Ring',
     image: '/images/daklak/daklak_dau_tu_logistics.jpg',
     category: 'investment',
-    link: '/posts?category=Đầu%20tư%20&%20Dự%20án'
+    link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}`
   },
   {
     id: 3,
@@ -337,7 +337,7 @@ const TOP_DESTINATIONS = [
     locationEn: 'Ea Kar & Krong Pac, Dak Lak',
     image: '/images/daklak/daklak_ca_phe.jpg',
     category: 'agritech',
-    link: '/posts?category=Đầu%20tư%20&%20Dự%20án'
+    link: `/posts?category=${encodeURIComponent('Nông sản & Cà phê')}`
   },
   {
     id: 4,
@@ -347,7 +347,7 @@ const TOP_DESTINATIONS = [
     locationEn: 'Arterial Link to International Ports',
     image: '/images/daklak/daklak_bien_ganh_da_dia.jpg',
     category: 'investment',
-    link: '/posts?category=Đầu%20tư%20&%20Dự%20án'
+    link: `/posts?category=${encodeURIComponent('Kinh tế Biển')}`
   },
   {
     id: 5,
@@ -357,7 +357,7 @@ const TOP_DESTINATIONS = [
     locationEn: 'Krong Ana, Dak Lak',
     image: '/images/daklak/daklak_thac_dray_nur.jpg',
     category: 'tourism',
-    link: '/posts?category=Khám%20phá%20Đắk%20Lắk'
+    link: `/posts?category=${encodeURIComponent('Khám phá Đắk Lắk')}`
   },
   {
     id: 6,
@@ -367,7 +367,7 @@ const TOP_DESTINATIONS = [
     locationEn: 'Buon Ma Thuot, Dak Lak',
     image: '/images/daklak/daklak_doi_ca_phe.jpg',
     category: 'coffee',
-    link: '/posts?category=Cà%20phê%20Đắk%20Lắk'
+    link: `/posts?category=${encodeURIComponent('Nông sản & Cà phê')}`
   },
   {
     id: 7,
@@ -377,7 +377,7 @@ const TOP_DESTINATIONS = [
     locationEn: 'Ea Hleo & Krong Buk, Dak Lak',
     image: '/images/daklak/daklak_dau_tu_logistics.jpg',
     category: 'investment',
-    link: '/posts?category=Đầu%20tư%20&%20Dự%20án'
+    link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}`
   },
   {
     id: 8,
@@ -387,7 +387,7 @@ const TOP_DESTINATIONS = [
     locationEn: 'Lak District & Buon Don, Dak Lak',
     image: '/images/daklak/daklak_cong_chieng.jpg',
     category: 'tourism',
-    link: '/posts?category=Văn%20hóa%20Đắk%20Lắk'
+    link: `/posts?category=${encodeURIComponent('Du lịch & Trải nghiệm')}`
   }
 ];
 
@@ -1283,16 +1283,16 @@ export const Home = () => {
             <div className="gt-hero-visuals scroll-reveal scroll-reveal-right">
               <div className="gt-photo-group">
                 {/* Card 1: Tall Vertical Photo on Left */}
-                <div className="gt-photo-card tall" onClick={() => navigate('/posts?category=Khám%20phá%20Đắk%20Lắk')}>
+                <div className="gt-photo-card tall" onClick={() => navigate(`/posts?category=${encodeURIComponent('Khám phá Đắk Lắk')}`)}>
                   <img src="/images/daklak/daklak_thac_dray_nur.jpg" alt="Thác Dray Nur Hùng Vĩ" />
                 </div>
 
                 {/* Cards 2 & 3: Stack on Right */}
                 <div className="gt-photo-right-col">
-                  <div className="gt-photo-card medium" onClick={() => navigate('/posts?category=Cà%20phê%20Đắk%20Lắk')}>
+                  <div className="gt-photo-card medium" onClick={() => navigate(`/posts?category=${encodeURIComponent('Nông sản & Cà phê')}`)}>
                     <img src="/images/daklak/daklak_doi_ca_phe.jpg" alt="Đồi Cà Phê Buôn Ma Thuột" />
                   </div>
-                  <div className="gt-photo-card medium" onClick={() => navigate('/posts?category=Văn%20hóa%20Đắk%20Lắk')}>
+                  <div className="gt-photo-card medium" onClick={() => navigate(`/posts?category=${encodeURIComponent('Du lịch & Trải nghiệm')}`)}>
                     <img src="/images/daklak/daklak_cong_chieng.jpg" alt="Không Gian Văn Hóa Cồng Chiêng" />
                   </div>
                 </div>
@@ -1408,7 +1408,7 @@ export const Home = () => {
                   </button>
                 </div>
               </div>
-              <Link to="/posts?category=Đầu%20tư%20&%20Dự%20án" className="gt-dest-view-all">
+              <Link to={`/posts?category=${encodeURIComponent('Dự án & Đầu tư')}`} className="gt-dest-view-all">
                 <span>{currentLang === 'en' ? 'Explore all opportunities' : 'Khám phá tất cả cơ hội'}</span>
                 <i className="ti ti-arrow-right" />
               </Link>
@@ -2339,13 +2339,13 @@ export const Home = () => {
               {/* Strength 1 (From Left) */}
               <div className="strength-card scroll-reveal scroll-reveal-left stagger-1">
                 <div className="strength-img-box">
-                  <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80" alt="Cà phê Đắk Lắk" />
+                  <img src="/images/daklak/daklak_doi_ca_phe.jpg" alt="Cà phê Đắk Lắk" />
                   <span className="strength-tag">{currentLang === 'en' ? 'Strategic Commodity' : 'Trụ cột Kinh tế'}</span>
                 </div>
                 <div className="strength-body">
                   <h3>{currentLang === 'en' ? 'Coffee & Specialty Agro-Products' : 'Cà Phê & Nông Sản Đặc Hữu'}</h3>
                   <p>{currentLang === 'en' ? 'Over 213,000 hectares of coffee, producing 560,000+ tons annually. Alongside durian, macadamia, and black pepper reaching top global exports.' : 'Hơn 213.000 ha cà phê, sản lượng trên 560.000 tấn/năm. Cùng sầu riêng, mắc ca, hồ tiêu đạt chuẩn xuất khẩu chất lượng cao vào EU, Mỹ, Nhật.'}</p>
-                  <Link to={`/posts?category=${encodeURIComponent('Cà phê Đắk Lắk')}`} className="quick-access-link">{currentLang === 'en' ? 'Explore value chain →' : 'Khám phá chuỗi giá trị →'}</Link>
+                  <Link to={`/posts?category=${encodeURIComponent('Nông sản & Cà phê')}`} className="quick-access-link">{currentLang === 'en' ? 'Explore value chain →' : 'Khám phá chuỗi giá trị →'}</Link>
                 </div>
               </div>
 
@@ -2371,7 +2371,7 @@ export const Home = () => {
                 <div className="strength-body">
                   <h3>{currentLang === 'en' ? 'Renewable Energy & Infrastructure' : 'Năng Lượng Tái Tạo & Công Nghiệp'}</h3>
                   <p>{currentLang === 'en' ? 'Centrally positioned wind & solar farm hubs; developing Buon Ma Thuot - Khanh Hoa highway opening swift coastal trade access.' : 'Trung tâm điện gió, điện mặt trời quy mô lớn; tuyến cao tốc Buôn Ma Thuột — Khánh Hòa mở toang cửa ngõ giao thương hướng biển.'}</p>
-                  <Link to={`/posts?category=${encodeURIComponent('Đầu tư & Dự án')}`} className="quick-access-link">{currentLang === 'en' ? 'View infrastructure →' : 'Xem hạ tầng KCN →'}</Link>
+                  <Link to={`/posts?category=${encodeURIComponent('Dự án & Đầu tư')}`} className="quick-access-link">{currentLang === 'en' ? 'View infrastructure →' : 'Xem hạ tầng KCN →'}</Link>
                 </div>
               </div>
 
@@ -2384,7 +2384,7 @@ export const Home = () => {
                 <div className="strength-body">
                   <h3>{currentLang === 'en' ? 'Open Regional Development Space' : 'Không Gian Phát Triển Vùng Mở'}</h3>
                   <p>{currentLang === 'en' ? 'Buon Ma Thuot is oriented as the center of the Central Highlands region, featuring dynamic innovation, healthcare, and education.' : 'Buôn Ma Thuột định hướng trở thành đô thị trung tâm vùng Tây Nguyên, hạt nhân đổi mới sáng tạo, tài chính, giáo dục và y tế chuyên sâu.'}</p>
-                  <Link to={`/posts?category=${encodeURIComponent('Dữ liệu & Báo cáo')}`} className="quick-access-link">{currentLang === 'en' ? 'Economic data →' : 'Báo cáo kinh tế →'}</Link>
+                  <Link to={`/posts?category=${encodeURIComponent('Dự án & Đầu tư')}`} className="quick-access-link">{currentLang === 'en' ? 'Economic data →' : 'Không gian phát triển →'}</Link>
                 </div>
               </div>
             </div>
@@ -2517,8 +2517,8 @@ export const Home = () => {
                 </p>
 
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <Link to="/posts?category=Cà%20phê%20Đắk%20Lắk" className="btn-daklak-gold" style={{ padding: '10px 20px', fontSize: '0.88rem' }}>
-                    Xem Chuyên mục Cà phê
+                  <Link to={`/posts?category=${encodeURIComponent('Nông sản & Cà phê')}`} className="btn-daklak-gold" style={{ padding: '10px 20px', fontSize: '0.88rem' }}>
+                    Xem Chuyên mục Nông sản & Cà phê
                   </Link>
                   <button onClick={() => scrollToConsult('Hợp tác Chuỗi giá trị Cà phê')} className="btn-daklak-outline" style={{ padding: '10px 20px', fontSize: '0.88rem' }}>
                     Kết nối Doanh nghiệp Cà phê

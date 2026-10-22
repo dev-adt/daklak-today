@@ -30,27 +30,25 @@ export const CATEGORIES_DATA = [
     ]
   },
   {
-    id: 'dau-tu-du-an',
-    name: 'Đầu tư & Dự án',
+    id: 'du-an-dau-tu',
+    name: 'Dự án & Đầu tư',
     name_en: 'Investment & Projects',
     order_index: 3,
     subcategories: [
       'Danh mục Dự án Kêu gọi',
       'Khu & Cụm công nghiệp',
-      'Vùng nguyên liệu & Quỹ đất',
       'Chính sách & Ưu đãi Đầu tư'
     ]
   },
   {
-    id: 'ca-phe-dak-lak',
-    name: 'Cà phê Đắk Lắk',
-    name_en: 'Dak Lak Coffee',
+    id: 'nong-san-ca-phe',
+    name: 'Nông sản & Cà phê',
+    name_en: 'Agri & Coffee',
     order_index: 4,
     subcategories: [
       'Chuỗi giá trị Cà phê',
       'Công nghệ Chế biến sâu',
-      'Thương hiệu & Thị trường',
-      'Văn hóa Cà phê'
+      'Thương hiệu & Thị trường'
     ]
   },
   {
@@ -60,21 +58,18 @@ export const CATEGORIES_DATA = [
     order_index: 5,
     subcategories: [
       'Hành trình 2N1Đ & 3N2Đ',
-      'Du lịch Sinh thái & Bản làng',
-      'Lưu trú & Homestay',
-      'Lễ hội & Sự kiện'
+      'Du lịch Sinh thái & Bản làng'
     ]
   },
   {
-    id: 'du-lieu-bao-cao',
-    name: 'Dữ liệu & Báo cáo',
-    name_en: 'Data & Reports',
+    id: 'kinh-te-bien',
+    name: 'Kinh tế Biển',
+    name_en: 'Marine Economy',
     order_index: 6,
     subcategories: [
-      'Chỉ số Kinh tế - Xã hội',
-      'Bản đồ Cơ hội Đắk Lắk',
-      'Báo cáo Ngành hàng',
-      'Quy hoạch Tỉnh Đắk Lắk'
+      'Cảng biển & Logistics',
+      'Thủy sản & Kinh tế Biển',
+      'Công nghiệp & Đầu tư Ven biển'
     ]
   },
   {
@@ -84,9 +79,7 @@ export const CATEGORIES_DATA = [
     order_index: 7,
     subcategories: [
       'Lễ hội Cà phê Buôn Ma Thuột',
-      'Diễn đàn Xúc tiến Đầu tư',
-      'Hội thảo Kinh tế',
-      'Giao thương & Kết nối B2B'
+      'Diễn đàn Xúc tiến Đầu tư'
     ]
   }
 ];
@@ -102,9 +95,12 @@ export const CATEGORY_LABELS = {
   // Dak Lak Specific Categories
   'Khám phá Đắk Lắk': { vi: 'Khám phá Đắk Lắk', en: 'Discover Dak Lak', zh: '探索多乐', ja: 'ダクラク探索', ko: '닥락 탐방' },
   'Doanh nghiệp & Sản phẩm': { vi: 'Doanh nghiệp & Sản phẩm', en: 'Enterprises & Products', zh: '企业与产品', ja: '企業・製品', ko: '기업 및 제품' },
-  'Đầu tư & Dự án': { vi: 'Đầu tư & Dự án', en: 'Investment & Projects', zh: '投资与项目', ja: '投資・プロジェクト', ko: '투자 및 프로젝트' },
-  'Cà phê Đắk Lắk': { vi: 'Cà phê Đắk Lắk', en: 'Dak Lak Coffee', zh: '多乐咖啡', ja: 'ダクラクコーヒー', ko: '닥락 커피' },
+  'Dự án & Đầu tư': { vi: 'Dự án & Đầu tư', en: 'Investment & Projects', zh: '投资与项目', ja: '投資・プロジェクト', ko: '투자 및 프로젝트' },
+  'Đầu tư & Dự án': { vi: 'Dự án & Đầu tư', en: 'Investment & Projects', zh: '投资与项目', ja: '投資・プロジェクト', ko: '투자 및 프로젝트' },
+  'Nông sản & Cà phê': { vi: 'Nông sản & Cà phê', en: 'Agri & Coffee', zh: '农产品与咖啡', ja: '農産物・コーヒー', ko: '농산물 및 커피' },
+  'Cà phê Đắk Lắk': { vi: 'Nông sản & Cà phê', en: 'Agri & Coffee', zh: '农产品与咖啡', ja: '農産物・コーヒー', ko: '농산물 및 커피' },
   'Du lịch & Trải nghiệm': { vi: 'Du lịch & Trải nghiệm', en: 'Tourism & Experiences', zh: '旅游与体验', ja: '観光・体験', ko: '관광 및 체험' },
+  'Kinh tế Biển': { vi: 'Kinh tế Biển', en: 'Marine Economy', zh: '海洋经济', ja: '海洋経済', ko: '해양 경제' },
   'Dữ liệu & Báo cáo': { vi: 'Dữ liệu & Báo cáo', en: 'Data & Reports', zh: '数据与报告', ja: 'データ・レポート', ko: '데이터 및 보고서' },
   'Sự kiện & Diễn đàn': { vi: 'Sự kiện & Diễn đàn', en: 'Events & Forums', zh: '活动与论坛', ja: 'イベント・フォーラム', ko: '이벤트 및 포럼' },
   
