@@ -391,6 +391,114 @@ const TOP_DESTINATIONS = [
   }
 ];
 
+// Fallback images đa dạng cho bài viết không có ảnh đại diện (tránh 2 bài liên tiếp cùng ảnh)
+const FALLBACK_POST_IMAGES = [
+  '/images/daklak/daklak_doi_ca_phe.jpg',
+  '/images/daklak/daklak_thac_dray_nur.jpg',
+  '/images/daklak/daklak_dau_tu_logistics.jpg',
+  '/images/daklak/daklak_ca_phe.jpg',
+  '/images/daklak/daklak_cong_chieng.jpg',
+  '/images/daklak/daklak_le_hoi_nha_rong.jpg',
+  '/images/daklak/daklak_bien_ganh_da_dia.jpg',
+  '/images/daklak/daklak_nha_rong_ede.jpg'
+];
+
+const getPostThumb = (post, idx = 0) => {
+  if (post?.image_url && typeof post.image_url === 'string' && post.image_url.trim() !== '') return post.image_url;
+  if (post?.cover_image && typeof post.cover_image === 'string' && post.cover_image.trim() !== '') return post.cover_image;
+  if (post?.thumbnail && typeof post.thumbnail === 'string' && post.thumbnail.trim() !== '') return post.thumbnail;
+  const hash = typeof post?.id === 'number' 
+    ? post.id 
+    : (post?.id ? String(post.id).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) : (idx * 3 + 1));
+  return FALLBACK_POST_IMAGES[(hash + idx) % FALLBACK_POST_IMAGES.length];
+};
+
+// Dữ liệu Top 10 Doanh nghiệp xuất khẩu cà phê Tây Nguyên
+const TOP_EXPORTERS_TAY_NGUYEN = {
+  title: 'Top Doanh Nghiệp Xuất Khẩu Cà Phê Tây Nguyên',
+  titleEn: 'Top Coffee Exporters in Central Highlands',
+  sub: 'Những cánh chim đầu đàn đưa Robusta Buôn Ma Thuột và Tây Nguyên chinh phục thị trường toàn cầu',
+  subEn: 'Flagship enterprises elevating Buon Ma Thuot & Central Highlands Robusta globally',
+  top3: [
+    {
+      rank: 1,
+      name: 'Simexco Đắk Lắk',
+      sub: 'Công ty TNHH MTV XNK 2-9 Đắk Lắk',
+      highlight: 'Doanh nghiệp nhà nước đầu tàu của Đắk Lắk, kim ngạch hàng trăm triệu USD/năm, liên kết chuỗi bền vững với hơn 40.000 nông hộ Tây Nguyên.',
+      highlightEn: 'Leading state enterprise of Dak Lak with hundreds of millions USD export turnover, partnering with 40,000+ local farming families.',
+      pill: 'Top 1 Đắk Lắk • Xuất khẩu >100.000 tấn/năm'
+    },
+    {
+      rank: 2,
+      name: 'Trung Nguyên Legend',
+      sub: 'Tập đoàn Cà phê Trung Nguyên',
+      highlight: 'Thương hiệu cà phê quốc gia khởi nguồn từ Buôn Ma Thuột, tiên phong chuỗi Cà phê Năng lượng và văn hóa cà phê Việt Nam tới 80+ quốc gia.',
+      highlightEn: 'National coffee champion founded in Buon Ma Thuot, pioneering Energy Coffee and Vietnamese coffee culture across 80+ countries.',
+      pill: 'Thương hiệu Quốc gia • Xuất khẩu 80+ nước'
+    },
+    {
+      rank: 3,
+      name: "Vĩnh Hiệp (L'amant)",
+      sub: 'Công ty TNHH Vĩnh Hiệp',
+      highlight: 'Tiên phong xuất khẩu cà phê hữu cơ (Organic USDA/EU) quy mô lớn của Tây Nguyên sang các thị trường khó tính Mỹ, EU, Nhật Bản.',
+      highlightEn: 'Pioneer in large-scale Organic USDA/EU coffee exports from Central Highlands to demanding US, EU, and Japanese markets.',
+      pill: 'Tiên phong Organic • Vùng trồng chuẩn quốc tế'
+    }
+  ],
+  rest: [
+    { rank: 4, name: 'Intimex Buôn Ma Thuột', desc: 'Thành viên tập đoàn Intimex - Nhà xuất khẩu cà phê nhân số 1 Việt Nam với mạng lưới thu mua chế biến quy mô lớn.' },
+    { rank: 5, name: 'An Thái Group', desc: 'Tập đoàn chế biến sâu với các dòng cà phê hòa tan, sấy lạnh, rang xay xuất khẩu sang hơn 30 quốc gia.' },
+    { rank: 6, name: 'Phúc Sinh Đắk Lắk', desc: 'Doanh nghiệp xuất khẩu nông sản hàng đầu sở hữu các chứng nhận quốc tế bền vững UTZ & Rainforest Alliance.' },
+    { rank: 7, name: 'Tín Nghĩa Tây Nguyên', desc: 'Đơn vị xuất khẩu uy tín lâu năm, cung ứng nguyên liệu Robusta chất lượng cao cho các tập đoàn rang xay quốc tế.' },
+    { rank: 8, name: 'CTP Group', desc: 'Doanh nghiệp niêm yết sàn HNX với kho bãi chế biến hơn 13.000 m² và chuỗi giá trị cà phê Tây Nguyên gia tăng.' },
+    { rank: 9, name: 'Đắkman Việt Nam', desc: 'Liên doanh xuất khẩu cà phê chất lượng cao đầu tiên tại Buôn Ma Thuột giữa Đắk Lắk và đối tác quốc tế.' },
+    { rank: 10, name: 'Bazan Heritage Coffee', desc: 'Nhà máy hiện đại tại KCN Hòa Phú (BMT) chuyên sâu chế biến dòng Robusta đặc sản và tôn vinh đất đỏ bazan.' }
+  ]
+};
+
+// Dữ liệu Top 10 Doanh nghiệp thương mại & xuất khẩu cà phê Thế Giới
+const TOP_EXPORTERS_WORLD = {
+  title: 'Top Doanh Nghiệp Xuất Khẩu Cà Phê Thế Giới',
+  titleEn: 'Top Global Coffee Trading & Export Giants',
+  sub: 'Các tập đoàn thương mại đa quốc gia chi phối chuỗi cung ứng và logistics cà phê toàn cầu',
+  subEn: 'Multinational trading giants shaping global coffee value chains, logistics, and roastery supplies',
+  top3: [
+    {
+      rank: 1,
+      name: 'Neumann Kaffee Gruppe (NKG)',
+      sub: 'Đức (Hamburg)',
+      highlight: 'Tập đoàn thương mại cà phê xanh số 1 hành tinh với hơn 50 chi nhánh tại 26 quốc gia, chi phối khoảng 10% sản lượng cà phê toàn cầu.',
+      highlightEn: 'The world #1 green coffee service group with 50+ companies in 26 countries, handling ~10% of total global coffee output.',
+      pill: 'Số 1 Thế Giới • ~15 triệu bao/năm'
+    },
+    {
+      rank: 2,
+      name: 'Volcafe (ED&F Man)',
+      sub: 'Thụy Sĩ (Winterthur)',
+      highlight: 'Một trong 3 nhà buôn cà phê lớn nhất lịch sử thế giới, đối tác cung ứng chiến lược của hàng triệu trang trại và các hãng rang xay toàn cầu.',
+      highlightEn: 'One of the top 3 coffee merchants globally, serving as strategic sourcing partner from millions of farms to top roasting brands.',
+      pill: 'Top 3 Toàn Cầu • Chuỗi cung ứng 20+ nước'
+    },
+    {
+      rank: 3,
+      name: 'Sucafina',
+      sub: 'Thụy Sĩ (Geneva)',
+      highlight: 'Tập đoàn đa quốc gia dẫn dắt số hóa chuỗi cung ứng "Farm to Cup", hiện diện vững chắc tại các vùng nguyên liệu Robusta và Arabica trọng điểm.',
+      highlightEn: 'Leading multinational driving digitized "Farm to Cup" sustainable supply chains across 33 key coffee origins.',
+      pill: 'Mạng lưới 33 quốc gia • Tiên phong Số hóa'
+    }
+  ],
+  rest: [
+    { rank: 4, name: 'Louis Dreyfus Company (LDC)', desc: 'Tập đoàn nông sản hàng đầu thế giới với hệ thống chế biến và kho vận cà phê khổng lồ tại Nam Mỹ và Châu Á.' },
+    { rank: 5, name: 'ofi (Olam Food Ingredients)', desc: 'Nhà cung ứng nguyên liệu cà phê nhân xanh và hòa tan hàng đầu thế giới với nhiều nhà máy quy mô lớn.' },
+    { rank: 6, name: 'Ecom Agroindustrial', desc: 'Tập đoàn nông nghiệp hơn 170 năm tuổi, dẫn đầu các chương trình cà phê chứng nhận bền vững toàn cầu.' },
+    { rank: 7, name: 'Starbucks Coffee Trading Co.', desc: 'Đơn vị thu mua và logistics tập trung tại Thụy Sĩ cung ứng nguyên liệu cho hơn 36.000 cửa hàng Starbucks toàn cầu.' },
+    { rank: 8, name: 'Lavazza Group', desc: 'Thương hiệu và nhà nhập khẩu rang xay cà phê cao cấp biểu tượng nước Ý, hiện diện tại 140+ thị trường.' },
+    { rank: 9, name: 'Tchibo GmbH', desc: 'Tập đoàn bán lẻ và rang xay cà phê hàng đầu châu Âu, nhà tiêu thụ và phân phối cà phê thành phẩm khổng lồ.' },
+    { rank: 10, name: 'Strauss Coffee', desc: 'Tập đoàn cà phê đa quốc gia trong top 5 nhà rang xay thế giới, thống trị thị trường Trung - Đông Âu và Brazil.' }
+  ]
+};
+
 export const Home = () => {
   const { role, user, token } = useAuth();
   let storedMemberUser = null;
@@ -409,6 +517,21 @@ export const Home = () => {
   // Search State & Scope
   const [searchQuery, setSearchQuery] = useState('');
   const [searchScope, setSearchScope] = useState('all');
+
+  // Hero Site-wide Search Bar State
+  const [heroSearchQuery, setHeroSearchQuery] = useState('');
+
+  // AI Special Topic Slider (Single Card 5s infinite auto-cycle)
+  const [aiSlideIndex, setAiSlideIndex] = useState(0);
+  const [isAiSlideHovered, setIsAiSlideHovered] = useState(false);
+
+  useEffect(() => {
+    if (isAiSlideHovered) return;
+    const interval = setInterval(() => {
+      setAiSlideIndex(prev => (prev + 1) % 3);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isAiSlideHovered]);
 
   // Top Destinations Tab Filter (Globe Trekker layout)
   const [activeDestTab, setActiveDestTab] = useState('all');
@@ -1110,7 +1233,7 @@ export const Home = () => {
               <h1 className="gt-hero-title">
                 {currentLang === 'en' ? 'Discover Dak Lak' : 'Khám Phá Đắk Lắk'}<br />
                 <span className="gt-hero-highlight">
-                  {currentLang === 'en' ? 'Hidden' : 'Đại Ngàn'}
+                  {currentLang === 'en' ? 'Heritage' : 'Bản Sắc'}
                   <svg className="gt-highlight-curve" viewBox="0 0 180 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 14C45 4 135 4 176 14" stroke="#E99035" strokeWidth="4" strokeLinecap="round" />
                   </svg>
@@ -1183,23 +1306,58 @@ export const Home = () => {
             </div>
           </div>
 
-          {/* Interactive Scroll Down Indicator */}
-          <div className="gt-scroll-down-wrap scroll-reveal scroll-reveal-up">
-            <a
-              href="#top-destinations"
-              className="gt-scroll-down-btn"
-              onClick={(e) => {
+          {/* Hero Site-wide Search Bar (Thay thế Cuộn xuống khám phá) */}
+          <div className="gt-hero-search-wrapper scroll-reveal scroll-reveal-up">
+            <form 
+              className="gt-hero-search-form"
+              onSubmit={(e) => {
                 e.preventDefault();
-                const el = document.getElementById('top-destinations');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                if (heroSearchQuery.trim()) {
+                  navigate(`/posts?search=${encodeURIComponent(heroSearchQuery.trim())}`);
+                }
               }}
-              aria-label={currentLang === 'en' ? 'Scroll down to explore' : 'Cuộn xuống khám phá'}
             >
-              <span>{currentLang === 'en' ? 'Scroll to explore' : 'Cuộn xuống khám phá'}</span>
-              <div className="gt-scroll-mouse">
-                <span className="gt-scroll-wheel" />
+              <div className="gt-hero-search-input-group">
+                <i className="ti ti-search gt-hero-search-icon" />
+                <input
+                  type="text"
+                  className="gt-hero-search-input"
+                  placeholder={currentLang === 'en' ? 'Search all news, coffee exporters, investment projects, culture...' : 'Tìm kiếm toàn bộ trang web: tin tức, doanh nghiệp cafe, dự án đầu tư...'}
+                  value={heroSearchQuery}
+                  onChange={(e) => setHeroSearchQuery(e.target.value)}
+                />
+                {heroSearchQuery && (
+                  <button 
+                    type="button" 
+                    className="gt-hero-search-clear" 
+                    onClick={() => setHeroSearchQuery('')}
+                    aria-label="Xóa"
+                  >
+                    <i className="ti ti-x" />
+                  </button>
+                )}
+                <button type="submit" className="gt-hero-search-btn">
+                  <span>{currentLang === 'en' ? 'Search' : 'Tìm kiếm'}</span>
+                  <i className="ti ti-arrow-right" />
+                </button>
               </div>
-            </a>
+              <div className="gt-hero-search-tags">
+                <span className="gt-search-tag-label">{currentLang === 'en' ? 'Popular:' : 'Chủ đề hot:'}</span>
+                {['Cà phê Robusta', 'Xuất khẩu cà phê', 'Đầu tư Đắk Lắk', 'Thác Dray Nur', 'Chuyển đổi số'].map((tag, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="gt-search-tag-pill"
+                    onClick={() => {
+                      setHeroSearchQuery(tag);
+                      navigate(`/posts?search=${encodeURIComponent(tag)}`);
+                    }}
+                  >
+                    #{tag}
+                  </button>
+                ))}
+              </div>
+            </form>
           </div>
         </section>
 
@@ -1309,9 +1467,9 @@ export const Home = () => {
                 <div className="spotlight-lead-card scroll-reveal scroll-reveal-left" onClick={() => navigate(`/posts/${latestPosts[0].slug || latestPosts[0].id}`)}>
                   <div className="spotlight-lead-img-wrap">
                     <img
-                      src={latestPosts[0].image_url || '/images/daklak/daklak_doi_ca_phe.jpg'}
+                      src={getPostThumb(latestPosts[0], 0)}
                       alt={latestPosts[0].title}
-                      onError={(e) => { e.target.src = '/images/daklak/daklak_doi_ca_phe.jpg'; }}
+                      onError={(e) => { e.target.src = FALLBACK_POST_IMAGES[0]; }}
                     />
                     <span className="spotlight-lead-badge">{latestPosts[0].category || 'Tiêu Điểm Đặc Biệt'}</span>
                   </div>
@@ -1358,9 +1516,9 @@ export const Home = () => {
                     >
                       <div className="feed-item-thumb">
                         <img
-                          src={post.image_url || '/images/daklak/daklak_ca_phe.jpg'}
+                          src={getPostThumb(post, idx + 1)}
                           alt={post.title}
-                          onError={(e) => { e.target.src = '/images/daklak/daklak_ca_phe.jpg'; }}
+                          onError={(e) => { e.target.src = FALLBACK_POST_IMAGES[(idx + 1) % FALLBACK_POST_IMAGES.length]; }}
                         />
                       </div>
                       <div className="feed-item-info">
@@ -1393,9 +1551,9 @@ export const Home = () => {
                   >
                     <div className="sub-card-img-wrap">
                       <img
-                        src={post.image_url || '/images/daklak/daklak_thac_dray_nur.jpg'}
+                        src={getPostThumb(post, idx + 5)}
                         alt={post.title}
-                        onError={(e) => { e.target.src = '/images/daklak/daklak_thac_dray_nur.jpg'; }}
+                        onError={(e) => { e.target.src = FALLBACK_POST_IMAGES[(idx + 5) % FALLBACK_POST_IMAGES.length]; }}
                       />
                       <span className="sub-card-cat">{post.category || 'Tin thời sự'}</span>
                     </div>
@@ -1576,6 +1734,140 @@ export const Home = () => {
                     title={ent.shortName}
                   />
                 ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            BLOCK: BẢNG XẾP HẠNG TOP XUẤT KHẨU CÀ PHÊ (TÂY NGUYÊN & THẾ GIỚI)
+            ======================================================== */}
+        <section className="daklak-coffee-exporters-section" id="top-xuat-khau-ca-phe">
+          <div className="daklak-container">
+            <div className="coffee-exporters-header scroll-reveal scroll-reveal-down">
+              <span className="daklak-section-badge">
+                <i className="ti ti-trophy" style={{ marginRight: '6px' }} />
+                {currentLang === 'en' ? 'Global & Regional Coffee Leadership' : 'Định Vị Thủ Phủ Cà Phê & Chuỗi Giá Trị Toàn Cầu'}
+              </span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? 'Top Coffee Exporters: Central Highlands & World' : 'Top Doanh Nghiệp Xuất Khẩu Cà Phê'}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en'
+                  ? 'Strategic overview of flagship Vietnamese exporters and multinational trading houses driving global supply chains.'
+                  : 'Bức tranh toàn cảnh về những doanh nghiệp đầu tàu xuất khẩu cà phê của Tây Nguyên và các tập đoàn thương mại nông sản hàng đầu thế giới.'}
+              </p>
+            </div>
+
+            <div className="coffee-exporters-grid">
+              {/* BLOCK 1: TOP TÂY NGUYÊN */}
+              <div className="coffee-exporter-column scroll-reveal scroll-reveal-left">
+                <div className="exporter-column-header">
+                  <div className="exporter-col-icon tay-nguyen">
+                    <i className="ti ti-flame" />
+                  </div>
+                  <div className="exporter-col-titles">
+                    <h3>{currentLang === 'en' ? TOP_EXPORTERS_TAY_NGUYEN.titleEn : TOP_EXPORTERS_TAY_NGUYEN.title}</h3>
+                    <p>{currentLang === 'en' ? TOP_EXPORTERS_TAY_NGUYEN.subEn : TOP_EXPORTERS_TAY_NGUYEN.sub}</p>
+                  </div>
+                </div>
+
+                {/* Top 3 Doanh nghiệp đứng đầu (Nổi bật) */}
+                <div className="exporter-top3-list">
+                  {TOP_EXPORTERS_TAY_NGUYEN.top3.map((exp) => (
+                    <div key={exp.rank} className="exporter-top3-card">
+                      <div className={`exporter-rank-badge rank-${exp.rank}`}>
+                        #{exp.rank}
+                      </div>
+                      <div className="exporter-top3-body">
+                        <div className="exporter-top3-header">
+                          <h4 className="exporter-top3-name">{exp.name}</h4>
+                          <span className="exporter-top3-sub">{exp.sub}</span>
+                        </div>
+                        <p className="exporter-top3-highlight">
+                          {currentLang === 'en' ? exp.highlightEn : exp.highlight}
+                        </p>
+                        <span className="exporter-top3-pill">
+                          <i className="ti ti-award" /> {exp.pill}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 7 Doanh nghiệp tiếp theo */}
+                <div className="exporter-rest-block">
+                  <h5 className="exporter-rest-title">
+                    <i className="ti ti-list-numbers" />
+                    <span>{currentLang === 'en' ? 'Next 7 Reputable Exporters' : '7 Doanh nghiệp tiêu biểu tiếp theo'}</span>
+                  </h5>
+                  <ul className="exporter-rest-list">
+                    {TOP_EXPORTERS_TAY_NGUYEN.rest.map((exp) => (
+                      <li key={exp.rank} className="exporter-rest-item">
+                        <span className="exporter-rest-rank">#{exp.rank}</span>
+                        <div className="exporter-rest-info">
+                          <span className="exporter-rest-name">{exp.name}:</span>
+                          <span className="exporter-rest-desc">{exp.desc}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* BLOCK 2: TOP THẾ GIỚI */}
+              <div className="coffee-exporter-column scroll-reveal scroll-reveal-right">
+                <div className="exporter-column-header">
+                  <div className="exporter-col-icon the-gioi">
+                    <i className="ti ti-world" />
+                  </div>
+                  <div className="exporter-col-titles">
+                    <h3>{currentLang === 'en' ? TOP_EXPORTERS_WORLD.titleEn : TOP_EXPORTERS_WORLD.title}</h3>
+                    <p>{currentLang === 'en' ? TOP_EXPORTERS_WORLD.subEn : TOP_EXPORTERS_WORLD.sub}</p>
+                  </div>
+                </div>
+
+                {/* Top 3 Doanh nghiệp đứng đầu (Nổi bật) */}
+                <div className="exporter-top3-list">
+                  {TOP_EXPORTERS_WORLD.top3.map((exp) => (
+                    <div key={exp.rank} className="exporter-top3-card">
+                      <div className={`exporter-rank-badge rank-${exp.rank}`}>
+                        #{exp.rank}
+                      </div>
+                      <div className="exporter-top3-body">
+                        <div className="exporter-top3-header">
+                          <h4 className="exporter-top3-name">{exp.name}</h4>
+                          <span className="exporter-top3-sub">{exp.sub}</span>
+                        </div>
+                        <p className="exporter-top3-highlight">
+                          {currentLang === 'en' ? exp.highlightEn : exp.highlight}
+                        </p>
+                        <span className="exporter-top3-pill">
+                          <i className="ti ti-globe" /> {exp.pill}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 7 Doanh nghiệp tiếp theo */}
+                <div className="exporter-rest-block">
+                  <h5 className="exporter-rest-title">
+                    <i className="ti ti-list-numbers" />
+                    <span>{currentLang === 'en' ? 'Next 7 Global Giants' : '7 Tập đoàn đa quốc gia tiếp theo'}</span>
+                  </h5>
+                  <ul className="exporter-rest-list">
+                    {TOP_EXPORTERS_WORLD.rest.map((exp) => (
+                      <li key={exp.rank} className="exporter-rest-item">
+                        <span className="exporter-rest-rank">#{exp.rank}</span>
+                        <div className="exporter-rest-info">
+                          <span className="exporter-rest-name">{exp.name}:</span>
+                          <span className="exporter-rest-desc">{exp.desc}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -1807,7 +2099,7 @@ export const Home = () => {
               </p>
             </div>
 
-            {/* 3 AI Cards Grid */}
+            {/* AI Showcase Single Slide Carousel (1 ô lướt mỗi 5s vô tận) */}
             {(() => {
               const wardAiPost = aiTopicPosts?.wardAi || latestPosts.find(p => p.slug === 'tro-ly-ai-phuong-xa');
               const orionPost = aiTopicPosts?.orion || latestPosts.find(p => p.slug && p.slug.includes('orion-chat-loc'));
@@ -1817,136 +2109,143 @@ export const Home = () => {
               const orionImg = orionPost?.image_url || orionPost?.cover_image || orionPost?.thumbnail;
               const edunowImg = edunowPost?.image_url || edunowPost?.cover_image || edunowPost?.thumbnail;
 
+              const aiSlides = [
+                {
+                  id: 0,
+                  tag: currentLang === 'en' ? 'Ward AI Assistant' : 'AI phường xã',
+                  pillClass: 'daklak-ai-pill-cyan',
+                  img: wardAiImg,
+                  alt: wardAiPost?.title || "Trợ lý AI phường xã",
+                  catClass: 'daklak-ai-cat-cyan',
+                  catIcon: 'ti-robot',
+                  catTitle: currentLang === 'en' ? 'Foundation AI Technology' : 'Công nghệ AI cơ sở',
+                  title: currentLang === 'en' ? 'Ward & Commune AI Assistant' : 'Trợ lý AI phường xã',
+                  link: '/posts/tro-ly-ai-phuong-xa',
+                  summary: currentLang === 'en'
+                    ? 'Local-level AI application supporting administration, citizen inquiries 24/7, and speeding up digital governance.'
+                    : 'Trợ lý AI phường xã phục vụ công tác điều hành, hỗ trợ cán bộ và người dân tra cứu thủ tục, tiếp nhận phản ánh và số hóa dịch vụ công cơ sở 24/7.'
+                },
+                {
+                  id: 1,
+                  tag: 'Orion',
+                  pillClass: 'daklak-ai-pill-gold',
+                  img: orionImg,
+                  alt: orionPost?.title || "Hệ sinh thái Orion",
+                  catClass: 'daklak-ai-cat-gold',
+                  catIcon: 'ti-cpu',
+                  catTitle: currentLang === 'en' ? 'Intelligent AI Platform' : 'Nền tảng AI thông minh',
+                  title: currentLang === 'en'
+                    ? 'Orion: Distilling ERP, Multi-Model AI & AI Agent Platform into an Intelligent Operating System for Enterprises'
+                    : 'Orion chắt lọc tinh hoa của ERP, Multi-Model AI và nền tảng xây dựng AI Agent để tạo thành một hệ điều hành quản trị thông minh dành cho doanh nghiệp',
+                  link: '/posts/orion-chat-loc-tinh-hoa-cua-erp-multimodel-ai-va-nen-tang-xay-dung-ai-agent-de-tao-thanh-mot-he-dieu-hanh-quan-tri-thong-minh-danh-cho-doanh-nghiep',
+                  summary: currentLang === 'en'
+                    ? 'Unified intelligent enterprise operating system combining ERP and multi-model AI to automate business workflows.'
+                    : 'Orion chắt lọc tinh hoa của ERP, Multi-Model AI và nền tảng xây dựng AI Agent để tạo thành một hệ điều hành quản trị thông minh dành cho doanh nghiệp.'
+                },
+                {
+                  id: 2,
+                  tag: 'Edunow.today',
+                  pillClass: 'daklak-ai-pill-green',
+                  img: edunowImg,
+                  alt: edunowPost?.title || "EDUNOW.AI",
+                  catClass: 'daklak-ai-cat-green',
+                  catIcon: 'ti-school',
+                  catTitle: currentLang === 'en' ? 'Training & Digital Skills' : 'Đào tạo & Kỹ năng số',
+                  title: currentLang === 'en'
+                    ? 'EDUNOW.AI: Smart Admissions AI Assistant Solution for Educational Institutions'
+                    : 'EDUNOW.AI Giải pháp Trợ lý AI tuyển sinh thông minh dành cho các cơ sở giáo dục',
+                  link: '/posts/edunowai-giai-phap-tro-ly-ai-tuyen-sinh-thong-minh-danh-cho-cac-co-so-giao-duc',
+                  summary: currentLang === 'en'
+                    ? 'Smart admissions consulting AI assistant and comprehensive digital skills training platform.'
+                    : 'EDUNOW.AI Giải pháp Trợ lý AI tuyển sinh thông minh dành cho các cơ sở giáo dục, tư vấn tuyển sinh 24/7 và chuyển đổi số đào tạo.'
+                }
+              ];
+
               return (
-                <div className="daklak-ai-cards-grid">
-                  {/* Card 1: AI phường xã */}
-                  <div className="daklak-ai-card">
-                    <div className="daklak-ai-card-img-wrap">
-                      <span className="daklak-ai-card-pill daklak-ai-pill-cyan">
-                        <i className="ti ti-robot" /> {currentLang === 'en' ? 'Ward AI Assistant' : 'AI phường xã'}
-                      </span>
-                      <div className="daklak-ai-img-container">
-                        <img 
-                          src={wardAiImg || "/images/adt_logo.svg"} 
-                          alt={wardAiPost?.title || "Trợ lý AI phường xã"} 
-                          className={`daklak-ai-card-img ${!wardAiImg ? 'daklak-ai-card-fallback-logo' : ''}`}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/images/adt_logo.svg";
-                            e.target.classList.add('daklak-ai-card-fallback-logo');
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="daklak-ai-card-body">
-                      <div className="daklak-ai-card-category daklak-ai-cat-cyan">
-                        <i className="ti ti-bolt" /> {currentLang === 'en' ? 'Foundation AI Technology' : 'Công nghệ AI cơ sở'}
-                      </div>
-                      <h3 className="daklak-ai-card-title">
-                        <Link to="/posts/tro-ly-ai-phuong-xa">
-                          {currentLang === 'en' ? 'Ward & Commune AI Assistant' : 'Trợ lý AI phường xã'}
-                        </Link>
-                      </h3>
-                      <p className="daklak-ai-card-summary">
-                        {currentLang === 'en'
-                          ? 'Local-level AI application supporting administration, citizen inquiries 24/7, and speeding up digital governance.'
-                          : 'Trợ lý AI phường xã phục vụ công tác điều hành, hỗ trợ cán bộ và người dân tra cứu thủ tục, tiếp nhận phản ánh và số hóa dịch vụ công cơ sở 24/7.'}
-                      </p>
-                      <div className="daklak-ai-card-footer">
-                        <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
-                        <Link to="/posts/tro-ly-ai-phuong-xa" className="daklak-ai-card-link">
-                          {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card 2: Orion */}
-                  <div className="daklak-ai-card">
-                    <div className="daklak-ai-card-img-wrap">
-                      <span className="daklak-ai-card-pill daklak-ai-pill-gold">
-                        <i className="ti ti-sparkles" /> Orion
-                      </span>
-                      <div className="daklak-ai-img-container">
-                        <img 
-                          src={orionImg || "/images/adt_logo.svg"} 
-                          alt={orionPost?.title || "Hệ sinh thái Orion"} 
-                          className={`daklak-ai-card-img ${!orionImg ? 'daklak-ai-card-fallback-logo' : ''}`}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/images/adt_logo.svg";
-                            e.target.classList.add('daklak-ai-card-fallback-logo');
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="daklak-ai-card-body">
-                      <div className="daklak-ai-card-category daklak-ai-cat-gold">
-                        <i className="ti ti-cpu" /> {currentLang === 'en' ? 'Intelligent AI Platform' : 'Nền tảng AI thông minh'}
-                      </div>
-                      <h3 className="daklak-ai-card-title">
-                        <Link to="/posts/orion-chat-loc-tinh-hoa-cua-erp-multimodel-ai-va-nen-tang-xay-dung-ai-agent-de-tao-thanh-mot-he-dieu-hanh-quan-tri-thong-minh-danh-cho-doanh-nghiep">
-                          {currentLang === 'en'
-                            ? 'Orion: Distilling ERP, Multi-Model AI & AI Agent Platform into an Intelligent Operating System for Enterprises'
-                            : 'Orion chắt lọc tinh hoa của ERP, Multi-Model AI và nền tảng xây dựng AI Agent để tạo thành một hệ điều hành quản trị thông minh dành cho doanh nghiệp'}
-                        </Link>
-                      </h3>
-                      <p className="daklak-ai-card-summary">
-                        {currentLang === 'en'
-                          ? 'Unified intelligent enterprise operating system combining ERP and multi-model AI to automate business workflows.'
-                          : 'Orion chắt lọc tinh hoa của ERP, Multi-Model AI và nền tảng xây dựng AI Agent để tạo thành một hệ điều hành quản trị thông minh dành cho doanh nghiệp.'}
-                      </p>
-                      <div className="daklak-ai-card-footer">
-                        <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
-                        <Link to="/posts/orion-chat-loc-tinh-hoa-cua-erp-multimodel-ai-va-nen-tang-xay-dung-ai-agent-de-tao-thanh-mot-he-dieu-hanh-quan-tri-thong-minh-danh-cho-doanh-nghiep" className="daklak-ai-card-link">
-                          {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
-                        </Link>
-                      </div>
+                <div 
+                  className="daklak-ai-slider-container"
+                  onMouseEnter={() => setIsAiSlideHovered(true)}
+                  onMouseLeave={() => setIsAiSlideHovered(false)}
+                >
+                  <div className="daklak-ai-slider-viewport">
+                    <div 
+                      className="daklak-ai-slider-track"
+                      style={{ transform: `translateX(-${aiSlideIndex * 100}%)` }}
+                    >
+                      {aiSlides.map((slide, sIdx) => (
+                        <div key={sIdx} className="daklak-ai-slide-card">
+                          <div className="daklak-ai-card" style={{ margin: 0, height: '100%' }}>
+                            <div className="daklak-ai-card-img-wrap">
+                              <span className={`daklak-ai-card-pill ${slide.pillClass}`}>
+                                <i className={`ti ${slide.catIcon}`} /> {slide.tag}
+                              </span>
+                              <div className="daklak-ai-img-container">
+                                <img 
+                                  src={slide.img || "/images/adt_logo.svg"} 
+                                  alt={slide.alt} 
+                                  className={`daklak-ai-card-img ${!slide.img ? 'daklak-ai-card-fallback-logo' : ''}`}
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "/images/adt_logo.svg";
+                                    e.target.classList.add('daklak-ai-card-fallback-logo');
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div className="daklak-ai-card-body">
+                              <div className={`daklak-ai-card-category ${slide.catClass}`}>
+                                <i className={`ti ${slide.catIcon}`} /> {slide.catTitle}
+                              </div>
+                              <h3 className="daklak-ai-card-title">
+                                <Link to={slide.link}>
+                                  {slide.title}
+                                </Link>
+                              </h3>
+                              <p className="daklak-ai-card-summary">
+                                {slide.summary}
+                              </p>
+                              <div className="daklak-ai-card-footer">
+                                <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
+                                <Link to={slide.link} className="daklak-ai-card-link">
+                                  {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Card 3: Edunow.today */}
-                  <div className="daklak-ai-card">
-                    <div className="daklak-ai-card-img-wrap">
-                      <span className="daklak-ai-card-pill daklak-ai-pill-green">
-                        <i className="ti ti-school" /> Edunow.today
-                      </span>
-                      <div className="daklak-ai-img-container">
-                        <img 
-                          src={edunowImg || "/images/adt_logo.svg"} 
-                          alt={edunowPost?.title || "EDUNOW.AI"} 
-                          className={`daklak-ai-card-img ${!edunowImg ? 'daklak-ai-card-fallback-logo' : ''}`}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/images/adt_logo.svg";
-                            e.target.classList.add('daklak-ai-card-fallback-logo');
-                          }}
+                  {/* Navigation Arrows & Indicators */}
+                  <div className="daklak-ai-slider-nav">
+                    <button
+                      type="button"
+                      className="daklak-ai-nav-arrow"
+                      onClick={() => setAiSlideIndex(prev => (prev - 1 + 3) % 3)}
+                      aria-label="Bài viết trước"
+                    >
+                      <i className="ti ti-chevron-left" />
+                    </button>
+                    <div className="daklak-ai-slider-indicators">
+                      {[0, 1, 2].map((idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`daklak-ai-indicator ${aiSlideIndex === idx ? 'active' : ''}`}
+                          onClick={() => setAiSlideIndex(idx)}
+                          aria-label={`Chuyển đến bài ${idx + 1}`}
                         />
-                      </div>
+                      ))}
                     </div>
-                    <div className="daklak-ai-card-body">
-                      <div className="daklak-ai-card-category daklak-ai-cat-green">
-                        <i className="ti ti-certificate" /> {currentLang === 'en' ? 'Training & Digital Skills' : 'Đào tạo & Kỹ năng số'}
-                      </div>
-                      <h3 className="daklak-ai-card-title">
-                        <Link to="/posts/edunowai-giai-phap-tro-ly-ai-tuyen-sinh-thong-minh-danh-cho-cac-co-so-giao-duc">
-                          {currentLang === 'en'
-                            ? 'EDUNOW.AI: Smart Admissions AI Assistant Solution for Educational Institutions'
-                            : 'EDUNOW.AI Giải pháp Trợ lý AI tuyển sinh thông minh dành cho các cơ sở giáo dục'}
-                        </Link>
-                      </h3>
-                      <p className="daklak-ai-card-summary">
-                        {currentLang === 'en'
-                          ? 'Smart admissions consulting AI assistant and comprehensive digital skills training platform.'
-                          : 'EDUNOW.AI Giải pháp Trợ lý AI tuyển sinh thông minh dành cho các cơ sở giáo dục, tư vấn tuyển sinh 24/7 và chuyển đổi số đào tạo.'}
-                      </p>
-                      <div className="daklak-ai-card-footer">
-                        <span className="daklak-ai-card-author">Công ty cổ phần ADT Quốc Tế</span>
-                        <Link to="/posts/edunowai-giai-phap-tro-ly-ai-tuyen-sinh-thong-minh-danh-cho-cac-co-so-giao-duc" className="daklak-ai-card-link">
-                          {currentLang === 'en' ? 'Read More' : 'Đọc chi tiết'} <i className="ti ti-arrow-right" />
-                        </Link>
-                      </div>
-                    </div>
+                    <button
+                      type="button"
+                      className="daklak-ai-nav-arrow"
+                      onClick={() => setAiSlideIndex(prev => (prev + 1) % 3)}
+                      aria-label="Bài viết tiếp theo"
+                    >
+                      <i className="ti ti-chevron-right" />
+                    </button>
                   </div>
                 </div>
               );

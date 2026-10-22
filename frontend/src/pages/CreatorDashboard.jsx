@@ -271,7 +271,226 @@ export const CreatorDashboard = () => {
       <SEOHead title="Dashboard Biên tập viên | DakLak.today" description="Trang quản trị bài viết dành riêng cho Biên tập viên DakLak.today" />
       <Navbar />
 
-      <div className="public-container" style={{ minHeight: '80vh', paddingBottom: '4rem', paddingTop: '2rem' }}>
+      {modalOpen ? (
+        <div style={{ minHeight: '80vh', padding: '2rem 1.5rem 4rem', backgroundColor: '#F8FAFC' }}>
+          <div style={{ maxWidth: '1040px', margin: '0 auto' }}>
+            {/* Top Navigation & Title Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '1.25rem' }}>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="btn"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '7px 14px', marginBottom: '10px', backgroundColor: '#FFFFFF', border: '1px solid #CBD5E1', color: '#334155', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                >
+                  <i className="ti ti-arrow-left"></i> Quay lại Dashboard
+                </button>
+                <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <i className="ti ti-writing" style={{ color: '#D97706' }}></i>
+                  <span>{editingPostId ? 'Chỉnh sửa bài viết' : 'Soạn Thảo Bài Viết Mới'}</span>
+                </h1>
+                <p style={{ color: '#64748B', fontSize: '13.5px', margin: '4px 0 0' }}>
+                  Không gian biên tập tin bài, nội dung chuyên sâu, văn hóa và kinh tế Đắk Lắk trên giao diện trực quan, rộng rãi.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setModalOpen(false)} 
+                  className="btn btn-secondary" 
+                  style={{ padding: '9px 18px', backgroundColor: '#FFFFFF', border: '1px solid #CBD5E1', color: '#475569', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                >
+                  Hủy
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => handleCreateOrEditPost(true)} 
+                  className="btn btn-secondary" 
+                  disabled={creatingPost} 
+                  style={{ padding: '9px 18px', backgroundColor: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                >
+                  Lưu nháp
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => handleCreateOrEditPost(false)} 
+                  className="btn btn-primary" 
+                  disabled={creatingPost} 
+                  style={{ padding: '9px 24px', borderRadius: '8px', fontWeight: '700' }}
+                >
+                  {creatingPost ? <><i className="ti ti-loader animate-spin"></i> Đang gửi...</> : (Number(currentCreator?.requires_approval) === 0 ? '🚀 Xuất bản bài viết' : '📤 Đăng tin (Chờ duyệt)')}
+                </button>
+              </div>
+            </div>
+
+            {/* Form Editor Body */}
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '2.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', textAlign: 'left' }}>
+              <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
+                
+                {/* Tiêu đề bài viết */}
+                <div className="fg">
+                  <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Tiêu đề bài đăng <span style={{ color: '#ef4444' }}>*</span></label>
+                  <input 
+                    type="text" 
+                    id="title" 
+                    value={newPostData.title} 
+                    onChange={handleNewPostChange} 
+                    placeholder="Nhập tiêu đề bài viết chuẩn SEO..." 
+                    style={{ fontSize: '15px', padding: '11px 14px', borderRadius: '8px' }}
+                    required 
+                  />
+                </div>
+
+                {/* Chuyên mục & Lĩnh vực */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+                  <div className="fg">
+                    <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Chuyên mục <span style={{ color: '#ef4444' }}>*</span></label>
+                    <select 
+                      id="category" 
+                      value={newPostData.category} 
+                      onChange={(e) => {
+                        const cat = e.target.value;
+                        setNewPostData(prev => ({ ...prev, category: cat, sub_category: '' }));
+                      }}
+                      style={{ fontSize: '14px', padding: '11px 14px', borderRadius: '8px' }}
+                      required
+                    >
+                      <option value="">-- Chọn Chuyên mục --</option>
+                      {categoriesList.map(c => (
+                        <option key={c.id || c.name} value={c.name}>{getCategoryLabel(c, currentLang)}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="fg">
+                    <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Lĩnh vực <span style={{ color: '#ef4444' }}>*</span></label>
+                    <select 
+                      id="sub_category" 
+                      value={newPostData.sub_category} 
+                      onChange={handleNewPostChange}
+                      style={{ fontSize: '14px', padding: '11px 14px', borderRadius: '8px' }}
+                      required
+                    >
+                      <option value="">-- Chọn Lĩnh vực --</option>
+                      {((categoriesList.find(c => c.name === newPostData.category)?.subcategories || []).map(s => typeof s === 'string' ? s : s.name)).map(sub => (
+                        <option key={sub} value={sub}>{getCategoryLabel(sub, currentLang)}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Loại tin & Từ khóa Tags */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+                  <div className="fg">
+                    <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Loại tin bài</label>
+                    <select id="type" value={newPostData.type || 'Tin chung'} onChange={handleNewPostChange} style={{ fontSize: '14px', padding: '11px 14px', borderRadius: '8px' }}>
+                      <option value="Tin chung">Tin chung (Mặc định)</option>
+                      <option value="Tìm kiếm đối tác">Tìm kiếm đối tác</option>
+                      <option value="Cần mua / Cần bán">Cần mua / Cần bán</option>
+                      <option value="Thông báo sự kiện">Thông báo sự kiện</option>
+                      <option value="Tuyển dụng">Tuyển dụng</option>
+                      <option value="Khác">Khác</option>
+                    </select>
+                  </div>
+
+                  <div className="fg">
+                    <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Từ khoá SEO (phân tách bằng dấu phẩy)</label>
+                    <input type="text" id="tags" value={newPostData.tags} onChange={handleNewPostChange} placeholder="Ví dụ: cà phê Đắk Lắk, xuất khẩu Robusta, logistics BMT" style={{ fontSize: '14px', padding: '11px 14px', borderRadius: '8px' }} />
+                  </div>
+                </div>
+
+                {/* Tóm tắt bài đăng (Meta Description max 160 ký tự) */}
+                <div className="fg">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <label style={{ margin: 0, fontSize: '13.5px', fontWeight: 700, color: '#1E293B' }}>Tóm tắt bài đăng (Meta Description — Tối đa 160 ký tự)</label>
+                    <span style={{ fontSize: '11.5px', color: (newPostData.summary || '').length >= 160 ? '#ef4444' : '#64748B', fontWeight: 600 }}>
+                      {(newPostData.summary || '').length}/160 ký tự
+                    </span>
+                  </div>
+                  <input 
+                    type="text" 
+                    id="summary" 
+                    value={newPostData.summary} 
+                    onChange={handleNewPostChange} 
+                    maxLength={160}
+                    placeholder="Mô tả tóm tắt ngắn gọn hiển thị trên Google Search & Zalo/FB preview (tối đa 160 ký tự)..." 
+                    style={{ fontSize: '14px', padding: '11px 14px', borderRadius: '8px' }}
+                  />
+                </div>
+
+                {/* Hạn đăng bài */}
+                <div className="fg">
+                  <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Hạn đăng bài (Tự động ẩn khi đến ngày cài đặt, để trống nếu hiển thị vĩnh viễn)</label>
+                  <input 
+                    type="date" 
+                    id="deadline" 
+                    value={newPostData.deadline || ''} 
+                    onChange={handleNewPostChange} 
+                    style={{ fontSize: '14px', padding: '11px 14px', borderRadius: '8px' }}
+                  />
+                </div>
+
+                {/* Nội dung chi tiết Rich Text */}
+                <div className="fg">
+                  <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Nội dung chi tiết bài viết <span style={{ color: '#ef4444' }}>*</span></label>
+                  <RichTextEditor 
+                    value={newPostData.body} 
+                    onChange={(val) => setNewPostData(prev => ({ ...prev, body: val }))} 
+                    placeholder="Nhập nội dung chi tiết bài viết..." 
+                  />
+                </div>
+
+                {/* Tải ảnh minh họa / Ảnh bìa */}
+                <div className="fg">
+                  <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Ảnh bìa bài viết</label>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input 
+                      type="text" 
+                      id="image_url" 
+                      value={newPostData.image_url} 
+                      onChange={handleNewPostChange} 
+                      placeholder="Dán URL link ảnh hoặc bấm nút bên để chọn tệp từ máy..." 
+                      style={{ flex: 1, minWidth: '240px', fontSize: '14px', padding: '11px 14px', borderRadius: '8px' }}
+                    />
+                    <label className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', padding: '11px 16px', borderRadius: '8px', fontWeight: '600' }}>
+                      <i className="ti ti-upload"></i> {uploadingImage ? 'Đang tải...' : 'Chọn tệp'}
+                      <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} disabled={uploadingImage} />
+                    </label>
+                  </div>
+                  {newPostData.image_url && (
+                    <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img src={newPostData.image_url} alt="Cover Preview" style={{ height: '80px', width: '130px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #CBD5E1' }} />
+                      <button
+                        type="button"
+                        onClick={() => setNewPostData(prev => ({ ...prev, image_url: '' }))}
+                        className="btn"
+                        style={{ fontSize: '12px', padding: '6px 12px', color: '#EF4444', background: 'rgba(239, 68, 68, 0.1)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+                      >
+                        <i className="ti ti-trash"></i> Xóa ảnh
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer nút hành động */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '1.25rem', borderTop: '1px solid #E2E8F0', paddingTop: '16px' }}>
+                  <button type="button" onClick={() => setModalOpen(false)} className="btn btn-secondary" style={{ padding: '9px 18px', backgroundColor: '#FFFFFF', border: '1px solid #CBD5E1', color: '#475569', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>
+                    Hủy
+                  </button>
+                  <button type="button" onClick={() => handleCreateOrEditPost(true)} className="btn btn-secondary" disabled={creatingPost} style={{ padding: '9px 18px', backgroundColor: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>
+                    Lưu nháp
+                  </button>
+                  <button type="button" onClick={() => handleCreateOrEditPost(false)} className="btn btn-primary" disabled={creatingPost} style={{ padding: '9px 24px', borderRadius: '8px', fontWeight: '700' }}>
+                    {creatingPost ? <><i className="ti ti-loader animate-spin"></i> Đang gửi...</> : (Number(currentCreator?.requires_approval) === 0 ? '🚀 Xuất bản bài viết' : '📤 Đăng tin (Chờ duyệt)')}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="public-container" style={{ minHeight: '80vh', paddingBottom: '4rem', paddingTop: '2rem' }}>
         
         {/* Banner tiêu đề Dashboard */}
         <div className="glass-card" style={{ padding: '2rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', borderLeft: '4px solid var(--neon-cyan)' }}>
@@ -410,162 +629,6 @@ export const CreatorDashboard = () => {
           </div>
         )}
       </div>
-
-      {/* Modal Đăng / Sửa bài viết */}
-      {modalOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,14,30,0.85)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
-          <div className="glass-card" style={{ width: '100%', maxWidth: '750px', padding: '2rem', borderColor: 'var(--border-strong)', textAlign: 'left' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
-              <h3 style={{ fontFamily: 'var(--font-title)', fontSize: '17px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                <i className="ti ti-plus" style={{ color: 'var(--neon-cyan)' }}></i> {editingPostId ? 'Chỉnh sửa bài viết' : 'Soạn bài viết mới'}
-              </h3>
-              <button onClick={() => setModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '20px', cursor: 'pointer' }}><i className="ti ti-x"></i></button>
-            </div>
-
-            <form onSubmit={(e) => e.preventDefault()}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '65vh', overflowY: 'auto', paddingRight: '8px' }}>
-                
-                {/* Tiêu đề bài viết */}
-                <div className="fg">
-                  <label style={{ fontSize: '13px', fontWeight: 600 }}>Tiêu đề bài đăng <span style={{ color: '#ef4444' }}>*</span></label>
-                  <input type="text" id="title" value={newPostData.title} onChange={handleNewPostChange} placeholder="Nhập tiêu đề bài viết chuẩn SEO..." required />
-                </div>
-
-                {/* Chuyên mục & Lĩnh vực */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div className="fg">
-                    <label style={{ fontSize: '13px', fontWeight: 600 }}>Chuyên mục <span style={{ color: '#ef4444' }}>*</span></label>
-                    <select 
-                      id="category" 
-                      value={newPostData.category} 
-                      onChange={(e) => {
-                        const cat = e.target.value;
-                        setNewPostData(prev => ({ ...prev, category: cat, sub_category: '' }));
-                      }}
-                      required
-                    >
-                      <option value="">-- Chọn Chuyên mục --</option>
-                      {categoriesList.map(c => (
-                        <option key={c.id || c.name} value={c.name}>{getCategoryLabel(c, currentLang)}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="fg">
-                    <label style={{ fontSize: '13px', fontWeight: 600 }}>Lĩnh vực <span style={{ color: '#ef4444' }}>*</span></label>
-                    <select 
-                      id="sub_category" 
-                      value={newPostData.sub_category} 
-                      onChange={handleNewPostChange}
-                      required
-                    >
-                      <option value="">-- Chọn Lĩnh vực --</option>
-                      {((categoriesList.find(c => c.name === newPostData.category)?.subcategories || []).map(s => typeof s === 'string' ? s : s.name)).map(sub => (
-                        <option key={sub} value={sub}>{getCategoryLabel(sub, currentLang)}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Loại tin & Từ khóa Tags */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div className="fg">
-                    <label style={{ fontSize: '13px', fontWeight: 600 }}>Loại tin bài</label>
-                    <select id="type" value={newPostData.type || 'Tin chung'} onChange={handleNewPostChange}>
-                      <option value="Tin chung">Tin chung (Mặc định)</option>
-                      <option value="Tìm kiếm đối tác">Tìm kiếm đối tác</option>
-                      <option value="Cần mua / Cần bán">Cần mua / Cần bán</option>
-                      <option value="Thông báo sự kiện">Thông báo sự kiện</option>
-                      <option value="Tuyển dụng">Tuyển dụng</option>
-                      <option value="Khác">Khác</option>
-                    </select>
-                  </div>
-
-                  <div className="fg">
-                    <label style={{ fontSize: '13px', fontWeight: 600 }}>Từ khoá SEO (phân tách bằng dấu phẩy)</label>
-                    <input type="text" id="tags" value={newPostData.tags} onChange={handleNewPostChange} placeholder="Ví dụ: du lịch di sản, văn hóa Đà Nẵng, lễ hội Huế" />
-                  </div>
-                </div>
-
-                {/* Tóm tắt bài đăng (Meta Description max 160 ký tự) */}
-                <div className="fg">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <label style={{ margin: 0, fontSize: '13px', fontWeight: 600 }}>Tóm tắt bài đăng (Meta Description — Tối đa 160 ký tự)</label>
-                    <span style={{ fontSize: '11px', color: (newPostData.summary || '').length >= 160 ? '#ef4444' : 'var(--text-muted)', fontWeight: 600 }}>
-                      {(newPostData.summary || '').length}/160 ký tự
-                    </span>
-                  </div>
-                  <input 
-                    type="text" 
-                    id="summary" 
-                    value={newPostData.summary} 
-                    onChange={handleNewPostChange} 
-                    maxLength={160}
-                    placeholder="Mô tả tóm tắt ngắn gọn hiển thị trên Google Search & Zalo/FB preview (tối đa 160 ký tự)..." 
-                  />
-                </div>
-
-                {/* Hạn đăng bài */}
-                <div className="fg">
-                  <label style={{ fontSize: '13px', fontWeight: 600 }}>Hạn đăng bài (Tự động ẩn khi đến ngày cài đặt, để trống nếu hiển thị vĩnh viễn)</label>
-                  <input 
-                    type="date" 
-                    id="deadline" 
-                    value={newPostData.deadline || ''} 
-                    onChange={handleNewPostChange} 
-                  />
-                </div>
-
-                {/* Nội dung chi tiết Rich Text */}
-                <div className="fg">
-                  <label style={{ fontSize: '13px', fontWeight: 600 }}>Nội dung chi tiết bài viết <span style={{ color: '#ef4444' }}>*</span></label>
-                  <RichTextEditor 
-                    value={newPostData.body} 
-                    onChange={(val) => setNewPostData(prev => ({ ...prev, body: val }))} 
-                    placeholder="Nhập nội dung chi tiết bài viết..." 
-                  />
-                </div>
-
-                {/* Tải ảnh minh họa / Ảnh bìa */}
-                <div className="fg">
-                  <label style={{ fontSize: '13px', fontWeight: 600 }}>Ảnh bìa bài viết</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input 
-                      type="text" 
-                      id="image_url" 
-                      value={newPostData.image_url} 
-                      onChange={handleNewPostChange} 
-                      placeholder="Dán URL link ảnh hoặc bấm nút bên để chọn tệp từ máy..." 
-                    />
-                    <label className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                      <i className="ti ti-upload"></i> {uploadingImage ? 'Đang tải...' : 'Chọn tệp'}
-                      <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} disabled={uploadingImage} />
-                    </label>
-                  </div>
-                  {newPostData.image_url && (
-                    <div style={{ marginTop: '8px' }}>
-                      <img src={newPostData.image_url} alt="Cover Preview" style={{ maxHeight: '100px', borderRadius: '8px', border: '1px solid var(--border)' }} />
-                    </div>
-                  )}
-                </div>
-
-              </div>
-
-              {/* Footer nút hành động */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-                <button type="button" onClick={() => setModalOpen(false)} className="btn btn-secondary" style={{ padding: '8px 18px' }}>
-                  Hủy
-                </button>
-                <button type="button" onClick={() => handleCreateOrEditPost(true)} className="btn btn-secondary" disabled={creatingPost} style={{ padding: '8px 18px' }}>
-                  Lưu nháp
-                </button>
-                <button type="button" onClick={() => handleCreateOrEditPost(false)} className="btn btn-primary" disabled={creatingPost} style={{ padding: '8px 22px' }}>
-                  {creatingPost ? <><i className="ti ti-loader animate-spin"></i> Đang gửi...</> : (Number(currentCreator?.requires_approval) === 0 ? '🚀 Xuất bản bài viết' : '📤 Đăng tin (Chờ duyệt)')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
       )}
 
       <Footer />

@@ -599,24 +599,7 @@ export const Navbar = () => {
                       className="dnvn-dropdown-panel"
                       role="menu"
                     >
-                      {/* Lối vào xem toàn bộ chuyên mục cha */}
-                      <Link
-                        to={`/posts?category=${encodeURIComponent(cat.name)}`}
-                        className="dnvn-dropdown-item"
-                        style={{
-                          color: '#D5A33F',
-                          fontWeight: '700',
-                          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                          marginBottom: '4px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}
-                        onClick={() => setActiveDropdownId(null)}
-                      >
-                        <i className="ti ti-layout-grid" style={{ fontSize: '13px' }} />
-                        <span>{currentLang === 'en' ? `All ${catDisplayName}` : `Tất cả ${catDisplayName}`}</span>
-                      </Link>
+
 
                       {subs.map((sub, idx) => {
                         const subName = typeof sub === 'object' ? sub.name : sub;
