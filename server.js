@@ -317,6 +317,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads'), {
   }
 }));
 app.use(express.static(path.join(__dirname, 'public'), {
+  index: false,
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -5160,6 +5161,33 @@ app.use((req, res, next) => {
 });
 
 // ════════════════════════════════════════════
+// Proxy ảnh cho OpenGraph (tránh bị lỗi chặn bot từ website bên thứ 3)
+// ════════════════════════════════════════════
+app.get('/api/og-image', async (req, res) => {
+  const targetUrl = req.query.url;
+  const baseUrl = getBaseUrl(req);
+  if (!targetUrl) return res.redirect(`${baseUrl}/logo_icon.png`);
+  try {
+    const upstream = await fetch(targetUrl, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(8000),
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
+      }
+    });
+    if (!upstream.ok) return res.redirect(`${baseUrl}/logo_icon.png`);
+    const contentType = upstream.headers.get('content-type') || 'image/jpeg';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+    const arrayBuffer = await upstream.arrayBuffer();
+    return res.send(Buffer.from(arrayBuffer));
+  } catch (err) {
+    return res.redirect(`${baseUrl}/logo_icon.png`);
+  }
+});
+
+// ════════════════════════════════════════════
 // SPA Fallback & Dynamic OpenGraph Meta Tag Engine (SEO / Social Preview)
 // ════════════════════════════════════════════
 
@@ -5203,6 +5231,7 @@ function cleanDescription(summary, body, fallback) {
   if (!text) {
     text = fallback || 'DakLak.today kết nối con người, doanh nghiệp, sản phẩm, du lịch, dữ liệu và cơ hội đầu tư của tỉnh Đắk Lắk bằng nền tảng số và trí tuệ nhân tạo.';
   }
+  text = text.replace(/[\r\n\t]+/g, ' ').trim();
   if (text.length > 220) {
     text = text.substring(0, 217) + '...';
   }
@@ -5210,11 +5239,11 @@ function cleanDescription(summary, body, fallback) {
 }
 
 function getBaseUrl(req) {
-  const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
   const host = req.headers['x-forwarded-host'] || req.get('host') || 'dev.daklak.today';
   if (process.env.SITE_URL && (host.includes('localhost') || host.includes('127.0.0.1'))) {
     return process.env.SITE_URL.replace(/\/+$/, '');
   }
+  const proto = host.includes('localhost') ? 'http' : 'https';
   return `${proto}://${host}`.replace(/\/+$/, '');
 }
 
@@ -5228,8 +5257,12 @@ function resolveImageUrl(imgUrl, baseUrl) {
   ) {
     return `${baseUrl}/logo_icon.png`;
   }
+  // External image: proxy through our server to guarantee accessibility to Zalo/FB crawlers
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-    return trimmed;
+    if (trimmed.includes(baseUrl.replace(/^https?:\/\//, '')) || trimmed.includes('daklak.today')) {
+      return trimmed;
+    }
+    return `${baseUrl}/api/og-image?url=${encodeURIComponent(trimmed)}`;
   }
   if (trimmed.startsWith('/')) {
     return `${baseUrl}${trimmed}`;
@@ -5237,64 +5270,56 @@ function resolveImageUrl(imgUrl, baseUrl) {
   return `${baseUrl}/${trimmed}`;
 }
 
-function injectMetaTags(html, { title, description, image, url, type = 'website' }) {
+function injectMetaTags(html, { title, description, image, url, type = 'website' }, baseUrl) {
   let resHtml = html;
 
   // Title
   resHtml = resHtml.replace(/<title>.*?<\/title>/is, `<title>${escapeHtml(title)}</title>`);
 
-  // Meta description
-  if (/<meta\s+name=["']description["'][^>]*>/i.test(resHtml)) {
-    resHtml = resHtml.replace(/<meta\s+name=["']description["'][^>]*>/i, `<meta name="description" content="${escapeHtml(description)}" />`);
-  } else {
-    resHtml = resHtml.replace(/<head>/i, `<head>\n    <meta name="description" content="${escapeHtml(description)}" />`);
-  }
-
-  // OG Title
-  if (/<meta\s+property=["']og:title["'][^>]*>/i.test(resHtml)) {
-    resHtml = resHtml.replace(/<meta\s+property=["']og:title["'][^>]*>/i, `<meta property="og:title" content="${escapeHtml(title)}" />`);
-  } else {
-    resHtml = resHtml.replace(/<\/head>/i, `    <meta property="og:title" content="${escapeHtml(title)}" />\n  </head>`);
-  }
-
-  // OG Description
-  if (/<meta\s+property=["']og:description["'][^>]*>/i.test(resHtml)) {
-    resHtml = resHtml.replace(/<meta\s+property=["']og:description["'][^>]*>/i, `<meta property="og:description" content="${escapeHtml(description)}" />`);
-  } else {
-    resHtml = resHtml.replace(/<\/head>/i, `    <meta property="og:description" content="${escapeHtml(description)}" />\n  </head>`);
-  }
-
-  // OG Image
-  if (/<meta\s+property=["']og:image["'][^>]*>/i.test(resHtml)) {
-    resHtml = resHtml.replace(/<meta\s+property=["']og:image["'][^>]*>/i, `<meta property="og:image" content="${escapeHtml(image)}" />`);
-  } else {
-    resHtml = resHtml.replace(/<\/head>/i, `    <meta property="og:image" content="${escapeHtml(image)}" />\n  </head>`);
-  }
-
-  // OG URL
-  if (/<meta\s+property=["']og:url["'][^>]*>/i.test(resHtml)) {
-    resHtml = resHtml.replace(/<meta\s+property=["']og:url["'][^>]*>/i, `<meta property="og:url" content="${escapeHtml(url)}" />`);
-  } else {
-    resHtml = resHtml.replace(/<\/head>/i, `    <meta property="og:url" content="${escapeHtml(url)}" />\n  </head>`);
-  }
-
-  // OG Type
-  if (/<meta\s+property=["']og:type["'][^>]*>/i.test(resHtml)) {
-    resHtml = resHtml.replace(/<meta\s+property=["']og:type["'][^>]*>/i, `<meta property="og:type" content="${escapeHtml(type)}" />`);
-  }
-
-  // Twitter card
+  // Xóa sạch toàn bộ meta description, canonical, OG và Twitter cũ để tránh xung đột
+  resHtml = resHtml.replace(/<meta\s+name=["']description["'][^>]*>\s*/gi, '');
+  resHtml = resHtml.replace(/<meta\s+property=["']og:[^"']+["'][^>]*>\s*/gi, '');
   resHtml = resHtml.replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>\s*/gi, '');
-  const twitterTags = `    <meta name="twitter:card" content="summary_large_image" />\n    <meta name="twitter:title" content="${escapeHtml(title)}" />\n    <meta name="twitter:description" content="${escapeHtml(description)}" />\n    <meta name="twitter:image" content="${escapeHtml(image)}" />\n`;
-  resHtml = resHtml.replace(/<\/head>/i, `${twitterTags}  </head>`);
+  resHtml = resHtml.replace(/<link\s+rel=["']canonical["'][^>]*>\s*/gi, '');
 
+  const isSquareLogo = image.endsWith('/logo_icon.png');
+
+  let newMeta = `    <meta name="description" content="${escapeHtml(description)}" />\n`;
+  newMeta += `    <link rel="canonical" href="${escapeHtml(url)}" />\n`;
+  newMeta += `    <meta property="og:site_name" content="DakLak.today" />\n`;
+  newMeta += `    <meta property="og:locale" content="vi_VN" />\n`;
+  newMeta += `    <meta property="og:type" content="${escapeHtml(type)}" />\n`;
+  newMeta += `    <meta property="og:url" content="${escapeHtml(url)}" />\n`;
+  newMeta += `    <meta property="og:title" content="${escapeHtml(title)}" />\n`;
+  newMeta += `    <meta property="og:description" content="${escapeHtml(description)}" />\n`;
+  newMeta += `    <meta property="og:image" content="${escapeHtml(image)}" />\n`;
+  newMeta += `    <meta property="og:image:secure_url" content="${escapeHtml(image)}" />\n`;
+
+  if (isSquareLogo) {
+    newMeta += `    <meta property="og:image:width" content="512" />\n`;
+    newMeta += `    <meta property="og:image:height" content="512" />\n`;
+  }
+  newMeta += `    <meta property="og:image:alt" content="${escapeHtml(title)}" />\n`;
+
+  newMeta += `    <meta name="twitter:card" content="summary_large_image" />\n`;
+  newMeta += `    <meta name="twitter:title" content="${escapeHtml(title)}" />\n`;
+  newMeta += `    <meta name="twitter:description" content="${escapeHtml(description)}" />\n`;
+  newMeta += `    <meta name="twitter:image" content="${escapeHtml(image)}" />\n`;
+
+  resHtml = resHtml.replace(/<\/head>/i, `${newMeta}  </head>`);
   return resHtml;
 }
 
 app.get('*', async (req, res) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
+  const userAgent = (req.headers['user-agent'] || '').toLowerCase();
+  const isCrawler = /zalo|facebookexternalhit|twitterbot|telegrambot|whatsapp|linkedinbot|slackbot|googlebot|bingbot|baiduspider|yandex/i.test(userAgent);
+
+  // Bot cào link preview cần header cho phép lưu cache để hiển thị card preview; còn trình duyệt người dùng thì chống dính bundle cũ
+  if (isCrawler) {
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+  } else {
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  }
 
   const baseHtml = getBaseIndexHtml();
   if (!baseHtml) {
@@ -5400,7 +5425,7 @@ app.get('*', async (req, res) => {
     console.error('Lỗi truy vấn OpenGraph SSR:', err.message);
   }
 
-  const finalHtml = injectMetaTags(baseHtml, meta);
+  const finalHtml = injectMetaTags(baseHtml, meta, baseUrl);
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(finalHtml);
 });
