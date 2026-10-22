@@ -427,8 +427,8 @@ const getPostThumb = (post, idx = 0) => {
 
 // Dữ liệu Top 10 Doanh nghiệp xuất khẩu cà phê Tây Nguyên
 const TOP_EXPORTERS_TAY_NGUYEN = {
-  title: 'Top Doanh Nghiệp Xuất Khẩu Cà Phê Tây Nguyên',
-  titleEn: 'Top Coffee Exporters in Central Highlands',
+  title: 'Top 10 Doanh Nghiệp Xuất Khẩu Cà Phê Tây Nguyên',
+  titleEn: 'Top 10 Coffee Exporters in Central Highlands',
   sub: 'Những cánh chim đầu đàn đưa Robusta Buôn Ma Thuột và Tây Nguyên chinh phục thị trường toàn cầu',
   subEn: 'Flagship enterprises elevating Buon Ma Thuot & Central Highlands Robusta globally',
   top3: [
@@ -470,8 +470,8 @@ const TOP_EXPORTERS_TAY_NGUYEN = {
 
 // Dữ liệu Top 10 Doanh nghiệp thương mại & xuất khẩu cà phê Thế Giới
 const TOP_EXPORTERS_WORLD = {
-  title: 'Top Doanh Nghiệp Xuất Khẩu Cà Phê Thế Giới',
-  titleEn: 'Top Global Coffee Trading & Export Giants',
+  title: 'Top 10 Doanh Nghiệp Xuất Khẩu Cà Phê Thế Giới',
+  titleEn: 'Top 10 Global Coffee Trading & Export Giants',
   sub: 'Các tập đoàn thương mại đa quốc gia chi phối chuỗi cung ứng và logistics cà phê toàn cầu',
   subEn: 'Multinational trading giants shaping global coffee value chains, logistics, and roastery supplies',
   top3: [
@@ -1243,13 +1243,13 @@ export const Home = () => {
             {/* Left Column: Heading, Subtitle & Action (Enters from Left) */}
             <div className="gt-hero-left scroll-reveal scroll-reveal-left">
               <h1 className="gt-hero-title">
-                {currentLang === 'en' ? 'Discover Dak Lak' : 'Khám Phá Đắk Lắk'}<br />
+                {currentLang === 'en' ? 'Discover Dak Lak' : 'Khám phá Đắk Lắk'}<br />
                 <span className="gt-hero-highlight">
-                  {currentLang === 'en' ? 'Heritage' : 'Bản Sắc'}
+                  {currentLang === 'en' ? 'Heritage of' : 'Bản sắc'}
                   <svg className="gt-highlight-curve" viewBox="0 0 180 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 14C45 4 135 4 176 14" stroke="#E99035" strokeWidth="4" strokeLinecap="round" />
                   </svg>
-                </span> {currentLang === 'en' ? 'Wonders' : 'Kỳ Vĩ'}
+                </span> {currentLang === 'en' ? 'Central Highlands' : 'Tây Nguyên'}
               </h1>
 
               <p className="gt-hero-desc">
@@ -1762,7 +1762,7 @@ export const Home = () => {
                 {currentLang === 'en' ? 'Global & Regional Coffee Leadership' : 'Định Vị Thủ Phủ Cà Phê & Chuỗi Giá Trị Toàn Cầu'}
               </span>
               <h2 className="daklak-section-title">
-                {currentLang === 'en' ? 'Top Coffee Exporters: Central Highlands & World' : 'Top Doanh Nghiệp Xuất Khẩu Cà Phê'}
+                {currentLang === 'en' ? 'Top 10 Coffee Exporters: Central Highlands & World' : 'Top 10 Doanh Nghiệp Xuất Khẩu Cà Phê'}
               </h2>
               <p className="daklak-section-desc">
                 {currentLang === 'en'
@@ -2306,7 +2306,7 @@ export const Home = () => {
               {/* Strength 2 (From Up) */}
               <div className="strength-card scroll-reveal scroll-reveal-up stagger-2">
                 <div className="strength-img-box">
-                  <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Văn hóa Du lịch" />
+                  <img src="/images/daklak/daklak_cong_chieng.jpg" alt="Văn hóa Du lịch Cồng Chiêng" />
                   <span className="strength-tag" style={{ background: 'rgba(31, 90, 58, 0.9)' }}>{currentLang === 'en' ? 'Living Heritage' : 'Di sản Sống'}</span>
                 </div>
                 <div className="strength-body">
@@ -2332,7 +2332,7 @@ export const Home = () => {
               {/* Strength 4 (From Right) */}
               <div className="strength-card scroll-reveal scroll-reveal-right stagger-4">
                 <div className="strength-img-box">
-                  <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80" alt="Không gian phát triển" />
+                  <img src="/images/daklak/daklak_dau_tu_logistics.jpg" alt="Không gian phát triển Đắk Lắk" />
                   <span className="strength-tag" style={{ background: 'rgba(122, 62, 29, 0.9)' }}>{currentLang === 'en' ? 'Urban Hub' : 'Đô Thị Trung Tâm'}</span>
                 </div>
                 <div className="strength-body">

@@ -105,11 +105,27 @@ export const Posts = () => {
   const [activeSlide, setActiveSlide] = useState(0);
 
   const demoImages = [
-    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80'
+    '/images/daklak/daklak_doi_ca_phe.jpg',
+    '/images/daklak/daklak_dau_tu_logistics.jpg',
+    '/images/daklak/daklak_cong_chieng.jpg',
+    '/images/daklak/daklak_thac_dray_nur.jpg',
+    '/images/daklak/daklak_ca_phe.jpg',
+    '/images/daklak/daklak_le_hoi_nha_rong.jpg',
+    '/images/daklak/daklak_nha_rong_ede.jpg',
+    '/images/daklak/daklak_bien_ganh_da_dia.jpg'
   ];
+
+  const isGenericOrPlaceholder = (url) => {
+    if (!url || typeof url !== 'string' || url.trim() === '' || url === 'null' || url === 'undefined') return true;
+    const lower = url.toLowerCase();
+    return (
+      lower.includes('photo-1460925895917') ||
+      lower.includes('photo-1522071820081') ||
+      lower.includes('photo-1519389950473') ||
+      lower.includes('photo-1507238691740') ||
+      lower.includes('placeholder')
+    );
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -234,8 +250,8 @@ export const Posts = () => {
           <div style={{ position: 'relative', height: '240px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', background: 'var(--surface-2)', marginBottom: '3rem', display: 'flex', alignItems: 'center' }}>
             {platinumPosts.map((p, idx) => {
               const isActive = idx === activeSlide;
-              const hasValidSlideImg = p.image_url && p.image_url !== 'null' && p.image_url !== 'undefined' && p.image_url.trim() !== '';
-              const postImg = hasValidSlideImg ? p.image_url : demoImages[p.id % demoImages.length];
+              const hasValidSlideImg = !isGenericOrPlaceholder(p.image_url);
+              const postImg = hasValidSlideImg ? p.image_url : demoImages[idx % demoImages.length];
               return (
                 <div key={p.id} style={{
                   position: 'absolute',
@@ -494,11 +510,11 @@ export const Posts = () => {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {currentPosts.map((p) => {
+            {currentPosts.map((p, pIdx) => {
               if (!p) return null;
               const dateStr = p.created_at ? new Date(p.created_at).toLocaleDateString('vi-VN') : '11/06/2026';
-              const hasValidListImg = p.image_url && typeof p.image_url === 'string' && p.image_url !== 'null' && p.image_url !== 'undefined' && p.image_url.trim() !== '';
-              const pImg = hasValidListImg ? p.image_url : demoImages[Math.abs(Number(p.id) || 0) % demoImages.length];
+              const hasValidListImg = !isGenericOrPlaceholder(p.image_url);
+              const pImg = hasValidListImg ? p.image_url : demoImages[(Math.abs(Number(p.id) || 0) + pIdx) % demoImages.length];
               const isPlat = p.company_tier === 'Platinum';
               const isGld = p.company_tier === 'Gold';
               const compName = typeof p.company_name === 'string' ? p.company_name : '';
