@@ -689,16 +689,17 @@ export const Home = () => {
   });
   const [loadingPosts, setLoadingPosts] = useState(false);
 
-  // Dynamic Live Events (khởi tạo từ cache)
+  // Dynamic Live Events (theo thực tế từ DB, không hiển thị mock demo)
   const [eventsList, setEventsList] = useState(() => {
     try {
-      const cached = localStorage.getItem('dnvn_cached_home_events');
+      localStorage.removeItem('dnvn_cached_home_events');
+      const cached = localStorage.getItem('daklak_cached_home_events');
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {}
-    return FALLBACK_EVENTS;
+    return [];
   });
 
   // Dynamic Live Members (khởi tạo từ cache)
@@ -743,10 +744,11 @@ export const Home = () => {
               localStorage.setItem('dnvn_cached_home_posts', JSON.stringify(postsRes.value.data));
             } catch (e) {}
           }
-          if (eventsRes.status === 'fulfilled' && eventsRes.value?.success && Array.isArray(eventsRes.value.data) && eventsRes.value.data.length > 0) {
+          if (eventsRes.status === 'fulfilled' && eventsRes.value?.success && Array.isArray(eventsRes.value.data)) {
             setEventsList(eventsRes.value.data);
             try {
-              localStorage.setItem('dnvn_cached_home_events', JSON.stringify(eventsRes.value.data));
+              localStorage.setItem('daklak_cached_home_events', JSON.stringify(eventsRes.value.data));
+              localStorage.removeItem('dnvn_cached_home_events');
             } catch (e) {}
           }
           if (membersRes.status === 'fulfilled' && membersRes.value?.success && Array.isArray(membersRes.value.data) && membersRes.value.data.length > 0) {
@@ -1204,21 +1206,11 @@ export const Home = () => {
     }
   ];
 
-  // Dữ liệu sự kiện cho bố cục mới (1 Sự kiện Tiêu điểm Hero + 3 Sự kiện phụ)
-  const heroEvent = (eventsList && eventsList.length > 0) ? eventsList[0] : FALLBACK_EVENTS[0];
+  // Dữ liệu sự kiện theo thực tế DB (1 Sự kiện Tiêu điểm Hero + tối đa 3 Sự kiện phụ, không chèn fake demo)
+  const heroEvent = (eventsList && eventsList.length > 0) ? eventsList[0] : null;
   const subEvents = useMemo(() => {
-    const list = (eventsList && eventsList.length > 1) ? eventsList.slice(1, 4) : [];
-    const needed = 3 - list.length;
-    if (needed > 0) {
-      for (const fb of FALLBACK_EVENTS) {
-        if (list.length >= 3) break;
-        if (fb.id !== heroEvent?.id && !list.some(x => x.id === fb.id || x.title === fb.title)) {
-          list.push(fb);
-        }
-      }
-    }
-    return list;
-  }, [eventsList, heroEvent]);
+    return (eventsList && eventsList.length > 1) ? eventsList.slice(1, 4) : [];
+  }, [eventsList]);
 
   return (
     <div className="daklak-home">
@@ -1907,127 +1899,181 @@ export const Home = () => {
               </div>
             </div>
 
-            {/* Event Hero Card */}
-            {heroEvent && (
-              <div className="daklak-event-hero-card">
-                <div className="daklak-event-hero-content">
-                  {/* Tags row */}
-                  <div className="daklak-event-hero-tags">
-                    <span className="daklak-hero-tag highlight">
-                      <i className="ti ti-sparkles" />
-                      {currentLang === 'en' ? 'Featured Event' : 'SỰ KIỆN NỔI BẬT'}
-                    </span>
-                    <span className="daklak-hero-tag fee">
-                      {formatEventPrice(heroEvent)}
-                    </span>
-                    <span className="daklak-event-hero-time">
-                      <i className="ti ti-clock" />
-                      {formatEventDateTime(heroEvent.event_date)}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="daklak-event-hero-title">
-                    <Link to={`/events/${heroEvent.id}`}>
-                      {heroEvent.title}
-                    </Link>
-                  </h3>
-
-                  {/* Short description */}
-                  <p className="daklak-event-hero-desc">
-                    {heroEvent.short_desc || heroEvent.description}
-                  </p>
-
-                  {/* Countdown Timer */}
-                  <div className="daklak-event-hero-countdown-block">
-                    <div className="daklak-countdown-title">
-                      <i className="ti ti-hourglass-empty" />
-                      <span>{currentLang === 'en' ? 'Event starts in' : 'SỰ KIỆN BẮT ĐẦU SAU'}</span>
-                    </div>
-                    <HomeEventCountdown eventDate={heroEvent.event_date} />
-                  </div>
-
-                  {/* Footer Row: Location & CTA */}
-                  <div className="daklak-event-hero-footer">
-                    <div className="daklak-event-hero-location" title={heroEvent.location || 'TP. Buôn Ma Thuột, Đắk Lắk'}>
-                      <i className="ti ti-map-pin" />
-                      <span>{heroEvent.location || 'TP. Buôn Ma Thuột, Đắk Lắk'}</span>
-                    </div>
-
-                    <div className="daklak-event-hero-actions">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenRegisterModal(heroEvent)}
-                        className="btn-daklak-event-register"
-                      >
-                        <span>{currentLang === 'en' ? 'Details & Register' : 'Xem chi tiết & Đăng ký'}</span>
-                        <i className="ti ti-arrow-right" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Poster Image */}
-                <div className="daklak-event-hero-image-wrap">
-                  <img
-                    src={heroEvent.image_url || heroEvent.poster_url || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80'}
-                    alt={heroEvent.title}
-                    className="daklak-event-hero-img"
-                    onError={(e) => {
-                      e.target.src = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80';
-                    }}
-                  />
-                  <div className="daklak-event-hero-img-overlay" />
-                </div>
-              </div>
-            )}
-
-            {/* Sub-Events 3-Card Grid */}
-            {subEvents.length > 0 && (
-              <div className="daklak-event-sub-grid">
-                {subEvents.map((evt, idx) => (
-                  <div key={evt.id || idx} className="daklak-event-sub-card">
-                    <div className="daklak-event-sub-thumb-wrap">
-                      <img
-                        src={evt.image_url || evt.poster_url || 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80'}
-                        alt={evt.title}
-                        className="daklak-event-sub-img"
-                        onError={(e) => {
-                          e.target.src = 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80';
-                        }}
-                      />
-                      <span className="daklak-event-sub-price-badge">
-                        {formatEventPrice(evt)}
+            {/* Nếu có sự kiện thực tế trong hệ thống thì hiển thị Hero & Sub-events */}
+            {heroEvent ? (
+              <>
+                <div className="daklak-event-hero-card">
+                  <div className="daklak-event-hero-content">
+                    {/* Tags row */}
+                    <div className="daklak-event-hero-tags">
+                      <span className="daklak-hero-tag highlight">
+                        <i className="ti ti-sparkles" />
+                        {currentLang === 'en' ? 'Featured Event' : 'SỰ KIỆN NỔI BẬT'}
+                      </span>
+                      <span className="daklak-hero-tag fee">
+                        {formatEventPrice(heroEvent)}
+                      </span>
+                      <span className="daklak-event-hero-time">
+                        <i className="ti ti-clock" />
+                        {formatEventDateTime(heroEvent.event_date)}
                       </span>
                     </div>
 
-                    <div className="daklak-event-sub-body">
-                      <div className="daklak-event-sub-time">
-                        <i className="ti ti-clock" />
-                        <span>{formatEventDateTime(evt.event_date)}</span>
+                    {/* Title */}
+                    <h3 className="daklak-event-hero-title">
+                      <Link to={`/events/${heroEvent.id}`}>
+                        {heroEvent.title}
+                      </Link>
+                    </h3>
+
+                    {/* Short description */}
+                    <p className="daklak-event-hero-desc">
+                      {heroEvent.short_desc || heroEvent.description}
+                    </p>
+
+                    {/* Countdown Timer */}
+                    <div className="daklak-event-hero-countdown-block">
+                      <div className="daklak-countdown-title">
+                        <i className="ti ti-hourglass-empty" />
+                        <span>{currentLang === 'en' ? 'Event starts in' : 'SỰ KIỆN BẮT ĐẦU SAU'}</span>
+                      </div>
+                      <HomeEventCountdown eventDate={heroEvent.event_date} />
+                    </div>
+
+                    {/* Footer Row: Location & CTA */}
+                    <div className="daklak-event-hero-footer">
+                      <div className="daklak-event-hero-location" title={heroEvent.location || 'TP. Buôn Ma Thuột, Đắk Lắk'}>
+                        <i className="ti ti-map-pin" />
+                        <span>{heroEvent.location || 'TP. Buôn Ma Thuột, Đắk Lắk'}</span>
                       </div>
 
-                      <h4 className="daklak-event-sub-title" title={evt.title}>
-                        <Link to={`/events/${evt.id}`}>{evt.title}</Link>
-                      </h4>
-
-                      <p className="daklak-event-sub-desc">
-                        {evt.short_desc || evt.description}
-                      </p>
-
-                      <div className="daklak-event-sub-footer">
-                        <div className="daklak-event-sub-loc" title={evt.location || 'TP. Buôn Ma Thuột'}>
-                          <i className="ti ti-map-pin" />
-                          <span>{evt.location || 'TP. Buôn Ma Thuột, Đắk Lắk'}</span>
-                        </div>
-                        <Link to={`/events/${evt.id}`} className="daklak-event-sub-link">
-                          <span>{currentLang === 'en' ? 'Details' : 'Chi tiết'}</span>
-                          <i className="ti ti-chevron-right" />
-                        </Link>
+                      <div className="daklak-event-hero-actions">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenRegisterModal(heroEvent)}
+                          className="btn-daklak-event-register"
+                        >
+                          <span>{currentLang === 'en' ? 'Details & Register' : 'Xem chi tiết & Đăng ký'}</span>
+                          <i className="ti ti-arrow-right" />
+                        </button>
                       </div>
                     </div>
                   </div>
-                ))}
+
+                  {/* Poster Image */}
+                  <div className="daklak-event-hero-image-wrap">
+                    <img
+                      src={heroEvent.image_url || heroEvent.poster_url || '/images/daklak/daklak_doi_ca_phe.jpg'}
+                      alt={heroEvent.title}
+                      className="daklak-event-hero-img"
+                      onError={(e) => {
+                        e.target.src = '/images/daklak/daklak_doi_ca_phe.jpg';
+                      }}
+                    />
+                    <div className="daklak-event-hero-img-overlay" />
+                  </div>
+                </div>
+
+                {/* Sub-Events 3-Card Grid */}
+                {subEvents.length > 0 && (
+                  <div className="daklak-event-sub-grid">
+                    {subEvents.map((evt, idx) => (
+                      <div key={evt.id || idx} className="daklak-event-sub-card">
+                        <div className="daklak-event-sub-thumb-wrap">
+                          <img
+                            src={evt.image_url || evt.poster_url || '/images/daklak/daklak_dau_tu_logistics.jpg'}
+                            alt={evt.title}
+                            className="daklak-event-sub-img"
+                            onError={(e) => {
+                              e.target.src = '/images/daklak/daklak_dau_tu_logistics.jpg';
+                            }}
+                          />
+                          <span className="daklak-event-sub-price-badge">
+                            {formatEventPrice(evt)}
+                          </span>
+                        </div>
+
+                        <div className="daklak-event-sub-body">
+                          <div className="daklak-event-sub-time">
+                            <i className="ti ti-clock" />
+                            <span>{formatEventDateTime(evt.event_date)}</span>
+                          </div>
+
+                          <h4 className="daklak-event-sub-title" title={evt.title}>
+                            <Link to={`/events/${evt.id}`}>{evt.title}</Link>
+                          </h4>
+
+                          <p className="daklak-event-sub-desc">
+                            {evt.short_desc || evt.description}
+                          </p>
+
+                          <div className="daklak-event-sub-footer">
+                            <div className="daklak-event-sub-loc" title={evt.location || 'TP. Buôn Ma Thuột'}>
+                              <i className="ti ti-map-pin" />
+                              <span>{evt.location || 'TP. Buôn Ma Thuột, Đắk Lắk'}</span>
+                            </div>
+                            <Link to={`/events/${evt.id}`} className="daklak-event-sub-link">
+                              <span>{currentLang === 'en' ? 'Details' : 'Chi tiết'}</span>
+                              <i className="ti ti-chevron-right" />
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              /* Nếu không có sự kiện nào trong hệ thống: hiển thị theo thực tế */
+              <div className="daklak-events-empty-box" style={{
+                padding: '3.5rem 2rem',
+                textAlign: 'center',
+                backgroundColor: '#ffffff',
+                borderRadius: '16px',
+                border: '1px dashed #CBD5E1',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
+                margin: '1rem 0'
+              }}>
+                <div style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  backgroundColor: '#F8FAFC',
+                  color: '#94A3B8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1rem',
+                  fontSize: '28px'
+                }}>
+                  <i className="ti ti-calendar-off" />
+                </div>
+                <h4 style={{ fontSize: '18px', fontWeight: '700', color: '#1E293B', marginBottom: '8px' }}>
+                  {currentLang === 'en' ? 'No Upcoming Events At This Time' : 'Hiện tại không có sự kiện nào'}
+                </h4>
+                <p style={{ fontSize: '14px', color: '#64748B', maxWidth: '520px', margin: '0 auto 1.5rem', lineHeight: '1.6' }}>
+                  {currentLang === 'en'
+                    ? 'All upcoming trade summits, economic forums, and cultural events will be updated here as soon as announced.'
+                    : 'Các hội thảo xúc tiến thương mại, diễn đàn kinh tế và sự kiện văn hóa mới sẽ được cập nhật sớm nhất. Quý vị vui lòng quay lại sau.'}
+                </p>
+                <Link
+                  to="/events"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 22px',
+                    borderRadius: '10px',
+                    backgroundColor: '#3B2417',
+                    color: '#ffffff',
+                    textDecoration: 'none',
+                    fontWeight: '600',
+                    fontSize: '13.5px'
+                  }}
+                >
+                  <i className="ti ti-calendar" />
+                  <span>{currentLang === 'en' ? 'View All Events' : 'Xem trang sự kiện'}</span>
+                </Link>
               </div>
             )}
           </div>

@@ -287,14 +287,11 @@ export const Events = () => {
       try {
         const json = await fetchJsonWithTimeout('/api/events', {}, 8000);
         if (json.success && Array.isArray(json.data) && isMounted) {
-          if (json.data.length > 0) {
-            setEventsList(json.data);
-            try {
-              localStorage.setItem('dnvn_cached_events', JSON.stringify(json.data));
-            } catch (e) {}
-          } else {
-            setEventsList(FALLBACK_EVENTS);
-          }
+          setEventsList(json.data);
+          try {
+            localStorage.setItem('daklak_cached_events', JSON.stringify(json.data));
+            localStorage.removeItem('dnvn_cached_events');
+          } catch (e) {}
         }
       } catch (e) {
         console.warn('Lỗi tải danh sách sự kiện:', e.message);
@@ -1794,8 +1791,18 @@ export const Events = () => {
             Đang tải danh sách sự kiện...
           </div>
         ) : filteredList.length === 0 ? (
-          <div style={{ padding: '4rem', textAlign: 'center', backgroundColor: '#ffffff', borderRadius: '12px', border: '1px dashed #CBD5E1', color: '#64748B' }}>
-            Chưa tìm thấy sự kiện nào phù hợp.
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', backgroundColor: '#ffffff', borderRadius: '16px', border: '1px dashed #CBD5E1', color: '#64748B' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#F8FAFC', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: '24px' }}>
+              <i className="ti ti-calendar-off" />
+            </div>
+            <div style={{ fontSize: '17px', fontWeight: '700', color: '#1E293B', marginBottom: '6px' }}>
+              {searchQuery ? 'Không tìm thấy sự kiện phù hợp' : 'Hiện tại không có sự kiện nào'}
+            </div>
+            <div style={{ fontSize: '13.5px', color: '#64748B', maxWidth: '480px', margin: '0 auto' }}>
+              {searchQuery 
+                ? 'Vui lòng thử tìm kiếm bằng từ khóa khác hoặc xóa bộ lọc tìm kiếm.' 
+                : 'Các sự kiện xúc tiến thương mại, hội thảo và diễn đàn kết nối mới sẽ được Ban tổ chức cập nhật tại đây khi có thông báo chính thức.'}
+            </div>
           </div>
         ) : (
           <div style={{

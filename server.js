@@ -806,80 +806,10 @@ db.query(`
         console.warn('Lỗi auto-link vé cũ:', e.message);
       }
 
-      // Khởi tạo sự kiện mẫu chuẩn theo mockup giao diện DakLak.today
-      const [existingEvents] = await db.query("SELECT id FROM events WHERE slug = 'su-kien-demo' OR title LIKE '%Sự kiện demo%' LIMIT 1");
-      if (!existingEvents.length) {
-        // Xóa sự kiện mẫu cũ nếu có
-        await db.query("DELETE FROM events WHERE title LIKE '%Festival Văn hóa%' OR title LIKE '%Cồng chiêng Tây Nguyên%'");
-        
-        await db.query(`
-          INSERT INTO events (title, slug, short_desc, description, content, event_date, end_date, location, organizer, capacity, is_paid, price, is_published, status, image_url) VALUES
-          (
-            'Sự kiện demo',
-            'su-kien-demo',
-            'Sự kiện demo kết nối giao thương và trải nghiệm công nghệ AI dành cho doanh nghiệp thành viên.',
-            'Sự kiện giao lưu, kết nối các doanh nghiệp thành viên Tạp chí Doanh Nghiệp Việt Nam.',
-            '<p><strong>Sự kiện demo</strong> là chương trình kết nối giao thương đặc biệt do <em>Tạp chí Doanh Nghiệp Việt Nam</em> phối hợp cùng <em>Công ty Cổ phần ADT Quốc tế</em> tổ chức.</p><p>Tại sự kiện, các doanh nghiệp sẽ được:</p><ul><li>Gặp gỡ trực tiếp các chuyên gia tài chính và ngân hàng đối tác hỗ trợ các gói vay vốn ưu đãi.</li><li>Trải nghiệm giải pháp Trợ lý AI và nền tảng quản trị thông minh cho SME.</li><li>Nhận mã QR check-in tiện lợi, tra cứu và kết nối trực tiếp với hơn 200 doanh nghiệp hội viên tham gia.</li></ul><p>Kính mời quý đại diện doanh nghiệp hoàn tất đăng ký để nhận mã QR tham gia sự kiện!</p>',
-            '2026-10-30 15:24:00',
-            '2026-10-30 16:10:00',
-            '36 Hùng vương',
-            'Tạp chí Doanh Nghiệp Việt Nam',
-            100,
-            0,
-            0,
-            1,
-            'upcoming',
-            'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80'
-          ),
-          (
-            'Diễn đàn Doanh nghiệp Việt Nam 2026: Đổi mới sáng tạo & Ứng dụng AI',
-            'dien-dan-doanh-nghiep-vn-2026',
-            'Diễn đàn quy mô toàn quốc tập hợp hơn 500 lãnh đạo doanh nghiệp, chuyên gia kinh tế và công nghệ.',
-            'Ứng dụng Trí tuệ nhân tạo và chuyển đổi số trong tái cấu trúc chuỗi cung ứng doanh nghiệp Việt Nam.',
-            '<p>Diễn đàn tập trung thảo luận về các chủ đề cấp thiết: Tự động hóa quy trình với AI Agent, Tối ưu chi phí vận hành bằng giải pháp ERP Cloud, và Chiến lược tiếp cận các quỹ đầu tư mạo hiểm giai đoạn 2026 - 2030.</p>',
-            '2026-11-15 08:30:00',
-            '2026-11-15 17:30:00',
-            'Trung tâm Hội nghị Quốc tế, Hà Nội',
-            'Tạp chí Doanh Nghiệp Việt Nam & ADT Group',
-            300,
-            0,
-            0,
-            1,
-            'upcoming',
-            'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80'
-          ),
-          (
-            'Hội nghị Xúc tiến Giao thương Doanh nghiệp SME & Vay vốn Xanh',
-            'xuc-tien-giao-thuong-sme-von-xanh',
-            'Kết nối ngân hàng thương mại, quỹ tín dụng quốc tế và các doanh nghiệp thực hành ESG.',
-            'Cơ hội tiếp cận các gói tín dụng xanh lãi suất ưu đãi lên tới 500 tỷ đồng.',
-            '<p>Hội nghị có sự tham gia của hơn 20 tổ chức tài chính hàng đầu và các hiệp hội doanh nghiệp ngành nghề, mang lại giải pháp tài chính thiết thực cho quá trình chuyển đổi xanh của doanh nghiệp.</p>',
-            '2026-12-05 09:00:00',
-            '2026-12-05 12:00:00',
-            'Khách sạn Daewoo, Ba Đình, Hà Nội',
-            'Hiệp hội Doanh nghiệp & Tạp chí Doanh Nghiệp VN',
-            200,
-            1,
-            200000,
-            1,
-            'upcoming',
-            'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80'
-          )
-        `);
-
-        // Tạo 2 đăng ký mẫu cho sự kiện demo để hiển thị: "Đăng ký: 2 / 100 | Còn: 98 vé" đúng chuẩn ảnh người dùng cung cấp!
-        const [demoEvt] = await db.query("SELECT id FROM events WHERE slug = 'su-kien-demo' LIMIT 1");
-        if (demoEvt.length) {
-          const dId = demoEvt[0].id;
-          await db.query(`
-            INSERT INTO event_registrations (event_id, ticket_code, full_name, phone, email, company, quantity, total_amount, payment_status, checkin_status)
-            VALUES 
-            (?, 'DNVN-DEMO-001', 'Nguyễn Văn Minh', '0912345678', 'minh.nguyen@techcorp.vn', 'Công ty Cổ phần TechCorp', 1, 0, 'free', 'not_checked_in'),
-            (?, 'DNVN-DEMO-002', 'Trần Thị Thu Trang', '0987654321', 'trang.tran@vinabiz.com', 'Tập đoàn VinaBiz', 1, 0, 'free', 'not_checked_in')
-          `, [dId, dId]);
-        }
-        console.log('✅ Đã khởi tạo 3 sự kiện chuẩn DakLak và vé mẫu!');
-      }
+      // Dọn dẹp các sự kiện demo mẫu nếu còn sót lại để hiển thị đúng theo thực tế
+      try {
+        await db.query("DELETE FROM events WHERE slug = 'su-kien-demo' OR title LIKE '%Sự kiện demo%'");
+      } catch (_) {}
     } catch (e) {
       console.warn('Cảnh báo kiểm tra bảng events & event_registrations:', e.message);
     }
