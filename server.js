@@ -5230,13 +5230,249 @@ app.use((req, res, next) => {
 });
 
 // ════════════════════════════════════════════
-// SPA Fallback (Anti-cache headers cho index.html)
+// SPA Fallback & Dynamic OpenGraph Meta Tag Engine (SEO / Social Preview)
 // ════════════════════════════════════════════
-app.get('*', (req, res) => {
+
+let cachedIndexHtml = null;
+let lastIndexHtmlReadTime = 0;
+
+function getBaseIndexHtml() {
+  const now = Date.now();
+  if (!cachedIndexHtml || now - lastIndexHtmlReadTime > 30000) {
+    try {
+      const indexPath = path.join(__dirname, 'public', 'index.html');
+      if (fs.existsSync(indexPath)) {
+        cachedIndexHtml = fs.readFileSync(indexPath, 'utf8');
+        lastIndexHtmlReadTime = now;
+      }
+    } catch (e) {
+      console.error('Lỗi đọc public/index.html:', e.message);
+    }
+  }
+  return cachedIndexHtml;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function cleanDescription(summary, body, fallback) {
+  let text = '';
+  if (summary && typeof summary === 'string') {
+    text = summary.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  if (!text && body && typeof body === 'string') {
+    text = body.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  if (!text) {
+    text = fallback || 'DakLak.today kết nối con người, doanh nghiệp, sản phẩm, du lịch, dữ liệu và cơ hội đầu tư của tỉnh Đắk Lắk bằng nền tảng số và trí tuệ nhân tạo.';
+  }
+  if (text.length > 220) {
+    text = text.substring(0, 217) + '...';
+  }
+  return text;
+}
+
+function getBaseUrl(req) {
+  const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+  const host = req.headers['x-forwarded-host'] || req.get('host') || 'dev.daklak.today';
+  if (process.env.SITE_URL && (host.includes('localhost') || host.includes('127.0.0.1'))) {
+    return process.env.SITE_URL.replace(/\/+$/, '');
+  }
+  return `${proto}://${host}`.replace(/\/+$/, '');
+}
+
+function resolveImageUrl(imgUrl, baseUrl) {
+  if (!imgUrl || typeof imgUrl !== 'string') return `${baseUrl}/logo_icon.png`;
+  const trimmed = imgUrl.trim();
+  if (
+    !trimmed || 
+    trimmed.includes('photo-1514432324607-a09d9b4aefdd') ||
+    trimmed.includes('placeholder')
+  ) {
+    return `${baseUrl}/logo_icon.png`;
+  }
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  if (trimmed.startsWith('/')) {
+    return `${baseUrl}${trimmed}`;
+  }
+  return `${baseUrl}/${trimmed}`;
+}
+
+function injectMetaTags(html, { title, description, image, url, type = 'website' }) {
+  let resHtml = html;
+
+  // Title
+  resHtml = resHtml.replace(/<title>.*?<\/title>/is, `<title>${escapeHtml(title)}</title>`);
+
+  // Meta description
+  if (/<meta\s+name=["']description["'][^>]*>/i.test(resHtml)) {
+    resHtml = resHtml.replace(/<meta\s+name=["']description["'][^>]*>/i, `<meta name="description" content="${escapeHtml(description)}" />`);
+  } else {
+    resHtml = resHtml.replace(/<head>/i, `<head>\n    <meta name="description" content="${escapeHtml(description)}" />`);
+  }
+
+  // OG Title
+  if (/<meta\s+property=["']og:title["'][^>]*>/i.test(resHtml)) {
+    resHtml = resHtml.replace(/<meta\s+property=["']og:title["'][^>]*>/i, `<meta property="og:title" content="${escapeHtml(title)}" />`);
+  } else {
+    resHtml = resHtml.replace(/<\/head>/i, `    <meta property="og:title" content="${escapeHtml(title)}" />\n  </head>`);
+  }
+
+  // OG Description
+  if (/<meta\s+property=["']og:description["'][^>]*>/i.test(resHtml)) {
+    resHtml = resHtml.replace(/<meta\s+property=["']og:description["'][^>]*>/i, `<meta property="og:description" content="${escapeHtml(description)}" />`);
+  } else {
+    resHtml = resHtml.replace(/<\/head>/i, `    <meta property="og:description" content="${escapeHtml(description)}" />\n  </head>`);
+  }
+
+  // OG Image
+  if (/<meta\s+property=["']og:image["'][^>]*>/i.test(resHtml)) {
+    resHtml = resHtml.replace(/<meta\s+property=["']og:image["'][^>]*>/i, `<meta property="og:image" content="${escapeHtml(image)}" />`);
+  } else {
+    resHtml = resHtml.replace(/<\/head>/i, `    <meta property="og:image" content="${escapeHtml(image)}" />\n  </head>`);
+  }
+
+  // OG URL
+  if (/<meta\s+property=["']og:url["'][^>]*>/i.test(resHtml)) {
+    resHtml = resHtml.replace(/<meta\s+property=["']og:url["'][^>]*>/i, `<meta property="og:url" content="${escapeHtml(url)}" />`);
+  } else {
+    resHtml = resHtml.replace(/<\/head>/i, `    <meta property="og:url" content="${escapeHtml(url)}" />\n  </head>`);
+  }
+
+  // OG Type
+  if (/<meta\s+property=["']og:type["'][^>]*>/i.test(resHtml)) {
+    resHtml = resHtml.replace(/<meta\s+property=["']og:type["'][^>]*>/i, `<meta property="og:type" content="${escapeHtml(type)}" />`);
+  }
+
+  // Twitter card
+  resHtml = resHtml.replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>\s*/gi, '');
+  const twitterTags = `    <meta name="twitter:card" content="summary_large_image" />\n    <meta name="twitter:title" content="${escapeHtml(title)}" />\n    <meta name="twitter:description" content="${escapeHtml(description)}" />\n    <meta name="twitter:image" content="${escapeHtml(image)}" />\n`;
+  resHtml = resHtml.replace(/<\/head>/i, `${twitterTags}  </head>`);
+
+  return resHtml;
+}
+
+app.get('*', async (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+
+  const baseHtml = getBaseIndexHtml();
+  if (!baseHtml) {
+    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
+
+  const baseUrl = getBaseUrl(req);
+  const currentUrl = `${baseUrl}${req.originalUrl || req.url}`;
+
+  // Default site metadata (hiển thị Logo của web khi share trang chủ hoặc trang chung)
+  let meta = {
+    title: 'DakLak.today — Cổng thông tin, dữ liệu và kết nối đầu tư Đắk Lắk',
+    description: 'DakLak.today kết nối con người, doanh nghiệp, sản phẩm, du lịch, dữ liệu và cơ hội đầu tư của tỉnh Đắk Lắk bằng nền tảng số và trí tuệ nhân tạo.',
+    image: `${baseUrl}/logo_icon.png`,
+    url: currentUrl,
+    type: 'website'
+  };
+
+  try {
+    const rawPath = req.path || '';
+
+    // 1. Chia sẻ link bài viết trực tiếp (/posts/:id hoặc /posts/:slug)
+    if (rawPath.startsWith('/posts/')) {
+      const segment = rawPath.replace(/^\/posts\/?/, '').split('/')[0].trim();
+      if (segment) {
+        const decoded = decodeURIComponent(segment);
+        const isNumeric = /^\d+$/.test(decoded);
+        let q = 'SELECT id, title, slug, summary, body, image_url, category FROM posts WHERE ';
+        let p = [];
+        if (isNumeric) {
+          q += 'id = ? OR slug = ? LIMIT 1';
+          p = [parseInt(decoded, 10), decoded];
+        } else {
+          q += 'slug = ? LIMIT 1';
+          p = [decoded];
+        }
+
+        const [postRows] = await db.query(q, p);
+        if (postRows.length) {
+          const post = postRows[0];
+          meta.title = `${post.title} — DakLak.today`;
+          meta.description = cleanDescription(post.summary, post.body, meta.description);
+          meta.image = resolveImageUrl(post.image_url, baseUrl);
+          meta.url = `${baseUrl}/posts/${post.slug || post.id}`;
+          meta.type = 'article';
+        }
+      }
+    } 
+    // 2. Chia sẻ danh bạ doanh nghiệp / hội viên (/members/:id)
+    else if (rawPath.startsWith('/members/')) {
+      const segment = rawPath.replace(/^\/members\/?/, '').split('/')[0].trim();
+      if (segment && /^\d+$/.test(segment)) {
+        const [memRows] = await db.query(
+          'SELECT id, name, company_name, description, logo_url, avatar_url FROM members WHERE id = ? LIMIT 1',
+          [parseInt(segment, 10)]
+        );
+        if (memRows.length) {
+          const m = memRows[0];
+          meta.title = `${m.company_name || m.name} — Hội viên DakLak.today`;
+          meta.description = cleanDescription(m.description, '', `Hồ sơ doanh nghiệp ${m.company_name || m.name} trên Cổng thông tin Đắk Lắk.`);
+          meta.image = resolveImageUrl(m.logo_url || m.avatar_url, baseUrl);
+          meta.url = `${baseUrl}/members/${m.id}`;
+        }
+      }
+    }
+    // 3. Chia sẻ sự kiện (/events/:id hoặc /su-kien/:id)
+    else if (rawPath.startsWith('/events/') || rawPath.startsWith('/su-kien/')) {
+      const segment = rawPath.replace(/^\/(events|su-kien)\/?/, '').split('/')[0].trim();
+      if (segment) {
+        const decoded = decodeURIComponent(segment);
+        const isNum = /^\d+$/.test(decoded);
+        const [evRows] = await db.query(
+          isNum ? 'SELECT id, title, slug, summary, image_url FROM events WHERE id = ? LIMIT 1'
+                : 'SELECT id, title, slug, summary, image_url FROM events WHERE slug = ? LIMIT 1',
+          [decoded]
+        );
+        if (evRows.length) {
+          const ev = evRows[0];
+          meta.title = `${ev.title} — Sự kiện DakLak.today`;
+          meta.description = cleanDescription(ev.summary, '', meta.description);
+          meta.image = resolveImageUrl(ev.image_url, baseUrl);
+          meta.url = `${baseUrl}/events/${ev.slug || ev.id}`;
+        }
+      }
+    }
+    // 4. Các trang danh mục chung
+    else if (rawPath === '/posts') {
+      meta.title = 'Cơ hội giao thương & Tin tức — DakLak.today';
+      meta.description = 'Cập nhật tin tức, cơ hội giao thương, danh mục kêu gọi đầu tư và tiềm năng phát triển tỉnh Đắk Lắk.';
+      meta.image = `${baseUrl}/logo_icon.png`;
+    }
+    else if (rawPath === '/members') {
+      meta.title = 'Doanh nghiệp & Hội viên — DakLak.today';
+      meta.description = 'Danh bạ cộng đồng doanh nghiệp, nhà đầu tư, hợp tác xã và thương hiệu tiêu biểu tỉnh Đắk Lắk.';
+      meta.image = `${baseUrl}/logo_icon.png`;
+    }
+    else if (rawPath === '/events' || rawPath === '/su-kien') {
+      meta.title = 'Sự kiện & Hội nghị xúc tiến — DakLak.today';
+      meta.description = 'Thông tin các sự kiện xúc tiến thương mại, hội nghị đầu tư, lễ hội cà phê và diễn đàn kinh tế Đắk Lắk.';
+      meta.image = `${baseUrl}/logo_icon.png`;
+    }
+  } catch (err) {
+    console.error('Lỗi truy vấn OpenGraph SSR:', err.message);
+  }
+
+  const finalHtml = injectMetaTags(baseHtml, meta);
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(finalHtml);
 });
 
 app.listen(PORT, () => {
