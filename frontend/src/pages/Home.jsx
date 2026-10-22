@@ -1108,19 +1108,19 @@ export const Home = () => {
             {/* Left Column: Heading, Subtitle & Action (Enters from Left) */}
             <div className="gt-hero-left scroll-reveal scroll-reveal-left">
               <h1 className="gt-hero-title">
-                {currentLang === 'en' ? 'Dak Lak – Investment Hub' : 'Đắk Lắk – Tâm Điểm Đầu Tư'}<br />
+                {currentLang === 'en' ? 'Discover Dak Lak' : 'Khám Phá Đắk Lắk'}<br />
                 <span className="gt-hero-highlight">
-                  {currentLang === 'en' ? 'Economic & Cultural' : 'Kinh Tế & Bản Sắc'}
+                  {currentLang === 'en' ? 'Hidden' : 'Đại Ngàn'}
                   <svg className="gt-highlight-curve" viewBox="0 0 180 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 14C45 4 135 4 176 14" stroke="#E99035" strokeWidth="4" strokeLinecap="round" />
                   </svg>
-                </span> {currentLang === 'en' ? 'Powerhouse' : 'Tây Nguyên'}
+                </span> {currentLang === 'en' ? 'Wonders' : 'Kỳ Vĩ'}
               </h1>
 
               <p className="gt-hero-desc">
                 {currentLang === 'en'
-                  ? 'Gateway to Central Highlands economic potential: Global coffee capital Buon Ma Thuot, expressway logistics corridors, high-tech agri-processing, and a thriving enterprise ecosystem.'
-                  : 'Cửa ngõ hội tụ tiềm năng kinh tế Tây Nguyên: Thủ phủ cà phê toàn cầu Buôn Ma Thuột, hành lang cao tốc kết nối Duyên hải, vùng nông sản chế biến sâu tỷ đô và hệ sinh thái doanh nghiệp bứt phá.'}
+                  ? 'Find unique moments and majestic natural wonders across the Buon Ma Thuot coffee capital, mythical waterfalls, and timeless indigenous gong heritage.'
+                  : 'Trải nghiệm những khoảnh khắc nguyên sơ và hùng vĩ giữa thủ phủ cà phê Buôn Ma Thuột, thác nước Dray Nur kỳ ảo, văn hóa cồng chiêng ngàn đời và những hành trình bất tận.'}
               </p>
 
               <div className="gt-hero-action-row">
@@ -1136,18 +1136,13 @@ export const Home = () => {
                   <i className="ti ti-chart-arrows-vertical" />
                   <span>{currentLang === 'en' ? 'Investment Opportunities' : 'Cơ Hội Đầu Tư & Tin Tức'}</span>
                 </a>
-                <a 
-                  href="#he-sinh-thai-doanh-nghiep" 
+                <Link 
+                  to="/members" 
                   className="gt-btn-secondary"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const el = document.getElementById('he-sinh-thai-doanh-nghiep');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }}
                 >
                   <i className="ti ti-building" />
                   <span>{currentLang === 'en' ? 'Enterprise Ecosystem' : 'Hệ Sinh Thái Doanh Nghiệp'}</span>
-                </a>
+                </Link>
                 <div className="gt-flight-trail">
                   <svg className="gt-flight-svg" viewBox="0 0 140 40" fill="none">
                     <path d="M5 25 C40 45, 80 5, 125 22" stroke="#E99035" strokeWidth="2.5" strokeDasharray="6 6" fill="none" />

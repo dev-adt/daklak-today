@@ -132,10 +132,7 @@ export const PostDetail = () => {
     }
     setActionSubmitting(true);
     try {
-      let leadSubject = '';
-      if (actionModalType === 'dossier') leadSubject = `[1-Click Act] Yêu cầu Hồ sơ Dự án: ${post.title}`;
-      else if (actionModalType === 'interest') leadSubject = `[1-Click Act] Đăng ký Quan tâm Đầu tư: ${post.title}`;
-      else leadSubject = `[1-Click Connect] Kết nối Doanh nghiệp: ${post.company_name || 'Hội viên'} - Bài viết: ${post.title}`;
+      const leadSubject = `Đăng ký quan tâm bài viết: ${post.title}${post.company_name ? ` (Đơn vị: ${post.company_name})` : ''}`;
 
       const res = await fetch('/api/leads', {
         method: 'POST',
@@ -146,7 +143,7 @@ export const PostDetail = () => {
           email: actionForm.email,
           city: 'Đắk Lắk',
           companyName: actionForm.companyName || 'Cá nhân / Nhà đầu tư',
-          memberType: actionModalType === 'dossier' ? 'Hồ sơ dự án' : actionModalType === 'interest' ? 'Quan tâm đầu tư' : 'Kết nối doanh nghiệp',
+          memberType: 'Quan tâm đầu tư',
           notes: `${leadSubject}. Ghi chú: ${actionForm.notes || 'Không có'}`
         })
       });
@@ -567,29 +564,6 @@ export const PostDetail = () => {
                   {loadingTranslate ? '...' : isTranslated ? t('translate_view_original') : t('translate_button')}
                 </button>
               </div>
-
-              {/* One Click to Share: Thanh chia sẻ nhanh đầu bài */}
-              <div className="post-share-dock">
-                <span className="post-share-label">
-                  <i className="ti ti-share" /> {currentLang === 'en' ? 'Share in 1-Click:' : 'Chia sẻ nhanh 1-Click:'}
-                </span>
-                <div className="post-share-buttons">
-                  <button onClick={handleShareFacebook} className="post-share-btn fb" title="Chia sẻ qua Facebook">
-                    <i className="ti ti-brand-facebook" /> Facebook
-                  </button>
-                  <button onClick={handleShareZalo} className="post-share-btn zalo" title="Chia sẻ qua Zalo">
-                    <span className="zalo-text-icon">Z</span> Zalo
-                  </button>
-                  <button onClick={handleCopyLink} className="post-share-btn copy" title="Sao chép liên kết bài viết">
-                    <i className="ti ti-link" /> {currentLang === 'en' ? 'Copy Link' : 'Sao chép link'}
-                  </button>
-                  {typeof navigator !== 'undefined' && navigator.share && (
-                    <button onClick={handleNativeShare} className="post-share-btn native" title="Chia sẻ trên thiết bị">
-                      <i className="ti ti-device-mobile" /> {currentLang === 'en' ? 'Share' : 'Chia sẻ'}
-                    </button>
-                  )}
-                </div>
-              </div>
             </div>
 
             {/* Summary / Lead Paragraph */}
@@ -688,34 +662,24 @@ export const PostDetail = () => {
             </div>
 
             {/* ========================================================
-                ONE CLICK TO ACT: HÀNH ĐỘNG ĐẦU TƯ & HỒ SƠ DỰ ÁN
+                HÀNH ĐỘNG ĐẦU TƯ: ĐĂNG KÝ QUAN TÂM
                 ======================================================== */}
             <div className="post-action-box">
               <div className="post-action-box-inner">
                 <div className="post-action-info">
-                  <div className="post-action-badge">
-                    <i className="ti ti-briefcase" /> {currentLang === 'en' ? 'One Click to Act • Investment & Business' : 'Hành Động Đầu Tư 1-Click'}
-                  </div>
                   <h3 className="post-action-title">
-                    {currentLang === 'en' ? 'Request Project Dossier or Register Investment Interest' : 'Nhận Hồ Sơ Dự Án hoặc Đăng Ký Quan Tâm Đầu Tư'}
+                    {currentLang === 'en' ? 'Register Investment & Partnership Interest' : 'Đăng Ký Quan Tâm Đầu Tư'}
                   </h3>
                   <p className="post-action-desc">
                     {currentLang === 'en'
-                      ? 'Interested in business partnerships, agricultural value chains, or investment incentives in Dak Lak? Submit your request in 1 click to receive official dossiers and direct support.'
-                      : 'Độc giả và nhà đầu tư có thể yêu cầu hồ sơ dự án chi tiết, thông tin xúc tiến thương mại hoặc đăng ký quan tâm trực tiếp trong 1 nhấp để được kết nối sớm nhất.'}
+                      ? 'Interested in business partnerships, agricultural value chains, or investment incentives in Dak Lak? Submit your interest to receive official dossiers and direct support.'
+                      : 'Độc giả và nhà đầu tư quan tâm đến cơ hội hợp tác, chuỗi cung ứng hoặc thông tin đầu tư tại Đắk Lắk có thể đăng ký trực tiếp để được kết nối sớm nhất.'}
                   </p>
                 </div>
                 <div className="post-action-buttons">
                   <button 
-                    onClick={() => openActionModal('dossier')} 
-                    className="post-act-btn primary"
-                  >
-                    <i className="ti ti-file-download" />
-                    <span>{currentLang === 'en' ? 'Request Project Dossier' : 'Yêu Cầu Hồ Sơ Dự Án'}</span>
-                  </button>
-                  <button 
                     onClick={() => openActionModal('interest')} 
-                    className="post-act-btn secondary"
+                    className="post-act-btn primary"
                   >
                     <i className="ti ti-chart-pie" />
                     <span>{currentLang === 'en' ? 'Register Investment Interest' : 'Đăng Ký Quan Tâm'}</span>
@@ -724,7 +688,7 @@ export const PostDetail = () => {
               </div>
             </div>
 
-            {/* Bottom Horizontal Card: Author & Contact Details (One Click to Connect) */}
+            {/* Bottom Horizontal Card: Author & Contact Details */}
             <div className="glass-card post-detail-author-card">
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '24px' }}>
                 
@@ -777,7 +741,7 @@ export const PostDetail = () => {
                   </div>
                 </div>
 
-                {/* Middle: Contact Info & One Click to Connect */}
+                {/* Middle: Contact Info */}
                 <div style={{ flex: '1 1 300px', padding: '0 10px' }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                     {t('contact_info_label')}
@@ -787,17 +751,14 @@ export const PostDetail = () => {
                     {post.contact_info || (currentLang === 'en' ? 'Contact publisher / editorial board' : 'Ban biên tập & Xúc tiến DakLak.today')}
                   </div>
                   
-                  {/* One Click to Connect Actions */}
-                  <div className="post-connect-actions">
-                    {post.contact_info && post.contact_info.replace(/[^0-9]/g, '').length >= 9 && (
+                  {/* Direct Call if phone available */}
+                  {post.contact_info && post.contact_info.replace(/[^0-9]/g, '').length >= 9 && (
+                    <div className="post-connect-actions">
                       <a href={`tel:${post.contact_info.replace(/[^0-9]/g, '')}`} className="post-connect-btn phone" title="Gọi trực tiếp trong 1 nhấp">
                         <i className="ti ti-phone-call" /> {currentLang === 'en' ? 'Call Directly' : 'Gọi Trực Tiếp'}
                       </a>
-                    )}
-                    <button onClick={() => openActionModal('connect')} className="post-connect-btn partner" title="Gửi yêu cầu hợp tác trong 1 nhấp">
-                      <i className="ti ti-handshake" /> {currentLang === 'en' ? 'Send Connect Request' : 'Gửi Yêu Cầu Hợp Tác'}
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right: Back Button */}
@@ -1046,7 +1007,7 @@ export const PostDetail = () => {
                 <p>
                   {actionModalType === 'dossier'
                     ? (currentLang === 'en' ? 'Project dossier and investment documentation will be delivered to your contact info shortly.' : 'Hồ sơ dự án chi tiết và tài liệu xúc tiến sẽ được gửi tới Email / Số điện thoại của bạn trong thời gian sớm nhất.')
-                    : (currentLang === 'en' ? 'DakLak.today and the enterprise will reach out to you within 24 hours.' : 'Ban xúc tiến đầu tư DakLak.today và đơn vị liên quan sẽ liên hệ trao đổi với bạn trong vòng 24 giờ.')}
+                    : (currentLang === 'en' ? 'DakLak.today and the relevant team will reach out to you within 24 hours.' : 'Ban xúc tiến đầu tư DakLak.today và đơn vị liên quan sẽ liên hệ trao đổi với bạn trong vòng 24 giờ.')}
                 </p>
                 <button onClick={() => setShowActionModal(false)} className="post-act-btn primary" style={{ marginTop: '20px' }}>
                   {currentLang === 'en' ? 'Close Window' : 'Đóng cửa sổ'}
@@ -1055,15 +1016,8 @@ export const PostDetail = () => {
             ) : (
               <form onSubmit={handleActionSubmit} className="action-modal-form">
                 <div className="action-modal-header">
-                  <span className="action-modal-badge">
-                    <i className="ti ti-bolt" /> 1-Click Action
-                  </span>
                   <h3 className="action-modal-heading">
-                    {actionModalType === 'dossier'
-                      ? (currentLang === 'en' ? 'Request Project Dossier' : 'Yêu Cầu Hồ Sơ Dự Án')
-                      : actionModalType === 'interest'
-                      ? (currentLang === 'en' ? 'Register Investment Interest' : 'Đăng Ký Quan Tâm Đầu Tư')
-                      : (currentLang === 'en' ? 'Connect With Enterprise' : 'Gửi Yêu Cầu Kết Nối & Hợp Tác')}
+                    {currentLang === 'en' ? 'Register Investment Interest' : 'Đăng Ký Quan Tâm'}
                   </h3>
                   <p className="action-modal-sub">
                     {post.title}
@@ -1134,7 +1088,7 @@ export const PostDetail = () => {
                       </>
                     ) : (
                       <>
-                        <i className="ti ti-send" /> {currentLang === 'en' ? 'Submit in 1-Click' : 'Gửi Yêu Cầu 1-Click'}
+                        <i className="ti ti-send" /> {currentLang === 'en' ? 'Submit Interest' : 'Gửi Đăng Ký Quan Tâm'}
                       </>
                     )}
                   </button>
