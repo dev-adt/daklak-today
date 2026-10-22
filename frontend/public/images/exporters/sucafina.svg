@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="200" height="80">
+  <rect width="200" height="80" rx="12" fill="#042F2E"/>
+  <!-- Sucafina Ribbon S Symbol -->
+  <g transform="translate(26, 40)">
+    <circle cx="0" cy="0" r="17" fill="#115E59"/>
+    <!-- Modern geometric S shape -->
+    <path d="M5,-9 C1,-9 -4,-6 -4,-2 C-4,4 6,2 6,7 C6,10 2,11 -3,11" fill="none" stroke="#2DD4BF" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="5" cy="-9" r="2" fill="#5EEAD4"/>
+    <circle cx="-3" cy="11" r="2" fill="#5EEAD4"/>
+  </g>
+  <!-- Typography -->
+  <text x="54" y="38" font-family="'Inter', sans-serif" font-size="16" font-weight="900" letter-spacing="1" fill="#FFFFFF">sucafina</text>
+  <text x="54" y="52" font-family="'Inter', sans-serif" font-size="8" font-weight="700" letter-spacing="0.5" fill="#2DD4BF">FARM TO ROASTER</text>
+  <text x="54" y="65" font-family="'Inter', sans-serif" font-size="6.5" font-weight="500" letter-spacing="0.6" fill="#99F6E4">SWITZERLAND • EST. 1905</text>
+</svg>

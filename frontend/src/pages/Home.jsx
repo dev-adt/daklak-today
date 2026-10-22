@@ -403,14 +403,26 @@ const FALLBACK_POST_IMAGES = [
   '/images/daklak/daklak_nha_rong_ede.jpg'
 ];
 
+const isGenericOrPlaceholder = (url) => {
+  if (!url || typeof url !== 'string' || url.trim() === '') return true;
+  const lower = url.toLowerCase();
+  return (
+    lower.includes('cong_chieng') ||
+    lower.includes('doi_ca_phe') ||
+    lower.includes('default') ||
+    lower.includes('placeholder') ||
+    lower.includes('photo-1514432324607-a09d9b4aefdd') ||
+    lower.includes('photo-1500382017468') ||
+    lower.includes('photo-1506744038136')
+  );
+};
+
 const getPostThumb = (post, idx = 0) => {
-  if (post?.image_url && typeof post.image_url === 'string' && post.image_url.trim() !== '') return post.image_url;
-  if (post?.cover_image && typeof post.cover_image === 'string' && post.cover_image.trim() !== '') return post.cover_image;
-  if (post?.thumbnail && typeof post.thumbnail === 'string' && post.thumbnail.trim() !== '') return post.thumbnail;
-  const hash = typeof post?.id === 'number' 
-    ? post.id 
-    : (post?.id ? String(post.id).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) : (idx * 3 + 1));
-  return FALLBACK_POST_IMAGES[(hash + idx) % FALLBACK_POST_IMAGES.length];
+  const url = post?.image_url || post?.cover_image || post?.thumbnail;
+  if (url && typeof url === 'string' && url.trim() !== '' && !isGenericOrPlaceholder(url)) {
+    return url;
+  }
+  return FALLBACK_POST_IMAGES[idx % FALLBACK_POST_IMAGES.length];
 };
 
 // Dữ liệu Top 10 Doanh nghiệp xuất khẩu cà phê Tây Nguyên
@@ -421,38 +433,38 @@ const TOP_EXPORTERS_TAY_NGUYEN = {
   subEn: 'Flagship enterprises elevating Buon Ma Thuot & Central Highlands Robusta globally',
   top3: [
     {
-      rank: 1,
       name: 'Simexco Đắk Lắk',
       sub: 'Công ty TNHH MTV XNK 2-9 Đắk Lắk',
+      logo: '/images/exporters/simexco.png',
       highlight: 'Doanh nghiệp nhà nước đầu tàu của Đắk Lắk, kim ngạch hàng trăm triệu USD/năm, liên kết chuỗi bền vững với hơn 40.000 nông hộ Tây Nguyên.',
       highlightEn: 'Leading state enterprise of Dak Lak with hundreds of millions USD export turnover, partnering with 40,000+ local farming families.',
       pill: 'Top 1 Đắk Lắk • Xuất khẩu >100.000 tấn/năm'
     },
     {
-      rank: 2,
       name: 'Trung Nguyên Legend',
       sub: 'Tập đoàn Cà phê Trung Nguyên',
+      logo: '/images/exporters/trungnguyen.svg',
       highlight: 'Thương hiệu cà phê quốc gia khởi nguồn từ Buôn Ma Thuột, tiên phong chuỗi Cà phê Năng lượng và văn hóa cà phê Việt Nam tới 80+ quốc gia.',
       highlightEn: 'National coffee champion founded in Buon Ma Thuot, pioneering Energy Coffee and Vietnamese coffee culture across 80+ countries.',
       pill: 'Thương hiệu Quốc gia • Xuất khẩu 80+ nước'
     },
     {
-      rank: 3,
       name: "Vĩnh Hiệp (L'amant)",
       sub: 'Công ty TNHH Vĩnh Hiệp',
+      logo: '/images/exporters/vinhhiep.svg',
       highlight: 'Tiên phong xuất khẩu cà phê hữu cơ (Organic USDA/EU) quy mô lớn của Tây Nguyên sang các thị trường khó tính Mỹ, EU, Nhật Bản.',
       highlightEn: 'Pioneer in large-scale Organic USDA/EU coffee exports from Central Highlands to demanding US, EU, and Japanese markets.',
       pill: 'Tiên phong Organic • Vùng trồng chuẩn quốc tế'
     }
   ],
   rest: [
-    { rank: 4, name: 'Intimex Buôn Ma Thuột', desc: 'Thành viên tập đoàn Intimex - Nhà xuất khẩu cà phê nhân số 1 Việt Nam với mạng lưới thu mua chế biến quy mô lớn.' },
-    { rank: 5, name: 'An Thái Group', desc: 'Tập đoàn chế biến sâu với các dòng cà phê hòa tan, sấy lạnh, rang xay xuất khẩu sang hơn 30 quốc gia.' },
-    { rank: 6, name: 'Phúc Sinh Đắk Lắk', desc: 'Doanh nghiệp xuất khẩu nông sản hàng đầu sở hữu các chứng nhận quốc tế bền vững UTZ & Rainforest Alliance.' },
-    { rank: 7, name: 'Tín Nghĩa Tây Nguyên', desc: 'Đơn vị xuất khẩu uy tín lâu năm, cung ứng nguyên liệu Robusta chất lượng cao cho các tập đoàn rang xay quốc tế.' },
-    { rank: 8, name: 'CTP Group', desc: 'Doanh nghiệp niêm yết sàn HNX với kho bãi chế biến hơn 13.000 m² và chuỗi giá trị cà phê Tây Nguyên gia tăng.' },
-    { rank: 9, name: 'Đắkman Việt Nam', desc: 'Liên doanh xuất khẩu cà phê chất lượng cao đầu tiên tại Buôn Ma Thuột giữa Đắk Lắk và đối tác quốc tế.' },
-    { rank: 10, name: 'Bazan Heritage Coffee', desc: 'Nhà máy hiện đại tại KCN Hòa Phú (BMT) chuyên sâu chế biến dòng Robusta đặc sản và tôn vinh đất đỏ bazan.' }
+    'Intimex Buôn Ma Thuột',
+    'An Thái Group',
+    'Phúc Sinh Đắk Lắk',
+    'Tín Nghĩa Tây Nguyên',
+    'CTP Group',
+    'Đắkman Việt Nam',
+    'Bazan Heritage Coffee'
   ]
 };
 
@@ -464,38 +476,38 @@ const TOP_EXPORTERS_WORLD = {
   subEn: 'Multinational trading giants shaping global coffee value chains, logistics, and roastery supplies',
   top3: [
     {
-      rank: 1,
       name: 'Neumann Kaffee Gruppe (NKG)',
       sub: 'Đức (Hamburg)',
+      logo: '/images/exporters/nkg.svg',
       highlight: 'Tập đoàn thương mại cà phê xanh số 1 hành tinh với hơn 50 chi nhánh tại 26 quốc gia, chi phối khoảng 10% sản lượng cà phê toàn cầu.',
       highlightEn: 'The world #1 green coffee service group with 50+ companies in 26 countries, handling ~10% of total global coffee output.',
       pill: 'Số 1 Thế Giới • ~15 triệu bao/năm'
     },
     {
-      rank: 2,
       name: 'Volcafe (ED&F Man)',
       sub: 'Thụy Sĩ (Winterthur)',
+      logo: '/images/exporters/volcafe.svg',
       highlight: 'Một trong 3 nhà buôn cà phê lớn nhất lịch sử thế giới, đối tác cung ứng chiến lược của hàng triệu trang trại và các hãng rang xay toàn cầu.',
       highlightEn: 'One of the top 3 coffee merchants globally, serving as strategic sourcing partner from millions of farms to top roasting brands.',
       pill: 'Top 3 Toàn Cầu • Chuỗi cung ứng 20+ nước'
     },
     {
-      rank: 3,
       name: 'Sucafina',
       sub: 'Thụy Sĩ (Geneva)',
+      logo: '/images/exporters/sucafina.svg',
       highlight: 'Tập đoàn đa quốc gia dẫn dắt số hóa chuỗi cung ứng "Farm to Cup", hiện diện vững chắc tại các vùng nguyên liệu Robusta và Arabica trọng điểm.',
       highlightEn: 'Leading multinational driving digitized "Farm to Cup" sustainable supply chains across 33 key coffee origins.',
       pill: 'Mạng lưới 33 quốc gia • Tiên phong Số hóa'
     }
   ],
   rest: [
-    { rank: 4, name: 'Louis Dreyfus Company (LDC)', desc: 'Tập đoàn nông sản hàng đầu thế giới với hệ thống chế biến và kho vận cà phê khổng lồ tại Nam Mỹ và Châu Á.' },
-    { rank: 5, name: 'ofi (Olam Food Ingredients)', desc: 'Nhà cung ứng nguyên liệu cà phê nhân xanh và hòa tan hàng đầu thế giới với nhiều nhà máy quy mô lớn.' },
-    { rank: 6, name: 'Ecom Agroindustrial', desc: 'Tập đoàn nông nghiệp hơn 170 năm tuổi, dẫn đầu các chương trình cà phê chứng nhận bền vững toàn cầu.' },
-    { rank: 7, name: 'Starbucks Coffee Trading Co.', desc: 'Đơn vị thu mua và logistics tập trung tại Thụy Sĩ cung ứng nguyên liệu cho hơn 36.000 cửa hàng Starbucks toàn cầu.' },
-    { rank: 8, name: 'Lavazza Group', desc: 'Thương hiệu và nhà nhập khẩu rang xay cà phê cao cấp biểu tượng nước Ý, hiện diện tại 140+ thị trường.' },
-    { rank: 9, name: 'Tchibo GmbH', desc: 'Tập đoàn bán lẻ và rang xay cà phê hàng đầu châu Âu, nhà tiêu thụ và phân phối cà phê thành phẩm khổng lồ.' },
-    { rank: 10, name: 'Strauss Coffee', desc: 'Tập đoàn cà phê đa quốc gia trong top 5 nhà rang xay thế giới, thống trị thị trường Trung - Đông Âu và Brazil.' }
+    'Louis Dreyfus Company (LDC)',
+    'ofi (Olam Food Ingredients)',
+    'Ecom Agroindustrial',
+    'Starbucks Coffee Trading Co.',
+    'Lavazza Group',
+    'Tchibo Group',
+    'Strauss Coffee'
   ]
 };
 
@@ -1772,12 +1784,12 @@ export const Home = () => {
                   </div>
                 </div>
 
-                {/* Top 3 Doanh nghiệp đứng đầu (Nổi bật) */}
+                {/* Top 3 Doanh nghiệp đứng đầu (Nổi bật - Logo thay thế cho rank #) */}
                 <div className="exporter-top3-list">
-                  {TOP_EXPORTERS_TAY_NGUYEN.top3.map((exp) => (
-                    <div key={exp.rank} className="exporter-top3-card">
-                      <div className={`exporter-rank-badge rank-${exp.rank}`}>
-                        #{exp.rank}
+                  {TOP_EXPORTERS_TAY_NGUYEN.top3.map((exp, idx) => (
+                    <div key={idx} className="exporter-top3-card">
+                      <div className="exporter-logo-wrap">
+                        <img src={exp.logo} alt={exp.name} className="exporter-brand-logo" />
                       </div>
                       <div className="exporter-top3-body">
                         <div className="exporter-top3-header">
@@ -1795,23 +1807,19 @@ export const Home = () => {
                   ))}
                 </div>
 
-                {/* 7 Doanh nghiệp tiếp theo */}
+                {/* Doanh nghiệp tiêu biểu tiếp theo (Không số 7, không #1-10, xếp 2-3-2) */}
                 <div className="exporter-rest-block">
                   <h5 className="exporter-rest-title">
-                    <i className="ti ti-list-numbers" />
-                    <span>{currentLang === 'en' ? 'Next 7 Reputable Exporters' : '7 Doanh nghiệp tiêu biểu tiếp theo'}</span>
+                    <i className="ti ti-building" />
+                    <span>{currentLang === 'en' ? 'Prominent Next Exporters' : 'Doanh nghiệp tiêu biểu tiếp theo'}</span>
                   </h5>
-                  <ul className="exporter-rest-list">
-                    {TOP_EXPORTERS_TAY_NGUYEN.rest.map((exp) => (
-                      <li key={exp.rank} className="exporter-rest-item">
-                        <span className="exporter-rest-rank">#{exp.rank}</span>
-                        <div className="exporter-rest-info">
-                          <span className="exporter-rest-name">{exp.name}:</span>
-                          <span className="exporter-rest-desc">{exp.desc}</span>
-                        </div>
-                      </li>
+                  <div className="exporter-next-grid-232">
+                    {TOP_EXPORTERS_TAY_NGUYEN.rest.map((name, idx) => (
+                      <div key={idx} className="exporter-tag-item">
+                        <span>{name}</span>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               </div>
 
@@ -1827,12 +1835,12 @@ export const Home = () => {
                   </div>
                 </div>
 
-                {/* Top 3 Doanh nghiệp đứng đầu (Nổi bật) */}
+                {/* Top 3 Doanh nghiệp đứng đầu (Nổi bật - Logo thay thế cho rank #) */}
                 <div className="exporter-top3-list">
-                  {TOP_EXPORTERS_WORLD.top3.map((exp) => (
-                    <div key={exp.rank} className="exporter-top3-card">
-                      <div className={`exporter-rank-badge rank-${exp.rank}`}>
-                        #{exp.rank}
+                  {TOP_EXPORTERS_WORLD.top3.map((exp, idx) => (
+                    <div key={idx} className="exporter-top3-card">
+                      <div className="exporter-logo-wrap">
+                        <img src={exp.logo} alt={exp.name} className="exporter-brand-logo" />
                       </div>
                       <div className="exporter-top3-body">
                         <div className="exporter-top3-header">
@@ -1850,23 +1858,19 @@ export const Home = () => {
                   ))}
                 </div>
 
-                {/* 7 Doanh nghiệp tiếp theo */}
+                {/* Tập đoàn tiêu biểu tiếp theo (Không số 7, không #1-10, xếp 2-3-2) */}
                 <div className="exporter-rest-block">
                   <h5 className="exporter-rest-title">
-                    <i className="ti ti-list-numbers" />
-                    <span>{currentLang === 'en' ? 'Next 7 Global Giants' : '7 Tập đoàn đa quốc gia tiếp theo'}</span>
+                    <i className="ti ti-world-latitude" />
+                    <span>{currentLang === 'en' ? 'Prominent Global Trading Houses' : 'Tập đoàn tiêu biểu tiếp theo'}</span>
                   </h5>
-                  <ul className="exporter-rest-list">
-                    {TOP_EXPORTERS_WORLD.rest.map((exp) => (
-                      <li key={exp.rank} className="exporter-rest-item">
-                        <span className="exporter-rest-rank">#{exp.rank}</span>
-                        <div className="exporter-rest-info">
-                          <span className="exporter-rest-name">{exp.name}:</span>
-                          <span className="exporter-rest-desc">{exp.desc}</span>
-                        </div>
-                      </li>
+                  <div className="exporter-next-grid-232">
+                    {TOP_EXPORTERS_WORLD.rest.map((name, idx) => (
+                      <div key={idx} className="exporter-tag-item">
+                        <span>{name}</span>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               </div>
             </div>

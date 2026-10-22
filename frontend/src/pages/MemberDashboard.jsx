@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import SEOHead from '../components/SEOHead';
 import RichTextEditor from '../components/RichTextEditor';
 import { useTranslation } from '../contexts/LanguageContext';
 import { CATEGORIES_DATA, ALL_CATEGORIES, getSubcategoriesByCategory, getCategoryLabel } from '../constants/categories';
@@ -446,7 +448,10 @@ export const MemberDashboard = () => {
 
   if (modalOpen) {
     return (
-      <div style={{ minHeight: '80vh', padding: '2rem 1.5rem 4rem', backgroundColor: '#F8FAFC' }}>
+      <div className="public-body">
+        <SEOHead title="Đăng Tin Giao Thương Mới | DakLak.today" description="Soạn thảo và đăng tin bài giao thương hội viên DakLak.today" />
+        <Navbar />
+        <div style={{ minHeight: '80vh', padding: '2rem 1.5rem 4rem', backgroundColor: '#F8FAFC' }}>
           <div style={{ maxWidth: '1040px', margin: '0 auto' }}>
             {/* Top Navigation & Title Bar */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '1.25rem' }}>
@@ -728,11 +733,16 @@ export const MemberDashboard = () => {
             </div>
           </div>
         </div>
+        <Footer />
+      </div>
     );
   }
 
   return (
-    <div className="dashboard-wrap">
+    <div className="public-body">
+      <SEOHead title="Dashboard Hội viên | DakLak.today" description="Trang quản trị tài khoản dành cho Hội viên DakLak.today" />
+      <Navbar />
+      <div className="dashboard-wrap">
         
         {/* Top Header Banner */}
         <div style={{ background: '#0C2340', borderBottom: '1px solid rgba(2,132,199,0.2)', padding: '2rem 0' }}>
@@ -1429,6 +1439,8 @@ export const MemberDashboard = () => {
           </div>
         </div>
       )}
+      </div>
+      <Footer />
     </div>
   );
 };

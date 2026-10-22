@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="200" height="80">
+  <rect width="200" height="80" rx="12" fill="#0A2540"/>
+  <!-- Volcafe / ED&F Man Emblem -->
+  <g transform="translate(25, 40)">
+    <!-- Stylized coffee bean globe -->
+    <circle cx="0" cy="0" r="17" fill="#F97316"/>
+    <path d="M-8,-2 C-8,-10 0,-12 8,-7 C4,-2 2,4 -3,8 C-7,6 -8,2 -8,-2 Z" fill="#FFFFFF"/>
+    <path d="M8,2 C8,10 0,12 -8,7 C-4,2 -2,-4 3,-8 C7,-6 8,-2 8,2 Z" fill="#0A2540" opacity="0.3"/>
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="#0A2540" stroke-width="1.5"/>
+  </g>
+  <!-- Typography -->
+  <text x="52" y="36" font-family="'Inter', sans-serif" font-size="16" font-weight="900" letter-spacing="1.5" fill="#FFFFFF">VOLCAFE</text>
+  <text x="52" y="52" font-family="'Inter', sans-serif" font-size="8.5" font-weight="700" letter-spacing="0.5" fill="#FB923C">ED&amp;F MAN COFFEE</text>
+  <text x="52" y="65" font-family="'Inter', sans-serif" font-size="6.5" font-weight="500" letter-spacing="0.6" fill="#94A3B8">GLOBAL GREEN COFFEE</text>
+</svg>

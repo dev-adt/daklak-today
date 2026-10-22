@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="200" height="80">
+  <rect width="200" height="80" rx="12" fill="#18181B"/>
+  <!-- Trung Nguyen Iconic Sunburst & Coffee Emblem -->
+  <g transform="translate(24, 40)">
+    <!-- Sunburst rays -->
+    <circle cx="0" cy="0" r="18" fill="none" stroke="#D4AF37" stroke-width="1.8" stroke-dasharray="3,2.5"/>
+    <circle cx="0" cy="0" r="13" fill="#27272A"/>
+    <!-- Stylized coffee bean / arrow -->
+    <path d="M-6,0 C-6,-7 0,-10 6,-8 C4,-3 2,3 -3,8 C-5,6 -6,3 -6,0 Z" fill="#D4AF37"/>
+    <path d="M6,0 C6,7 0,10 -6,8 C-4,3 -2,-3 3,-8 C5,-6 6,-3 6,0 Z" fill="#F59E0B"/>
+    <circle cx="0" cy="0" r="2.5" fill="#FFFFFF"/>
+  </g>
+  <!-- Typography -->
+  <text x="52" y="34" font-family="'Times New Roman', serif, 'Cinzel'" font-size="13" font-weight="900" letter-spacing="1.2" fill="#FFFFFF">TRUNG NGUYÊN</text>
+  <text x="52" y="52" font-family="'Times New Roman', serif, 'Cinzel'" font-size="11.5" font-weight="800" letter-spacing="3" fill="#D4AF37">L E G E N D</text>
+  <text x="52" y="65" font-family="'Inter', sans-serif" font-size="6.5" font-weight="600" letter-spacing="1" fill="#A1A1AA">THE ENERGY COFFEE</text>
+</svg>
