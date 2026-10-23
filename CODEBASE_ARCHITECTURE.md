@@ -1,7 +1,7 @@
 # 🏗️ TÀI LIỆU KIẾN TRÚC TOÀN HỆ THỐNG (CODEBASE ARCHITECTURE)
 # PLATFORM CHUẨN HOÁ: DAKLAK.TODAY & HỆ THỐNG MẪU NHÂN BẢN (*.TODAY)
 
-Tài liệu này cung cấp bức tranh toàn cảnh về kiến trúc kỹ thuật phần mềm, luồng dữ liệu (data flow), phân quyền người dùng (RBAC), giải pháp đa ngôn ngữ độc quyền, và thiết kế tầng hiển thị của nền tảng **Today Platform Codebase** (phiên bản chuẩn hóa hiện tại: `DakLak.today`).
+Tài liệu này cung cấp bức tranh toàn cảnh về kiến trúc kỹ thuật phần mềm, luồng dữ liệu (data flow), phân quyền người dùng (RBAC), giải pháp đa ngôn ngữ độc quyền, hạ tầng SEO OpenGraph SSR, cơ chế chống dính cache đa tầng và thiết kế tầng hiển thị của nền tảng **Today Platform Codebase** (phiên bản chuẩn hóa hiện tại: `DakLak.today` v2.5).
 
 ---
 
@@ -9,17 +9,18 @@ Tài liệu này cung cấp bức tranh toàn cảnh về kiến trúc kỹ thu�
 
 | Phân tầng | Công nghệ / Thư viện | Đặc tính & Vai trò trong hệ thống |
 | :--- | :--- | :--- |
-| **Frontend Core** | React 18, Vite, React Router v6 | Single Page Application (SPA), Code Splitting (React.lazy) giảm >65% kích thước tải trang ban đầu. |
-| **PWA & Offline** | Service Worker (`public/sw.js`), Web App Manifest | Hỗ trợ cài đặt trực tiếp thành ứng dụng di động/desktop, lưu đệm tài nguyên tĩnh ngoại tuyến. |
-| **Styling & Tokens** | Vanilla CSS, CSS Custom Properties (Tokens) | Độc lập hoàn toàn, không phụ thuộc TailwindCSS, tránh lỗi xung đột class và tối ưu 100% quyền kiểm soát layout. |
-| **Đa ngôn ngữ Đa tầng** | Dual-Engine: Static UI Dictionary + Silent Google Translate Engine | Chuyển đổi 5 ngôn ngữ (VI, EN, ZH, JA, KO): dịch tức thì UI tĩnh 0ms và dịch ngầm toàn bộ dữ liệu CSDL (tin tức, sự kiện) mà không cần reload trang. |
+| **Frontend Core** | React 18, Vite, React Router v6 | Single Page Application (SPA), Code Splitting (`React.lazy`) giảm >65% kích thước tải trang ban đầu. |
+| **PWA & Offline** | Service Worker (`public/sw.js`), Web App Manifest | Cache version `daklak-cache-v2`, tách biệt root page, hỗ trợ cài đặt ứng dụng di động/desktop. |
+| **Styling & Tokens** | Vanilla CSS, CSS Custom Properties (Design Tokens) | Độc lập hoàn toàn, không phụ thuộc TailwindCSS, tránh lỗi xung đột class và tối ưu 100% quyền kiểm soát layout. |
+| **Đa ngôn ngữ Đa tầng** | Dual-Engine: Static UI Dictionary + Silent Google Translate Engine | Chuyển đổi 5 ngôn ngữ (VI, EN, ZH, JA, KO): dịch tức thì UI tĩnh 0ms và dịch ngầm toàn bộ dữ liệu CSDL mà không reload trang. |
 | **Typography & Icons** | Tabler Icons, Google Fonts (Be Vietnam Pro, Outfit, Plus Jakarta Sans, Inter) | Bộ font chữ hỗ trợ tiếng Việt hoàn hảo, chống gãy chữ trên mọi thiết bị. |
 | **Backend Core** | Node.js, Express.js (RESTful API Engine) | 98 endpoints RESTful, phục vụ dữ liệu động, xử lý xác thực, thanh toán vé, quản lý lead và phân phối tĩnh. |
+| **SEO SSR Engine** | Express User-Agent Inspection & Dynamic Meta Injector | Tự động chèn thẻ OpenGraph to đẹp cho Zalo, Facebook, LinkedIn crawler bots mà không cần chuyển toàn bộ app sang Next.js. |
 | **Database** | MySQL 8.0 / MariaDB (Pool via `mysql2/promise`) | CSDL quan hệ chuẩn hóa 16 bảng, tối ưu index, khóa ngoại và tự động duy trì kết nối pool bền bỉ. |
-| **AI Intelligence** | Google Gemini API / OpenRouter (`gemini-3-flash` / `gemini-2.5-flash`) | RAG tự động nạp dữ liệu hội viên, bài viết và sự kiện từ DB để trả lời người dùng 24/7 theo ngữ cảnh địa phương. |
+| **AI Intelligence** | Google Gemini API / OpenRouter (`gemini-2.5-flash` / `gemini-1.5-flash`) | RAG tự động nạp dữ liệu hội viên, bài viết và sự kiện từ DB để trả lời người dùng 24/7 theo ngữ cảnh địa phương. |
 | **Authentication** | JWT (JSON Web Tokens) & HTTP Session Cookies, Bcrypt | Hệ thống xác thực phân quyền 5 cấp độ độc lập, an toàn. |
 | **Email Service** | Nodemailer (SMTP SSL/TLS 465) | Tự động gửi email vé sự kiện có mã QR, thư xác nhận tài khoản và cấp lại mật khẩu. |
-| **Process Manager** | PM2 (`ecosystem.config.js`) | Quản lý tiến trình Node.js dạng Cluster nhiều luồng, tự động khôi phục khi gặp sự cố. |
+| **Process Manager** | PM2 (`ecosystem.config.js`) | Quản lý tiến trình Node.js dạng Cluster/Fork, tự động khôi phục khi gặp sự cố. |
 | **Web Server** | Nginx Reverse Proxy & Let's Encrypt SSL | Đảm nhiệm SSL HTTPS, nén gzip/brotli, bảo mật proxy và cân bằng tải. |
 
 ---
@@ -32,11 +33,13 @@ daklak-today/
 │   └── brand.config.js              # ⭐ Cấu hình thương hiệu phía Backend & Prompt AI
 ├── frontend/
 │   ├── public/                      # Assets tĩnh Frontend
-│   │   ├── images/                  # Banner, hình ảnh đối tác & chuyên đề
-│   │   ├── img_guide/               # Ảnh chụp tài liệu hướng dẫn
-│   │   ├── logo_icon.svg            # Biểu trưng vector thương hiệu
-│   │   ├── logo_icon.png            # Biểu trưng raster fallback
-│   │   └── favicon.svg / .png       # Favicon tab trình duyệt
+│   │   ├── images/                  # Thư mục ảnh tĩnh
+│   │   │   ├── daklak/              # Ảnh danh lam thắng cảnh, trụ cột đầu tư địa phương
+│   │   │   ├── industrial/          # Logo vector SVG các Khu & Cụm công nghiệp
+│   │   │   └── exporters/           # Logo vector SVG các tập đoàn xuất khẩu hàng đầu
+│   │   ├── logo_icon.svg / .png     # Logo icon vector & raster
+│   │   ├── favicon.svg / .png       # Favicon tab trình duyệt
+│   │   └── sw.js                    # Service Worker PWA (daklak-cache-v2)
 │   ├── src/
 │   │   ├── brand.config.js          # ⭐ CẤU HÌNH THƯƠNG HIỆU TẬP TRUNG FRONTEND
 │   │   ├── components/              # Các UI Components dùng chung
@@ -54,6 +57,7 @@ daklak-today/
 │   │   │   └── PWAContext.jsx       # Xử lý thông báo cài đặt App PWA
 │   │   ├── pages/                   # Màn hình ứng dụng
 │   │   │   ├── Home.jsx             # ⭐ Trang chủ (Landing page đa phân khu)
+│   │   │   ├── HomeDakLak.css       # ⭐ Style phân khu trang chủ (Podium grid, 2-3-2 grid)
 │   │   │   ├── Posts.jsx            # Tin bài, cơ hội đầu tư & bộ lọc chuyên mục
 │   │   │   ├── PostDetail.jsx       # Chi tiết bài viết (Mở công khai cho mọi độc giả)
 │   │   │   ├── Events.jsx           # Lịch sự kiện, hội thảo & đăng ký vé QR
@@ -78,15 +82,16 @@ daklak-today/
 │   └── vite.config.js               # Cấu hình Vite build trực tiếp vào thư mục root /public
 ├── public/                          # Thư mục bundle production phục vụ Web server
 │   ├── assets/                      # JS, CSS được nén gzip/brotli
-│   ├── sw.js                        # Service Worker PWA
+│   ├── sw.js                        # Service Worker PWA production
 │   └── manifest.json                # PWA Manifest
 ├── scripts/
 │   └── rebrand.js                   # CLI Script tự động thay đổi tên thương hiệu
 ├── .env.example                     # Mẫu biến môi trường
 ├── db.js                            # Kết nối MySQL Connection Pool
 ├── ecosystem.config.js              # Cấu hình PM2 Cluster trên VPS
+├── nginx.conf                       # Cấu hình Nginx mẫu cho Production
 ├── schema.sql                       # ⭐ Cấu trúc CSDL chuẩn hóa 16 bảng & Seed Data
-└── server.js                        # ⭐ Backend Express API: 98 REST Endpoints & AI RAG
+└── server.js                        # ⭐ Backend Express API: 98 REST Endpoints, AI RAG & SSR SEO
 ```
 
 ---
@@ -107,7 +112,7 @@ Hệ thống quản lý định danh người dùng theo **5 cấp độ / vai t
 ### 1. Khách vãng lai (Public / Guest):
 - Xem Trang chủ, Danh mục, Sự kiện, Danh bạ doanh nghiệp.
 - **Nội dung bài viết mở công khai hoàn toàn (`PostDetail.jsx`)**: Khách vãng lai có thể đọc toàn văn chi tiết bài viết, xem ảnh phóng sự và tài liệu đính kèm mà không bị che mờ hay bắt buộc đăng nhập (tối ưu hóa trải nghiệm đọc và chỉ số thu thập dữ liệu của Google Search bot).
-- Trò chuyện với Trợ lý AI Đắk Lắk.
+- Trò chuyện với Trợ lý AI.
 - Đăng ký nhận tư vấn xúc tiến đầu tư qua form Trang chủ (`/api/leads`).
 - Đăng ký vé sự kiện công khai (có cơ chế kiểm tra tự động trùng lặp số điện thoại/email trong cùng sự kiện).
 
@@ -177,7 +182,7 @@ Header (`frontend/src/components/Navbar.jsx`) được thiết kế theo các ti
 
 ## ⚡ 5. CƠ CHẾ ĐỒNG BỘ CHUYÊN MỤC TỨC THÌ (REALTIME CATEGORY SYNC)
 
-Để người quản trị thêm/sửa/xóa chuyên mục trong Dashboard và người dùng thấy ngay ngoài trang chủ mà không phải chờ 2 phút như bản cũ:
+Để người quản trị thêm/sửa/xóa chuyên mục trong Dashboard và người dùng thấy ngay ngoài trang chủ mà không phải chờ đợi:
 
 1. **Loại bỏ Cache Server**:
    Endpoint `GET /api/categories` trong `server.js` cấu hình:
@@ -229,14 +234,93 @@ Hệ thống sử dụng giải pháp dịch thuật 2 tầng:
      - 10 bài viết, dữ liệu xúc tiến đầu tư mới nhất trong bảng `posts`.
      - Các sự kiện sắp diễn ra trong bảng `events`.
      - Dữ liệu tri thức bổ trợ trong thư mục `knowledge_base/`.
-   - Bơm toàn bộ ngữ cảnh này vào prompt của Google Gemini Flash Preview, giúp AI trả lời chính xác, sát thực tế địa phương và không bị ảo giác (hallucination).
+   - Bơm toàn bộ ngữ cảnh này vào prompt của Google Gemini Flash, giúp AI trả lời chính xác, sát thực tế địa phương và không bị ảo giác (hallucination).
 3. **Quản lý Phiên (Session Management)**:
    - Lưu trữ toàn bộ lịch sử hỏi đáp theo `session_id` trong bảng `chat_logs`.
    - Hỗ trợ đổi phiên, xóa phiên và tải lại lịch sử trò chuyện cũ.
 
 ---
 
-## 💾 8. MÔ HÌNH DỮ LIỆU CSDL (16 BẢNG QUAN HỆ TRONG `schema.sql`)
+## 🏛️ 8. KIẾN TRÚC KHỐI PODIUM TOP 10 KCN & TOP 10 XUẤT KHẨU 2-3-2
+
+Trong phiên bản mới nhất, trang chủ tích hợp 2 phân khu kinh tế mũi nhọn với giải pháp hiển thị thông tin chuyên sâu:
+
+### 1. Khối Top 10 Khu & Cụm Công Nghiệp Tiêu Biểu:
+- **Kiến trúc Bục Podium 3 Vị trí**:
+  - Thẻ 2 bên trái: Xếp hạng tiêu biểu (Bazan Silver).
+  - Thẻ 1 ở giữa: Nhô cao lên `18px`, viền vàng ánh kim nổi bật (`gold-border`, `gold-highlight`).
+  - Thẻ 3 bên phải: Cửa ngõ kết nối giao thương (Bazan Bronze).
+- **Phân tách 2 ô thông tin độc lập (Tuyệt đối không lặp nội dung)**:
+  - **Ô trên (`.industrial-scale-pill`)**: Quy mô diện tích và hiện trạng hạ tầng / trục cao tốc kết nối (Icon: `ti-chart-area-line`).
+  - **Ô dưới (`.industrial-focus-pill`)**: Ngành nghề mũi nhọn trọng tâm thu hút đầu tư (Icon: `ti-coffee`, `ti-leaf`, `ti-truck-delivery`).
+- **Thẻ thuần hiển thị thông tin (`cursor: default`)**:
+  - Không dẫn link điều hướng ép buộc, không tạo cảm giác nút bấm click giả.
+- **Lưới 7 Cụm công nghiệp còn lại (Grid 2 - 3 - 2)**:
+  - Hàng 1 (2 items, mỗi item span 3 / 6 cột): `Cụm CN Tân An 1 & 2`, `Cụm CN Ea Dar`.
+  - Hàng 2 (3 items, mỗi item span 2 / 6 cột): `Cụm CN Cư Kuin`, `Cụm CN Buôn Hồ`, `Cụm CN Krông Búk`.
+  - Hàng 3 (2 items, mỗi item span 3 / 6 cột): `Cụm CN Cư M'gar`, `Cụm CN Ea H'leo`.
+  - Xóa bỏ hoàn toàn thuộc tính cắt chữ `...`, đảm bảo 100% tên cụm công nghiệp được hiển thị trọn vẹn.
+
+### 2. Khối Top 10 Xuất khẩu Cà phê (Tây Nguyên & Toàn cầu):
+- Logo thương hiệu chuẩn vector SVG (`Simexco`, `Trung Nguyên`, `NKG`, `Volcafe`, `Sucafina`...).
+- Bố cục 7 đơn vị tiếp theo áp dụng cùng cấu trúc lưới 2-3-2 (`.exporter-next-grid-232`).
+
+---
+
+## 🛡️ 9. CƠ CHẾ CHỐNG DÍNH CACHE ĐA TẦNG (CLOUDFLARE, PWA & NGINX)
+
+Để xóa bỏ hoàn toàn hiện tượng "đã pull code trên VPS nhưng client vẫn nhận bản build cũ", hệ thống áp dụng cơ chế chống cache đa tầng:
+
+```
+[Trình duyệt Người dùng]
+        │
+        ▼ (Kiểm tra PWA Service Worker: daklak-cache-v2, bỏ qua '/')
+[Cloudflare Edge CDN]
+        │ (Nhận header: Cloudflare-CDN-Cache-Control: no-store => Không lưu cache HTML)
+        ▼
+[Nginx Reverse Proxy]
+        │ (location /: Cache-Control: no-store, no-cache / location /assets/: 1y immutable)
+        ▼
+[Node.js Express (server.js)]
+        │ (Phục vụ public/index.html mới nhất sau mỗi lần deploy)
+```
+
+1. **Chỉ thị Cloudflare CDN Edge**:
+   File `server.js` gửi:
+   ```javascript
+   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+   res.setHeader('Pragma', 'no-cache');
+   res.setHeader('Expires', '0');
+   res.setHeader('CDN-Cache-Control', 'no-store');
+   res.setHeader('Cloudflare-CDN-Cache-Control', 'no-store');
+   ```
+2. **PWA Service Worker Versioning**:
+   File `public/sw.js` sử dụng `CACHE_NAME = 'daklak-cache-v2'`. Khi deploy bản mới, Service Worker tự động kích hoạt `self.clients.claim()` và xóa sạch cache cũ.
+3. **Vite Cache-Busting Chéo Hash**:
+   Tất cả file JS/CSS trong `/assets/` đều gắn hash độc nhất (VD: `index-Bha0QgXZ.js`). Khi code thay đổi, hash thay đổi, đảm bảo không bao giờ nạp nhầm code cũ.
+
+---
+
+## 🚀 10. HẠ TẦNG SEO OPENGRAPH SSR & CHIA SẺ MẠNG XÃ HỘI
+
+1. **Dynamic Meta Tag Injection**:
+   Trong `server.js`, route `app.get('*')` kiểm tra User-Agent của các bot cào:
+   ```javascript
+   const isCrawler = /zalo|facebookexternalhit|twitterbot|telegrambot|whatsapp|linkedinbot|slackbot|googlebot/i.test(userAgent);
+   ```
+   Nếu là bot cào, server đọc CSDL của bài viết/sự kiện/hội viên tương ứng và chèn trực tiếp các thẻ:
+   - `<meta property="og:title" content="...">`
+   - `<meta property="og:description" content="...">`
+   - `<meta property="og:image" content="...">`
+   - `<meta property="og:url" content="...">`
+   - `<meta property="og:site_name" content="...">`
+   - `<link rel="canonical" href="...">`
+2. **Proxy hình ảnh (`/api/og-image`)**:
+   Tự động proxy hình ảnh từ nguồn bên ngoài để vượt qua rào cản kiểm duyệt hình ảnh của Zalo và Facebook, bảo đảm 100% link chia sẻ đều hiển thị thumbnail đẹp mắt.
+
+---
+
+## 💾 11. MÔ HÌNH DỮ LIỆU CSDL (16 BẢNG QUAN HỆ TRONG `schema.sql`)
 
 1. `members`: Doanh nghiệp hội viên (chứa tài khoản `username`, `password_hash`, thông tin đại diện, MST, trạng thái duyệt tự động Silver).
 2. `member_sessions`: Phiên đăng nhập của hội viên.
@@ -258,7 +342,7 @@ Hệ thống sử dụng giải pháp dịch thuật 2 tầng:
 
 ---
 
-## 🚀 9. QUY TRÌNH BUILD & TRIỂN KHAI PRODUCTION
+## 🚀 12. QUY TRÌNH BUILD & TRIỂN KHAI PRODUCTION
 
 ```bash
 # 1. Khởi tạo Cơ sở Dữ liệu từ file schema.sql
@@ -274,14 +358,14 @@ cd ..
 # 3. Cài đặt dependency backend
 npm install
 
-# 4. Khởi chạy cụm tiến trình PM2 Cluster
-pm2 start ecosystem.config.js --env production
+# 4. Khởi chạy cụm tiến trình PM2
+pm2 start ecosystem.config.js
 pm2 save
 
-# 5. Cấu hình Nginx Reverse Proxy trỏ vào Port 5000 và kích hoạt SSL Certbot
+# 5. Cấu hình Nginx Reverse Proxy trỏ vào Port 3028 và kích hoạt SSL Certbot
 certbot --nginx -d domain.today -d www.domain.today
 ```
 
 ---
 
-*Tài liệu này được đồng bộ và kiểm thử thực tế trên phiên bản Golden Master của DakLak.today bởi ADT Quốc tế.*
+*Tài liệu này được đồng bộ và kiểm thử thực tế trên phiên bản Golden Master của DakLak.today v2.5 bởi ADT Quốc tế.*

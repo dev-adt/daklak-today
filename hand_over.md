@@ -3,22 +3,25 @@
 
 > **Dự án chuẩn (Golden Master)**: Nền tảng Cổng thông tin, Dữ liệu, Du lịch, Đầu tư & Hệ sinh thái số Doanh nghiệp (`DakLak.today`)  
 > **Đơn vị phát triển & bàn giao**: ADT Quốc tế  
-> **Đối tượng sử dụng**: Lập trình viên Fullstack / Frontend / AI Coding Assistant (Antigravity, Cursor, Windsurf, Claude Code...) tiếp nhận nhân bản dự án sang các tỉnh thành/lĩnh vực mới (VD: `gialai.today`, `kontum.today`, `lamdong.today`, `danang.today`...).  
-> **Mục tiêu tài liệu**: Hướng dẫn toàn diện cách **tái sử dụng 100% logic backend, CSDL và hệ thống tính năng nghiệp vụ đã được tối ưu hoàn thiện**, chỉ cần thay đổi **Cấu hình Thương hiệu, Bảng màu nhận diện, và Dữ liệu danh mục** là có ngay một cổng thông tin `.today` mới hoàn chỉnh trong vòng 30 phút.
+> **Phiên bản Codebase**: Golden Master v2.5 (Cập nhật kiến trúc Top 10 Khu công nghiệp Podium, Top 10 Xuất khẩu 2-3-2, OpenGraph SEO SSR & Anti-CDN Cache Engine)  
+> **Đối tượng sử dụng**: Lập trình viên Fullstack / Frontend / AI Coding Assistant (Antigravity, Cursor, Windsurf, Claude Code...) tiếp nhận nhân bản dự án sang các tỉnh thành/lĩnh vực mới (VD: `gialai.today`, `kontum.today`, `lamdong.today`, `danang.today`, `binhthuan.today`...).  
+> **Mục tiêu tài liệu**: Hướng dẫn toàn diện cách **tái sử dụng 100% logic backend, CSDL và hệ thống tính năng nghiệp vụ đã được tối ưu hoàn thiện**, chỉ cần thay đổi **Cấu hình Thương hiệu, Bảng màu nhận diện, và Dữ liệu danh mục/đặc thù địa phương** là có ngay một cổng thông tin `.today` mới hoàn chỉnh trong vòng 30 phút.
 
 ---
 
 ## 📑 MỤC LỤC
 1. [Tổng quan Kiến trúc & Nguyên lý Thiết kế Golden Master](#1-tổng-quan-kiến-trúc--nguyên-lý-thiết-kế-golden-master)
 2. [Cấu trúc Thư mục Toàn dự án Mới nhất](#2-cấu-trúc-thư-mục-toàn-dự-án-mới-nhất)
-3. [Quy trình 5 Bước Nhân bản Sang Web `.today` Mới (Rebranding Checklist)](#3-quy-trình-5-bước-nhân-bản-sang-web-today-mới-rebranding-checklist)
-4. [Kiến trúc Header & Bộ chọn Đa Ngôn ngữ Chống Dịch Đè (Anti-Mistranslation)](#4-kiến-trúc-header--bộ-chọn-đa-ngôn-ngữ-chống-dịch-đè-anti-mistranslation)
-5. [Cơ chế Đồng bộ Chuyên mục Tức thì (Realtime Category Sync)](#5-cơ-chế-đồng-bộ-chuyên-mục-tức-thì-realtime-category-sync)
-6. [Bản đồ Dữ liệu & Phân khu Trang chủ (`Home.jsx`)](#6-bản-đồ-dữ-liệu--phân-khu-trang-chủ-homejsx)
-7. [Khung Code Mẫu Chuẩn (Clean Skeleton) cho `Home.jsx`](#7-khung-code-mẫu-chuẩn-clean-skeleton-cho-homejsx)
-8. [Danh mục API Backend Chuẩn hóa](#8-danh-mục-api-backend-chuẩn-hóa)
-9. [Quy trình Build, Khởi tạo CSDL & Triển khai VPS (Production)](#9-quy-trình-build-khởi-tạo-csdl--triển-khai-vps-production)
-10. [Các Lỗi Thường Gặp & Cách Khắc Phục (Troubleshooting)](#10-các-lỗi-thường-gặp--cách-khắc-phục-troubleshooting)
+3. [Quy trình 6 Bước Nhân bản Sang Web `.today` Mới (Rebranding Checklist)](#3-quy-trình-6-bước-nhân-bản-sang-web-today-mới-rebranding-checklist)
+4. [Bản đồ Dữ liệu & Phân khu Trang chủ (`Home.jsx`) Mới nhất](#4-bản-đồ-dữ-liệu--phân-khu-trang-chủ-homejsx-mới-nhất)
+5. [Kiến trúc Header & Bộ chọn Đa Ngôn ngữ Chống Dịch Đè (Anti-Mistranslation)](#5-kiến-trúc-header--bộ-chọn-đa-ngôn-ngữ-chống-dịch-đè-anti-mistranslation)
+6. [Cơ chế Chống Dính Cache Toàn diện (Anti-Cache Engine: Cloudflare, PWA & Nginx)](#6-cơ-chế-chống-dính-cache-toàn-diện-anti-cache-engine-cloudflare-pwa--nginx)
+7. [Hạ tầng SEO OpenGraph SSR & Chia sẻ Mạng Xã hội (Zalo, Facebook, LinkedIn)](#7-hạ-tầng-seo-opengraph-ssr--chia-sẻ-mạng-xã-hội-zalo-facebook-linkedin)
+8. [Cơ chế Đồng bộ Chuyên mục Tức thì (Realtime Category Sync)](#8-cơ-chế-đồng-bộ-chuyên-mục-tức-thì-realtime-category-sync)
+9. [Khung Code Mẫu Chuẩn (Clean Skeleton) cho `Home.jsx`](#9-khung-code-mẫu-chuẩn-clean-skeleton-cho-homejsx)
+10. [Danh mục 98 API Backend Chuẩn hóa](#10-danh-mục-98-api-backend-chuẩn-hóa)
+11. [Quy trình Build, Khởi tạo CSDL & Triển khai VPS (Production)](#11-quy-trình-build-khởi-tạo-csdl--triển-khai-vps-production)
+12. [Các Lỗi Thường Gặp & Cách Khắc Phục (Troubleshooting)](#12-các-lỗi-thường-gặp--cách-khắc-phục-troubleshooting)
 
 ---
 
@@ -33,15 +36,18 @@ Dự án được cấu trúc theo mô hình **Monorepo thu gọn (All-in-one)**
 │  - Sticky Header 72px (1 hàng, co giãn font 12.5px-14.5px, chống đè chữ)      │
 │  - Google Translate Engine Silent Injection (dịch cả DB mà không reload)      │
 │  - Trợ lý AI nổi FloatingAIBot đa phiên + Markdown Stream                     │
+│  - Khối Top 10 Khu CN Podium + Khối Top 10 Xuất khẩu Cà phê Grid 2-3-2        │
 └──────────────────────────────────────┬────────────────────────────────────────┘
-                                       │ REST API (/api/*)
+                                       │ REST API (/api/*) + SSR OpenGraph
                                        ▼
 ┌───────────────────────────────────────────────────────────────────────────────┐
 │                         NODE.JS / EXPRESS BACKEND ENGINE                      │
 │  - Phân quyền 5 cấp: Guest, Member (Auto Silver), Creator, Organizer, Admin   │
 │  - JWT & Session Auth đa bảng                - API Vé & Soát vé QR thời gian  │
 │  - Cache-Control: no-store Chuyên mục tức thì - Quản trị Leads & Báo cáo      │
+│  - SSR Meta Tag Injector (Hỗ trợ Zalo/FB Card) - Proxy ảnh cào /api/og-image   │
 │  - AI Gemini Flash RAG (Đọc dữ liệu DB hội viên, sự kiện, bài viết)           │
+│  - Header Cloudflare-CDN-Cache-Control: no-store (Chống dính bản build cũ)    │
 └──────────────────────┬─────────────────────────────────┬──────────────────────┘
                        │ Pool Connection (mysql2)        │ Google Gemini API / OpenRouter
                        ▼                                 ▼
@@ -51,15 +57,19 @@ Dự án được cấu trúc theo mô hình **Monorepo thu gọn (All-in-one)**
           └─────────────────────────┘       └────────────────────────┘
 ```
 
-### Điểm mạnh cốt lõi của Codebase:
-1. **Tập trung hóa cấu hình thương hiệu**: 90% thông tin địa phương/thương hiệu (Tên web, tỉnh thành, slogan, logo, màu sắc, hotline, tài khoản VietQR, AI Prompt) nằm tại **2 file duy nhất**: `frontend/src/brand.config.js` và `config/brand.config.js`.
-2. **Độc lập Styling (Zero CSS Conflicts)**: 100% sử dụng Vanilla CSS hiện đại và Design Tokens (`index.css`), không phụ thuộc TailwindCSS, tránh lỗi build xung đột thư viện hay class purge.
+### Các Điểm Mạnh Cốt Lõi Vượt Trội Của Codebase:
+1. **Tập trung hóa cấu hình thương hiệu**: 90% thông tin nhận diện (Tên cổng thông tin, tỉnh thành, slogan, logo, màu sắc, hotline, tài khoản VietQR, AI Prompt) nằm tại **2 file duy nhất**: `frontend/src/brand.config.js` và `config/brand.config.js`.
+2. **Độc lập Styling (Zero CSS Conflicts)**: 100% sử dụng Vanilla CSS hiện đại và Design Tokens (`index.css`, `HomeDakLak.css`), không phụ thuộc TailwindCSS, tránh lỗi purge class, lỗi xung đột specificity hay lỗi build rollup.
 3. **Đa ngôn ngữ 5 thứ tiếng (VI, EN, ZH, JA, KO)**:
    - Từ điển giao diện tĩnh chuyển đổi 0ms không độ trễ.
    - Tích hợp engine Google Translate ngầm dịch toàn bộ nội dung động từ cơ sở dữ liệu (tin tức, sự kiện, giới thiệu) sang tiếng Anh, Trung, Nhật, Hàn.
-   - Có cơ chế **cấm dịch đè (`translate="no"` / `notranslate`)** độc quyền tại thanh chọn ngôn ngữ và logo thương hiệu, loại bỏ triệt để hiện tượng mã quốc tế biến thành chữ tiếng Việt (như chữ "Chúng tôi").
-4. **Mở nội dung chi tiết bài viết công khai**: Khách vãng lai xem trọn vẹn nội dung bài viết mà không bị tường chắn ép đăng nhập, tối đa hóa chỉ số SEO Google.
-5. **Đồng bộ danh mục thời gian thực (Zero-Cache Sync)**: Khi Admin thêm/sửa/xóa chuyên mục trong Dashboard, thanh Header ngoài trang chủ cập nhật ngay tức thì mà không cần xóa cache trình duyệt.
+   - Cơ chế **cấm dịch đè (`translate="no"` / `notranslate`)** độc quyền tại thanh chọn ngôn ngữ và logo thương hiệu, loại bỏ triệt để hiện tượng mã quốc tế biến thành chữ tiếng Việt (như chữ "Chúng tôi").
+4. **Mở nội dung chi tiết bài viết công khai (SEO First)**: Khách vãng lai xem trọn vẹn nội dung bài viết mà không bị tường chắn ép đăng nhập, tối đa hóa chỉ số thu thập dữ liệu và ranking của Google Search bot.
+5. **Hạ tầng OpenGraph SSR thông minh**: Dù là SPA React, link chia sẻ bài viết, sự kiện, doanh nghiệp lên **Zalo, Facebook, Skype, LinkedIn** vẫn tự động bung ảnh đại diện to, tiêu đề và tóm tắt chuẩn xác 100% nhờ engine inject meta server-side tại `server.js`.
+6. **Cơ chế Chống Dính Cache Toàn diện**:
+   - `PWA Service Worker` cấu hình `daklak-cache-v2`, không precache `'/'` (root), giúp client luôn nhận mã index mới.
+   - Server gửi header `Cloudflare-CDN-Cache-Control: no-store` và `CDN-Cache-Control: no-store` giúp máy chủ Cloudflare Edge không bao giờ lưu đè file HTML của trang chủ.
+7. **Đồng bộ danh mục thời gian thực (Zero-Cache Sync)**: Khi Admin thêm/sửa/xóa chuyên mục trong Dashboard, thanh Header ngoài trang chủ cập nhật ngay tức thì mà không cần xóa cache trình duyệt.
 
 ---
 
@@ -71,12 +81,13 @@ daklak-today/
 │   └── brand.config.js              # ⭐ Cấu hình thương hiệu Backend, VietQR & AI Prompt
 ├── frontend/
 │   ├── public/                      # Assets tĩnh Frontend
-│   │   ├── images/                  # Ảnh banner, đối tác, ảnh minh họa
-│   │   ├── img_guide/               # Ảnh tài liệu hướng dẫn sử dụng
-│   │   ├── logo_icon.svg            # Logo icon vector
-│   │   ├── logo_icon.png            # Logo icon png
+│   │   ├── images/                  # Thư mục ảnh tĩnh
+│   │   │   ├── daklak/              # Ảnh danh lam thắng cảnh, trụ cột đầu tư địa phương
+│   │   │   ├── industrial/          # Logo vector SVG các Khu & Cụm công nghiệp
+│   │   │   └── exporters/           # Logo vector SVG các tập đoàn xuất khẩu hàng đầu
+│   │   ├── logo_icon.svg / .png     # Logo icon vector & raster
 │   │   ├── favicon.svg / .png       # Favicon tab trình duyệt
-│   │   └── pwa-192x192.png          # Biểu tượng PWA ứng dụng
+│   │   └── sw.js                    # PWA Service Worker (daklak-cache-v2)
 │   ├── src/
 │   │   ├── brand.config.js          # ⭐⭐ FILE CỐT LÕI CẤU HÌNH THƯƠNG HIỆU FRONTEND
 │   │   ├── components/              # Các UI Component độc lập
@@ -95,10 +106,11 @@ daklak-today/
 │   │   │   ├── categories.js        # Danh mục mặc định fallback có nhãn song ngữ
 │   │   │   └── provinces.js         # Danh mục tỉnh thành Việt Nam
 │   │   ├── pages/                   # Các trang ứng dụng chính
-│   │   │   ├── Home.jsx             # ⭐ Trang chủ (Landing page đa phân khu)
+│   │   │   ├── Home.jsx             # ⭐ Trang chủ (Landing page đa phân khu: KCN, Exporters, Hero, Events...)
+│   │   │   ├── HomeDakLak.css       # ⭐ Style phân khu trang chủ (Podium grid, 2-3-2 grid, animations)
 │   │   │   ├── Posts.jsx            # Tin bài, cơ hội đầu tư & bộ lọc chuyên mục
 │   │   │   ├── PostDetail.jsx       # Chi tiết bài viết (mở công khai, chuẩn SEO)
-│   │   │   ├── Events.jsx           # Danh sách sự kiện & đặt vé QR chống giật dịch
+│   │   │   ├── Events.jsx           # Danh sách sự kiện & đặt vé QR
 │   │   │   ├── Members.jsx          # Danh bạ hồ sơ doanh nghiệp hội viên
 │   │   │   ├── AIChat.jsx           # Trang trò chuyện AI chuyên sâu
 │   │   │   ├── Search.jsx           # Tìm kiếm dữ liệu toàn hệ thống
@@ -120,23 +132,28 @@ daklak-today/
 │   └── vite.config.js               # Cấu hình Vite build trực tiếp vào thư mục root /public
 ├── public/                          # Thư mục bundle production phục vụ Web server
 │   ├── assets/                      # JS, CSS được nén gzip/brotli
-│   ├── sw.js                        # Service Worker PWA
+│   ├── images/                      # Ảnh phục vụ production
+│   ├── sw.js                        # Service Worker PWA production
 │   └── manifest.json                # PWA Manifest
 ├── scripts/
 │   └── rebrand.js                   # CLI Script tự động thay đổi tên thương hiệu
 ├── .env.example                     # Mẫu biến môi trường
 ├── db.js                            # Kết nối MySQL Connection Pool
-├── ecosystem.config.js              # Cấu hình PM2 Cluster trên VPS
+├── ecosystem.config.js              # Cấu hình PM2 Cluster trên VPS (Production)
+├── ecosystem.dev.config.js          # Cấu hình PM2 cho môi trường DEV
+├── nginx.conf                       # Cấu hình Nginx mẫu cho Production (No-cache HTML, 1y Assets)
+├── nginx.dev.conf                   # Cấu hình Nginx mẫu cho DEV
 ├── schema.sql                       # ⭐⭐ Cấu trúc CSDL chuẩn hóa 16 bảng kèm dữ liệu mẫu
-├── server.js                        # ⭐⭐ Backend Express API: 98 REST Endpoints & AI RAG
+├── server.js                        # ⭐⭐ Backend Express API: 98 REST Endpoints, AI RAG & SSR OpenGraph
+├── CODEBASE_ARCHITECTURE.md         # Tài liệu kiến trúc toàn hệ thống
 └── hand_over.md                     # Tài liệu bàn giao & nhân bản (Tệp tin này)
 ```
 
 ---
 
-## 🎨 3. QUY TRÌNH 5 BƯỚC NHÂN BẢN SANG WEB `.TODAY` MỚI (REBRANDING CHECKLIST)
+## 🎨 3. QUY TRÌNH 6 BƯỚC NHÂN BẢN SANG WEB `.TODAY` MỚI (REBRANDING CHECKLIST)
 
-Khi nhân bản codebase này sang một tỉnh thành hoặc thương hiệu mới (ví dụ: `gialai.today`, `kontum.today`, `danang.today`), bạn chỉ cần làm theo đúng 5 bước sau:
+Khi nhân bản codebase này sang một tỉnh thành hoặc thương hiệu mới (ví dụ: `gialai.today`, `kontum.today`, `lamdong.today`, `danang.today`), hãy thực hiện lần lượt 6 bước chuẩn hóa sau:
 
 ### Bước 1: Khai báo lại cấu hình Frontend (`frontend/src/brand.config.js`)
 Mở file [frontend/src/brand.config.js](file:///frontend/src/brand.config.js) và cập nhật thông tin địa phương mới:
@@ -164,7 +181,7 @@ export const brandConfig = {
   },
 
   // 4. Bảng màu chủ đạo (Tùy biến theo bản sắc địa phương)
-  // Ví dụ: Gia Lai chọn Xanh Đại ngàn (#1B6B40) hoặc Nâu Đất Đỏ (#7A3E1D)
+  // Ví dụ: Gia Lai chọn Xanh Đại ngàn (#1B6B40) kết hợp Vàng Ánh Kim (#D5A33F)
   colors: {
     primary: '#1B6B40',
     primaryHover: '#145331',
@@ -182,7 +199,7 @@ export const brandConfig = {
     systemRole: 'Bạn là chuyên gia tư vấn đầu tư, dữ liệu kinh tế và văn hóa tỉnh Gia Lai...'
   },
 
-  // 6. Tài khoản ngân hàng VietQR (dành cho thu phí vé sự kiện/hội viên)
+  // 6. Tài khoản ngân hàng VietQR (thu phí vé sự kiện/hội viên)
   bankAccount: {
     bankName: 'Vietcombank',
     bankBranch: 'Chi nhánh Gia Lai',
@@ -205,21 +222,30 @@ export default brandConfig;
 
 ### Bước 2: Đồng bộ cấu hình Backend (`config/brand.config.js` & `.env`)
 1. Mở file [config/brand.config.js](file:///config/brand.config.js) và đồng bộ các trường `appName`, `brandName`, `bankAccount`, `ai.systemPrompt` tương ứng với tỉnh thành mới.
-2. Sao chép `.env.example` thành `.env` và khai báo:
+2. Sao chép `.env.example` thành `.env` trên môi trường chạy:
 ```env
-PORT=5000
+PORT=3028
 SITE_URL=https://gialai.today
 BRAND_NAME=GiaLai.today
 AI_AGENT_NAME=Gia Lai AI Assistant
 GEMINI_API_KEY=your_gemini_api_key_here
-OPENROUTER_API_KEY=your_openrouter_api_key_here
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=your_db_password
 DB_NAME=gialai_today_db
 ```
 
-### Bước 3: Thay đổi bảng màu Design Tokens trong `frontend/src/index.css`
+### Bước 3: Cập nhật dữ liệu đặc thù địa phương trong `frontend/src/pages/Home.jsx`
+Trong file [frontend/src/pages/Home.jsx](file:///frontend/src/pages/Home.jsx), thay thế các khối dữ liệu tĩnh đặc trưng bằng dữ liệu của địa phương mới:
+1. **`TOP_DESTINATIONS`**: Danh sách 8 điểm đến danh lam thắng cảnh nổi tiếng của tỉnh (VD: Biển Hồ T'Nưng, Chư Đăng Ya, Thác Phú Cường...).
+2. **`TOP_INDUSTRIAL_PARKS`**:
+   - `top3`: 3 KCN lớn nhất tỉnh (gồm logo SVG, tên, vị trí, quy mô ô trên, và ngành nghề ô dưới).
+   - `rest`: 7 khu/cụm công nghiệp tiếp theo (bố cục tự động dàn hàng 2-3-2).
+3. **`TOP_EXPORTERS_TAY_NGUYEN`** (hoặc ngành hàng mũi nhọn của tỉnh mới: Cao su, Hồ tiêu, Thủy hải sản, Gỗ ghép...).
+4. **`FEATURED_ENTERPRISES`**: 7 doanh nghiệp tiêu biểu của tỉnh cho khối slider tự động cuộn.
+5. **`INVESTMENT_PILLARS`**: 3 - 4 trụ cột kêu gọi đầu tư trọng điểm (Nông nghiệp công nghệ cao, Công nghiệp chế biến, Năng lượng tái tạo, Du lịch sinh thái).
+
+### Bước 4: Thay đổi bảng màu Design Tokens trong `frontend/src/index.css`
 Mở [frontend/src/index.css](file:///frontend/src/index.css), cập nhật các mã màu thương hiệu ở thẻ `:root`:
 ```css
 :root {
@@ -234,24 +260,45 @@ Mở [frontend/src/index.css](file:///frontend/src/index.css), cập nhật các
   --gold-glow: rgba(213, 163, 63, 0.35);
 
   /* Nền Header Navbar */
-  --header-bg: #1B120C;
+  --header-bg: #0F2A1D;
   --header-border: rgba(213, 163, 63, 0.35);
 }
 ```
 
-### Bước 4: Thay thế ảnh Icon, Logo & Favicon trong `frontend/public/`
-- Đặt file `logo_icon.svg` hoặc `logo_icon.png` mới vào `frontend/public/`.
+### Bước 5: Thay thế ảnh Icon, Logo & Favicon trong `frontend/public/`
+- Đặt file `logo_icon.svg` hoặc `logo_icon.png` mới vào `frontend/public/` và `public/`.
 - Đặt `favicon.svg` và `favicon.png` đại diện cho biểu trưng tỉnh thành mới.
-- Đặt ảnh đại diện AI `ai_robot_avatar-removebg.png` (nếu có nhân vật đại sứ AI riêng).
+- Thêm các file logo SVG cho KCN vào thư mục `frontend/public/images/industrial/`.
 
-### Bước 5: Cập nhật Chuyên mục Mặc định trong CSDL (`schema.sql`)
-Mở file [schema.sql](file:///schema.sql), cập nhật bảng `categories` và `sub_categories` phù hợp với địa phương (VD: Cà phê Pleiku, Tiêu Gia Lai, Du lịch Biển Hồ, Dự án Điện gió...).
+### Bước 6: Cập nhật Chuyên mục Mặc định trong CSDL (`schema.sql`)
+Mở file [schema.sql](file:///schema.sql), cập nhật bảng `categories` và `sub_categories` phù hợp với địa phương (VD: Cà phê Pleiku, Hồ tiêu Chư Sê, Năng lượng tái tạo Gia Lai, Du lịch Đại ngàn...).
 
 ---
 
-## 🧭 4. KIẾN TRÚC HEADER & BỘ CHỌN ĐA NGÔN NGỮ CHỐNG DỊCH ĐÈ
+## 🗺️ 4. BẢN ĐỒ DỮ LIỆU & PHÂN KHU TRANG CHỦ (`Home.jsx`) MỚI NHẤT
 
-Header của hệ thống (`frontend/src/components/Navbar.jsx`) đã được hoàn thiện đạt tiêu chuẩn cao cấp:
+Trang chủ [frontend/src/pages/Home.jsx](file:///frontend/src/pages/Home.jsx) hiện tại bao gồm chuỗi phân khu hoàn chỉnh theo tiêu chuẩn báo chí kinh tế & cổng dữ liệu đầu tư quốc tế:
+
+| STT | Phân khu (Section) | Nguồn Dữ Liệu / Logic | Đặc điểm hiển thị & Quy chuẩn UI |
+| :---: | :--- | :--- | :--- |
+| **1** | **Spotlight Top Banner** | Bài viết ghim từ `/api/posts?limit=5` | Tự động lấy ảnh bìa bài viết thật làm background, có tiêu đề và nút CTA "Xem chi tiết". |
+| **2** | **Hero Search & AI Slider** | `brandConfig.slogan` & `searchQuery` | Tìm kiếm liên thông toàn trang; thẻ AI Special Topic Slider tự động chuyển slide mỗi 5s. |
+| **3** | **Khám phá Điểm đến** | Hằng số `TOP_DESTINATIONS` (8 địa danh) | Thiết kế dạng thẻ Globe Trekker; bộ lọc Tab (Tất cả, Thác nước, Văn hóa, Sinh thái). |
+| **4** | **Trụ cột Đầu tư** | Hằng số `INVESTMENT_PILLARS` | 3 khối trụ cột liên kết trực tiếp vào đúng chuyên mục tương ứng trên Header. |
+| **5** | **Top 10 Khu & Cụm Công Nghiệp** | Hằng số `TOP_INDUSTRIAL_PARKS` | **Bục Podium 3 thẻ** (Top 2 bên trái, Top 1 nhô cao ở giữa, Top 3 bên phải); 2 ô thông tin độc lập (Quy mô trên - Ngành mũi nhọn dưới); **7 cụm CN còn lại xếp lưới 2-3-2** đầy đủ tên 100%. Hiển thị thuần túy không dẫn link. |
+| **6** | **Top 10 Xuất khẩu Cà phê** | Hằng số `TOP_EXPORTERS_TAY_NGUYEN` & `WORLD` | Tab chuyển đổi Tây Nguyên và Toàn cầu; Top 3 thẻ có logo SVG thương hiệu; 7 đơn vị tiếp theo xếp lưới **2-3-2**. |
+| **7** | **Sự kiện & Diễn đàn Trọng điểm** | API `/api/events?limit=4` | Đồng hồ đếm ngược; nếu chưa có sự kiện thì hiển thị trạng thái trống lịch sự và nút liên hệ hợp tác tổ chức. |
+| **8** | **Doanh nghiệp Tiêu biểu** | Hằng số `FEATURED_ENTERPRISES` | Slider 7 doanh nghiệp tự động chạy mỗi 5 giây, tạm dừng khi rê chuột (hover). |
+| **9** | **Tin tức & Dự án Đầu tư** | API `/api/posts?limit=6` | Grid tin bài mới nhất; cơ chế chọn ảnh fallback đa dạng không trùng nhau (`getPostThumb`). |
+| **10** | **Form Tiếp nhận Đầu tư (Leads)** | Gửi đến endpoint **`/api/leads`** | Tiếp nhận thông tin nhu cầu đầu tư, tự động phân loại nhu cầu và lưu CSDL. |
+| **11** | **FAQ Accordion & Bản đồ số** | Hằng số `FAQ_ITEMS` | Hệ thống câu hỏi thường gặp về thủ tục đầu tư, chính sách ưu đãi kèm bản đồ địa lý. |
+| **12** | **Trợ lý AI Nổi (`FloatingAIBot`)** | API `/api/chat` (Gemini Flash RAG) | Nút tròn nổi cố định góc phải dưới 24/7, tự động nạp dữ liệu địa phương. |
+
+---
+
+## 🧭 5. KIẾN TRÚC HEADER & BỘ CHỌN ĐA NGÔN NGỮ CHỐNG DỊCH ĐÈ
+
+Header của hệ thống (`frontend/src/components/Navbar.jsx`) được hoàn thiện theo tiêu chuẩn cao cấp:
 
 ### 1. Bảng quy chuẩn kích thước Header & Typography:
 - **Nguyên tắc bất biến**: Thanh Header **luôn nằm trên 1 hàng duy nhất** (không bao giờ tách thành 2 tầng gây vỡ layout).
@@ -266,12 +313,97 @@ Header của hệ thống (`frontend/src/components/Navbar.jsx`) đã được h
 * **Vấn đề đã triệt tiêu**: Khi người dùng dịch sang tiếng Anh hoặc đổi về tiếng Việt, công cụ dịch của Google Translate quét toàn bộ DOM. Các chữ viết tắt ngôn ngữ tiếng Anh như `US` hay `EN` nếu không bảo vệ sẽ bị dịch sang tiếng Việt thành chữ **"Chúng tôi"** (do từ `us` trong tiếng Anh có nghĩa là chúng tôi).
 * **Giải pháp áp dụng trên Codebase**:
   - Toàn bộ khối bộ chọn ngôn ngữ, nút bấm, thẻ span nhãn (`VI`, `EN`, `ZH`, `JA`, `KO`) và cờ quốc kỳ được gắn cứng hai thuộc tính:
-    `className="notranslate" translate="no"`
+    ```html
+    <div className="notranslate" translate="no">
+      <span>{(currentLang || 'VI').toUpperCase()}</span>
+    </div>
+    ```
   - Khi Google Translate gặp các thẻ này, engine dịch sẽ **bỏ qua 100%**, đảm bảo các nhãn ngôn ngữ và thương hiệu giữ nguyên tuyệt đối, không bao giờ bị biến đổi nội dung.
 
 ---
 
-## ⚡ 5. CƠ CHẾ ĐỒNG BỘ CHUYÊN MỤC TỨC THÌ (REALTIME CATEGORY SYNC)
+## ⚡ 6. CƠ CHẾ CHỐNG DÍNH CACHE TOÀN DIỆN (ANTI-CACHE ENGINE)
+
+Khi phát triển và triển khai cổng thông tin điện tử, lỗi phổ biến nhất là **đã cập nhật code mới trên server nhưng trình duyệt người dùng vẫn hiển thị bản cũ**. Codebase Golden Master đã được trang bị giải pháp 3 lớp toàn diện:
+
+### Lớp 1: Chống Dính Cache tại Cloudflare CDN Edge
+Trong file [server.js](file:///server.js), các yêu cầu truy cập file HTML luôn được gửi kèm các header chỉ thị cho Cloudflare và Proxy:
+```javascript
+res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+res.setHeader('Pragma', 'no-cache');
+res.setHeader('Expires', '0');
+res.setHeader('CDN-Cache-Control', 'no-store');
+res.setHeader('Cloudflare-CDN-Cache-Control', 'no-store');
+```
+> **Ý nghĩa**: Cloudflare Edge CDN sẽ **không bao giờ lưu cache trang chủ HTML**. Bất cứ khi nào bạn đẩy bản build mới lên VPS, người dùng truy cập sẽ nhận ngay phiên bản mã nguồn mới nhất mà không cần phải Purge Cache thủ công trên Cloudflare.
+
+### Lớp 2: PWA Service Worker Cache Versioning
+File [public/sw.js](file:///public/sw.js) được cấu hình:
+- Tên cache: `const CACHE_NAME = 'daklak-cache-v2';`
+- **Loại bỏ `'/'` (root) khỏi mảng `PRECACHE_ASSETS`**: Service Worker chỉ lưu đệm các tài nguyên tĩnh như logo, manifest, không bao giờ cache cứng HTML trang chủ.
+- Khi người dùng truy cập, nếu có phiên bản cache mới, sự kiện `activate` sẽ tự động xóa sạch toàn bộ cache cũ (`caches.delete`).
+
+### Lớp 3: Cấu hình Nginx Production (`nginx.conf`)
+File [nginx.conf](file:///nginx.conf) được tối ưu phân tách rành mạch:
+```nginx
+# 1. Các file tĩnh đã băm hash của Vite (/assets/): Cache dài hạn 1 năm
+location /assets/ {
+    root /www/wwwroot/daklak.today/public;
+    expires 1y;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+}
+
+# 2. File index.html và đường dẫn chính: Tuyệt đối không lưu cache
+location / {
+    root /www/wwwroot/daklak.today/public;
+    index index.html;
+    try_files $uri $uri/ /index.html;
+    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate";
+    add_header Pragma "no-cache";
+    add_header Expires "0";
+}
+```
+
+---
+
+## 🚀 7. HẠ TẦNG SEO OPENGRAPH SSR & CHIA SẺ MẠNG XÃ HỘI
+
+Một trong những hạn chế lớn nhất của React SPA là khi dán link bài viết lên **Zalo, Facebook, LinkedIn, Viber**, bot cào dữ liệu không thực thi JavaScript nên chỉ hiển thị màn hình trắng hoặc logo mặc định. 
+
+Codebase đã tích hợp sẵn **SSR Meta Injection Engine** ngay trong `server.js`:
+
+```
+   Người dùng dán link bài viết vào Zalo/Facebook
+                      │
+                      ▼
+             Request gửi đến Server
+                      │
+                      ▼
+    Kiểm tra User-Agent Crawler (Zalo, FacebookBot, Googlebot...)
+                      │
+   ┌──────────────────┴──────────────────┐
+   │                                     │
+   ▼                                     ▼
+[Bot Crawler]                    [Trình duyệt thông thường]
+Đọc CSDL bài viết/sự kiện        Gửi index.html sạch
+Inject <meta og:title>,          Kèm header chống dính cache
+<meta og:image>, <meta desc>     để tải React SPA
+thẳng vào <head> của HTML
+                      │
+                      ▼
+      Bot Zalo/Facebook nhận được
+   Card xem trước tuyệt đẹp (Ảnh to + Tiêu đề)
+```
+
+### Các Tính Năng Đã Hoàn Thiện:
+1. **Proxy hình ảnh cào (`/api/og-image?url=...`)**:
+   Zalo và Facebook thường chặn các ảnh nằm trên máy chủ khác hoặc ảnh qua giao thức HTTP không an toàn. Hàm `resolveImageUrl` trong `server.js` tự động chuyển đổi ảnh ngoại biên thành ảnh proxy nội bộ, đảm bảo 100% link chia sẻ đều hiển thị ảnh bìa.
+2. **Cơ chế Fallback Thumbnail Thông minh (`getPostThumb`)**:
+   Nếu bài viết chưa có ảnh đại diện, hệ thống tự động chọn luân phiên từ mảng `FALLBACK_POST_IMAGES` (8 ảnh phong cảnh chất lượng cao) để tránh việc 2 bài viết liền kề bị trùng lặp ảnh mặc định.
+
+---
+
+## ⚡ 8. CƠ CHẾ ĐỒNG BỘ CHUYÊN MỤC TỨC THÌ (REALTIME CATEGORY SYNC)
 
 Hệ thống danh mục đã được xóa bỏ hoàn toàn cơ chế cache đệm 2 phút của server:
 
@@ -294,24 +426,7 @@ Hệ thống danh mục đã được xóa bỏ hoàn toàn cơ chế cache đ�
 
 ---
 
-## 🗺️ 6. BẢN ĐỒ DỮ LIỆU & PHÂN KHU TRANG CHỦ (`Home.jsx`)
-
-Trang chủ [frontend/src/pages/Home.jsx](file:///frontend/src/pages/Home.jsx) được tổ chức theo kiến trúc module hóa:
-
-| Phân khu (Section) | Nguồn dữ liệu / Endpoint | Chức năng nghiệp vụ |
-| :--- | :--- | :--- |
-| **1. Spotlight Banner** | Bài viết ghim từ `/api/posts?limit=5` | Lấy trực tiếp ảnh bìa bài viết thật để làm nền, có nút "Xem chi tiết". |
-| **2. Hero Banner & Search** | `brandConfig.slogan` & `searchQuery` | Tìm kiếm dữ liệu điều hướng `/posts?search=...`, nút CTA cuộn xuống form tư vấn. |
-| **3. Dự án Trọng điểm** | Bảng tin dự án kêu gọi đầu tư | Hiển thị dạng lưới **4 cột (Desktop lớn) / 2 cột (Laptop) / 1 cột (Mobile)** cân đối, không bị lệch hàng. |
-| **4. Sự kiện & Countdown** | `/api/events?limit=4` | Đồng hồ đếm ngược thời gian thực, đăng ký vé QR (có memoized content chống giật dịch). |
-| **5. Tin bài & Cơ hội Giao thương** | `/api/posts?limit=6` | Tin tức mới nhất theo danh mục, hiển thị ảnh bìa, ngày đăng, chuyên mục. |
-| **6. Doanh nghiệp Hội viên** | `/api/members?limit=4` | Giới thiệu doanh nghiệp hội viên tiêu biểu đã xác thực. |
-| **7. Form Đăng ký Tư vấn** (`id="tu-van"`) | Gửi đến **`/api/leads`** | Tiếp nhận thông tin nhu cầu đầu tư, kết nối giao thương vào CSDL. |
-| **8. Trợ lý AI Nổi (`FloatingAIBot`)** | Gửi đến `/api/chat` (Gemini Flash RAG) | Nút tròn cố định góc phải dưới, click mở modal trò chuyện trực tiếp 24/7. |
-
----
-
-## 💻 7. KHUNG CODE MẪU CHUẨN (CLEAN SKELETON) CHO `Home.jsx`
+## 💻 9. KHUNG CODE MẪU CHUẨN (CLEAN SKELETON) CHO `Home.jsx`
 
 Khi nhân bản sang một tỉnh thành và muốn vẽ lại phong cách giao diện khác (VD: Bento Grid, Magazine, Minimalism), bạn chỉ cần sao chép khung code mẫu chuẩn dưới đây để đảm bảo **đầy đủ 100% logic API, xử lý form và đa ngôn ngữ**:
 
@@ -484,15 +599,15 @@ export default Home;
 
 ---
 
-## 🔌 8. DANH MỤC API BACKEND CHUẨN HÓA
+## 🔌 10. DANH MỤC 98 API BACKEND CHUẨN HÓA
 
-Backend Express (`server.js`) cung cấp 98 endpoints RESTful hoàn chỉnh:
+Backend Express (`server.js`) cung cấp hệ thống API RESTful hoàn chỉnh:
 
 | Endpoint | Phương thức | Dữ liệu gửi lên | Mục đích sử dụng |
 | :--- | :---: | :--- | :--- |
 | **`/api/categories`** | `GET` | Không | Lấy danh sách chuyên mục & lĩnh vực con (Header no-cache tức thì). |
 | **`/api/posts`** | `GET` | `limit`, `category`, `search`, `page` | Lấy danh sách bài viết & tin tức kinh tế, đầu tư. |
-| **`/api/posts/:id`** | `GET` | `id` (Param) | Chi tiết bài viết (mở công khai cho mọi người đọc). |
+| **`/api/posts/:id`** | `GET` | `id` / `slug` (Param) | Chi tiết bài viết (mở công khai cho mọi người đọc). |
 | **`/api/events`** | `GET` | `limit`, `status=upcoming` | Lấy danh sách hội thảo, sự kiện xúc tiến. |
 | **`/api/events/:id/register`** | `POST` | `fullName`, `phone`, `email`, `quantity` | Đăng ký vé sự kiện, xuất mã vé QR và kiểm tra trùng lặp. |
 | **`/api/members`** | `GET` | `limit`, `featured=true` | Lấy danh sách doanh nghiệp hội viên đã xác thực. |
@@ -502,10 +617,11 @@ Backend Express (`server.js`) cung cấp 98 endpoints RESTful hoàn chỉnh:
 | **`/api/auth/register`** | `POST` | `username`, `password`, `company_name`, `tier` | Đăng ký tài khoản (Gói Silver tự động kích hoạt ngay). |
 | **`/api/auth/login`** | `POST` | `username`, `password` | Đăng nhập đa vai trò (Admin, Member, Creator, Organizer). |
 | **`/api/admin/checkin`** | `POST` | `ticketCode` | Quét mã QR soát vé sự kiện thời gian thực. |
+| **`/api/og-image`** | `GET` | `url` | Proxy ảnh phục vụ bot cào Zalo/Facebook preview. |
 
 ---
 
-## 🚀 9. QUY TRÌNH BUILD, KHỞI TẠO CSDL & TRIỂN KHAI VPS (PRODUCTION)
+## 🚀 11. QUY TRÌNH BUILD, KHỞI TẠO CSDL & TRIỂN KHAI VPS (PRODUCTION)
 
 ### 1. Khởi tạo Cơ sở Dữ liệu MySQL trên VPS:
 ```bash
@@ -538,30 +654,49 @@ module.exports = {
   apps: [{
     name: 'gialai-today',
     script: 'server.js',
-    instances: 'max',
-    exec_mode: 'cluster',
-    env_production: {
+    instances: 1,
+    exec_mode: 'fork',
+    env: {
       NODE_ENV: 'production',
-      PORT: 5000
+      PORT: 3028
     }
   }]
 };
 ```
 Khởi chạy dịch vụ:
 ```bash
-pm2 start ecosystem.config.js --env production
+pm2 start ecosystem.config.js
 pm2 save
 pm2 startup
 ```
 
 ### 4. Cấu hình Nginx Reverse Proxy & SSL Let's Encrypt:
-Tạo file `/etc/nginx/sites-available/gialai.today`:
+Tạo file `/etc/nginx/sites-available/gialai.today` (hoặc cấu hình vhost trong aaPanel):
 ```nginx
 server {
+    listen 80;
     server_name gialai.today www.gialai.today;
 
+    # Hashed Assets
+    location /assets/ {
+        root /www/wwwroot/gialai.today/public;
+        expires 1y;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+
+    # SPA Fallback & No-cache
     location / {
-        proxy_pass http://127.0.0.1:5000;
+        root /www/wwwroot/gialai.today/public;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate";
+        add_header Pragma "no-cache";
+        add_header Expires "0";
+    }
+
+    # API Proxy
+    location /api/ {
+        proxy_pass http://127.0.0.1:3028;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -569,7 +704,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
     }
 
     client_max_body_size 50M;
@@ -584,24 +718,26 @@ certbot --nginx -d gialai.today -d www.gialai.today
 
 ---
 
-## 🛠️ 10. CÁC LỖI THƯỜNG GẶP & CÁCH KHẮC PHỤC (TROUBLESHOOTING)
+## 🛠️ 12. CÁC LỖI THƯỜNG GẶP & CÁCH KHẮC PHỤC (TROUBLESHOOTING)
 
-### 1. Nút ngôn ngữ hoặc nhãn UI bị dịch thành "Chúng tôi"
+### 1. Kéo code về rồi nhưng trình duyệt vẫn hiện giao diện/chữ cũ
+- **Nguyên nhân 1 (Cloudflare Edge Cache)**: Nếu tên miền qua Cloudflare, Cloudflare có thể đã lưu cache URL gốc `https://domain.today/`.
+  - *Xử lý*: Đăng nhập Cloudflare -> **Caching** -> **Configuration** -> Bấm **Purge Everything**. Hoặc kiểm tra bằng cách thêm `?v=2` vào cuối URL.
+- **Nguyên nhân 2 (PWA Service Worker)**: Trình duyệt Chrome lưu offline cache trong Service Worker.
+  - *Xử lý*: Bấm `F12` -> tab **Application** -> **Storage** -> Bấm **Clear site data**. Hoặc mở tab Ẩn danh `Ctrl + Shift + N` để kiểm tra.
+
+### 2. Nút ngôn ngữ hoặc nhãn UI bị dịch thành "Chúng tôi"
 - **Nguyên nhân**: Sử dụng chữ `US` hoặc không có thuộc tính cấm dịch, khiến Google Translate hiểu nhầm `US` là đại từ nhân xưng tiếng Anh.
 - **Cách xử lý**: Đảm bảo bao bọc phần hiển thị ngôn ngữ bằng `className="notranslate" translate="no"`.
 
-### 2. Xóa chuyên mục trong Admin nhưng ngoài Trang chủ vẫn còn
-- **Nguyên nhân**: Trình duyệt lưu cache API cũ hoặc trình duyệt giữ service worker.
-- **Cách xử lý**: Codebase hiện tại đã cấu hình `Cache-Control: no-cache, no-store, must-revalidate` và phát sự kiện `categories-updated`. Nếu kiểm tra thấy máy khách chưa cập nhật, chỉ cần Hard Refresh (`Ctrl + F5`) một lần duy nhất.
+### 3. Xóa chuyên mục trong Admin nhưng ngoài Trang chủ vẫn còn
+- **Nguyên nhân**: Trình duyệt lưu cache API cũ.
+- **Cách xử lý**: Codebase đã tích hợp sự kiện realtime `window.dispatchEvent(new Event('categories-updated'))`. Nếu máy khách chưa nhận, bấm `Ctrl + F5` là cập nhật ngay.
 
-### 3. Đồng hồ Countdown Sự kiện bị nhấp nháy hoặc hiển thị `NaN`
+### 4. Đồng hồ Countdown Sự kiện bị nhấp nháy hoặc hiển thị `NaN`
 - **Nguyên nhân**: Định dạng ngày tháng MySQL có khoảng cách (`YYYY-MM-DD HH:mm:ss`) gây lỗi trên trình duyệt Safari iOS, hoặc React re-render xung đột với Google Translate DOM.
 - **Cách xử lý**: Luôn dùng hàm bọc `parseEventDate` từ `frontend/src/utils/dateUtils.js` và cô lập logic countdown vào component con tách biệt.
 
-### 4. Đổi Logo trong `public/` nhưng trình duyệt không nhận
-- **Nguyên nhân**: Trình duyệt lưu cache ảnh tĩnh hoặc Service Worker của PWA lưu giữ bản offline.
-- **Cách xử lý**: Đổi tên file ảnh (VD: `/logo_icon_v2.svg`) và cập nhật đường dẫn trong `brand.config.js`.
-
 ---
 
-*Tài liệu này là cẩm nang tiêu chuẩn được chuyển giao độc quyền bởi ADT Quốc tế. Mọi thành viên trong nhóm dự án vui lòng tuân thủ đúng các nguyên tắc trên để việc nhân bản sang các tỉnh thành diễn ra nhanh chóng, chuẩn xác và không phát sinh lỗi.*
+*Tài liệu này là cẩm nang tiêu chuẩn được phát triển và chuyển giao độc quyền bởi ADT Quốc tế. Mọi thành viên trong nhóm dự án vui lòng tuân thủ đúng các nguyên tắc trên để việc nhân bản sang các tỉnh thành mới diễn ra nhanh chóng, chuẩn xác và không phát sinh lỗi.*
