@@ -530,8 +530,8 @@ const TOP_INDUSTRIAL_PARKS = {
       logo: '/images/industrial/kcn_hoa_phu.svg',
       highlight: 'KCN tập trung hiện hữu quy mô lớn nhất Đắk Lắk, trung tâm chế biến sâu cà phê, nông lâm sản xuất khẩu và chuỗi dịch vụ phụ trợ năng động.',
       highlightEn: 'The largest active industrial park in Dak Lak, premier hub for deep coffee processing, agro-exports, and dynamic ancillary services.',
-      pill: 'Ngành mũi nhọn: Chế biến cà phê & Nông sản xuất khẩu',
-      pillEn: 'Core: Coffee Processing & Agro-Exports',
+      pill: 'Chế biến cà phê & Nông sản xuất khẩu',
+      pillEn: 'Coffee Processing & Agro-Exports',
       link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`
     },
     {
@@ -546,8 +546,8 @@ const TOP_INDUSTRIAL_PARKS = {
       logo: '/images/industrial/kcn_phu_xuan.svg',
       highlight: 'Đại dự án KCN sinh thái kiểu mẫu đa ngành, vị trí đắc địa gần trung tâm Buôn Ma Thuột, hạ tầng đồng bộ thu hút chế biến công nghệ cao.',
       highlightEn: 'Flagship modern eco-industrial zone, prime proximity to Buon Ma Thuot, built for high-tech processing and sustainable manufacturing.',
-      pill: 'Ngành mũi nhọn: Công nghiệp sinh thái & Chế biến công nghệ cao',
-      pillEn: 'Core: Eco-Industrial & High-Tech Manufacturing',
+      pill: 'Công nghiệp sinh thái & Chế biến công nghệ cao',
+      pillEn: 'Eco-Industrial & High-Tech Manufacturing',
       link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`
     },
     {
@@ -562,8 +562,8 @@ const TOP_INDUSTRIAL_PARKS = {
       logo: '/images/industrial/kcn_mdrak.svg',
       highlight: 'KCN cửa ngõ tiếp giáp trục Cao tốc Buôn Ma Thuột — Khánh Hòa, kết nối trực tiếp hải lộ và Cảng biển nước sâu Nam Vân Phong.',
       highlightEn: 'Strategic gateway park along Buon Ma Thuot - Khanh Hoa Expressway, seamlessly linked to Nam Van Phong deepwater seaport.',
-      pill: 'Ngành mũi nhọn: Công nghiệp phụ trợ & Hậu cần Cảng biển',
-      pillEn: 'Core: Ancillary Industry & Seaport Logistics',
+      pill: 'Công nghiệp phụ trợ & Hậu cần Cảng biển',
+      pillEn: 'Ancillary Industry & Seaport Logistics',
       link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`
     }
   ],
