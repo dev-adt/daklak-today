@@ -5314,11 +5314,15 @@ app.get('*', async (req, res) => {
   const userAgent = (req.headers['user-agent'] || '').toLowerCase();
   const isCrawler = /zalo|facebookexternalhit|twitterbot|telegrambot|whatsapp|linkedinbot|slackbot|googlebot|bingbot|baiduspider|yandex/i.test(userAgent);
 
-  // Bot cào link preview cần header cho phép lưu cache để hiển thị card preview; còn trình duyệt người dùng thì chống dính bundle cũ
-  if (isCrawler) {
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+  // Bot cào link preview chỉ cache nếu là bài viết cụ thể, trang chủ luôn no-cache để không dính bundle cũ trên Cloudflare Edge
+  if (isCrawler && req.path.startsWith('/posts/')) {
+    res.setHeader('Cache-Control', 'public, max-age=3600');
   } else {
-    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('CDN-Cache-Control', 'no-store');
+    res.setHeader('Cloudflare-CDN-Cache-Control', 'no-store');
   }
 
   const baseHtml = getBaseIndexHtml();
