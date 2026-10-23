@@ -1803,7 +1803,7 @@ export const Home = () => {
                 <div className="exporter-rest-block">
                   <h5 className="exporter-rest-title">
                     <i className="ti ti-building" />
-                    <span>{currentLang === 'en' ? 'Prominent Next Exporters' : 'Doanh nghiệp tiêu biểu tiếp theo'}</span>
+                    <span>{currentLang === 'en' ? 'Other Prominent Exporters' : 'Các doanh nghiệp tiêu biểu tiếp theo'}</span>
                   </h5>
                   <div className="exporter-next-grid-232">
                     {TOP_EXPORTERS_TAY_NGUYEN.rest.map((name, idx) => (
@@ -1854,7 +1854,7 @@ export const Home = () => {
                 <div className="exporter-rest-block">
                   <h5 className="exporter-rest-title">
                     <i className="ti ti-world-latitude" />
-                    <span>{currentLang === 'en' ? 'Prominent Global Trading Houses' : 'Tập đoàn tiêu biểu tiếp theo'}</span>
+                    <span>{currentLang === 'en' ? 'Other Prominent Global Trading Houses' : 'Các tập đoàn tiêu biểu tiếp theo'}</span>
                   </h5>
                   <div className="exporter-next-grid-232">
                     {TOP_EXPORTERS_WORLD.rest.map((name, idx) => (
