@@ -530,8 +530,8 @@ const TOP_INDUSTRIAL_PARKS = {
       logo: '/images/industrial/kcn_hoa_phu.svg',
       highlight: 'KCN tập trung hiện hữu quy mô lớn nhất Đắk Lắk, trung tâm chế biến sâu cà phê, nông lâm sản xuất khẩu và chuỗi dịch vụ phụ trợ năng động.',
       highlightEn: 'The largest active industrial park in Dak Lak, premier hub for deep coffee processing, agro-exports, and dynamic ancillary services.',
-      pill: 'Top 1 Đắk Lắk • Đang hoạt động • Lấp đầy >95%',
-      pillEn: 'Top 1 Dak Lak • Fully Operational',
+      pill: 'Quy mô 180 ha • Đang hoạt động • Lấp đầy >95%',
+      pillEn: 'Scale: 180 ha • Fully Operational',
       link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`
     },
     {
@@ -1957,20 +1957,16 @@ export const Home = () => {
               </p>
             </div>
 
-            {/* TOP 3 PODIUM: 1 HÀNG 3 CỘT (TOP 2 BÊN TRÁI - TOP 1 Ở CHÍNH GIỮA NHỈNH LÊN - TOP 3 BÊN PHẢI) */}
+            {/* TOP 3 PODIUM: 1 HÀNG 3 CỘT (BÊN TRÁI - CHÍNH GIỮA NHỈNH LÊN - BÊN PHẢI) */}
             <div className="industrial-podium-grid">
-              {/* Top 2 (Bên trái) */}
+              {/* Cột bên trái (KCN Phú Xuân) */}
               {(() => {
                 const kcn2 = TOP_INDUSTRIAL_PARKS.top3[1];
                 return (
                   <div 
                     key={kcn2.id} 
                     className="industrial-podium-card rank-2 scroll-reveal scroll-reveal-left"
-                    onClick={() => navigate(kcn2.link)}
                   >
-                    <span className="industrial-rank-badge silver">
-                      <i className="ti ti-medal" /> #2
-                    </span>
                     <div className="industrial-card-top">
                       <div className="exporter-logo-wrap">
                         <img src={kcn2.logo} alt={kcn2.name} className="exporter-brand-logo" />
@@ -1999,18 +1995,14 @@ export const Home = () => {
                 );
               })()}
 
-              {/* Top 1 (Chính giữa - Nhỉnh lên 1 chút) */}
+              {/* Cột chính giữa (KCN Hòa Phú - Nhỉnh lên 1 chút) */}
               {(() => {
                 const kcn1 = TOP_INDUSTRIAL_PARKS.top3[0];
                 return (
                   <div 
                     key={kcn1.id} 
                     className="industrial-podium-card rank-1 scroll-reveal scroll-reveal-up"
-                    onClick={() => navigate(kcn1.link)}
                   >
-                    <span className="industrial-rank-badge gold">
-                      <i className="ti ti-crown" /> TOP 1
-                    </span>
                     <div className="industrial-card-top">
                       <div className="exporter-logo-wrap gold-border">
                         <img src={kcn1.logo} alt={kcn1.name} className="exporter-brand-logo" />
@@ -2039,18 +2031,14 @@ export const Home = () => {
                 );
               })()}
 
-              {/* Top 3 (Bên phải) */}
+              {/* Cột bên phải (KCN M'Đrắk) */}
               {(() => {
                 const kcn3 = TOP_INDUSTRIAL_PARKS.top3[2];
                 return (
                   <div 
                     key={kcn3.id} 
                     className="industrial-podium-card rank-3 scroll-reveal scroll-reveal-right"
-                    onClick={() => navigate(kcn3.link)}
                   >
-                    <span className="industrial-rank-badge bronze">
-                      <i className="ti ti-medal" /> #3
-                    </span>
                     <div className="industrial-card-top">
                       <div className="exporter-logo-wrap">
                         <img src={kcn3.logo} alt={kcn3.name} className="exporter-brand-logo" />
@@ -2080,18 +2068,17 @@ export const Home = () => {
               })()}
             </div>
 
-            {/* 7 CỤM / KHU CÔNG NGHIỆP CÒN LẠI (2 HÀNG 4 / 3 CHỈ HIỂN THỊ TÊN) */}
+            {/* 7 CỤM / KHU CÔNG NGHIỆP CÒN LẠI (BỐ CỤC 2 - 3 - 2 HIỂN THỊ TÊN ĐẦY ĐỦ) */}
             <div className="industrial-rest-wrapper scroll-reveal scroll-reveal-up">
               <h5 className="exporter-rest-title">
                 <i className="ti ti-building-community" />
                 <span>{currentLang === 'en' ? 'Other Prominent Industrial Parks & Clusters' : 'Các khu & cụm công nghiệp tiêu biểu tiếp theo'}</span>
               </h5>
-              <div className="industrial-rest-grid-43">
+              <div className="industrial-next-grid-232">
                 {TOP_INDUSTRIAL_PARKS.rest.map((park, idx) => (
                   <div 
                     key={idx} 
                     className="industrial-tag-item"
-                    onClick={() => navigate(`/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`)}
                   >
                     <div className="industrial-tag-content">
                       <i className="ti ti-building-factory" />

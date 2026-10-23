@@ -2572,17 +2572,16 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  cursor: pointer;
+  cursor: default;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .industrial-podium-card:hover {
-  transform: translateY(-6px);
-  border-color: var(--gt-orange, #E99035);
-  box-shadow: 0 18px 40px rgba(233, 144, 53, 0.16);
+  border-color: rgba(233, 144, 53, 0.6);
+  box-shadow: 0 16px 36px rgba(59, 36, 23, 0.1);
 }
 
-/* TOP 1 Ở CHÍNH GIỮA: Nhỉnh lên một chút và viền vàng nổi bật */
+/* KCN HÒA PHÚ Ở CHÍNH GIỮA: Nhỉnh lên một chút và viền vàng nổi bật */
 .industrial-podium-card.rank-1 {
   background: linear-gradient(155deg, #FFFFFF 0%, #FFFDF9 60%, #FFF8EE 100%);
   border: 2px solid rgba(233, 144, 53, 0.7);
@@ -2593,47 +2592,8 @@
 }
 
 .industrial-podium-card.rank-1:hover {
-  transform: translateY(-24px);
   border-color: #E99035;
-  box-shadow: 0 26px 56px rgba(233, 144, 53, 0.26);
-}
-
-/* HUY HIỆU RANK TRÊN ĐẦU CARD */
-.industrial-rank-badge {
-  position: absolute;
-  top: -13px;
-  right: 22px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 4px 12px;
-  text-transform: uppercase;
-}
-
-.industrial-rank-badge.gold {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-  color: #FFFFFF;
-  border: 1px solid #FCD34D;
-  font-size: 0.8rem;
-  padding: 5px 14px;
-  box-shadow: 0 6px 16px rgba(217, 119, 6, 0.35);
-}
-
-.industrial-rank-badge.silver {
-  background: linear-gradient(135deg, #64748B 0%, #475569 100%);
-  color: #FFFFFF;
-  border: 1px solid #CBD5E1;
-}
-
-.industrial-rank-badge.bronze {
-  background: linear-gradient(135deg, #B45309 0%, #78350F 100%);
-  color: #FFFFFF;
-  border: 1px solid #FDE68A;
+  box-shadow: 0 24px 52px rgba(233, 144, 53, 0.24);
 }
 
 /* NỘI DUNG BÊN TRONG CARD */
@@ -2716,7 +2676,7 @@
   border: 1px solid rgba(233, 144, 53, 0.35);
 }
 
-/* 7 KCN CÒN LẠI: 2 HÀNG 4 / 3 */
+/* 7 KCN CÒN LẠI: BỐ CỤC 2 - 3 - 2 */
 .industrial-rest-wrapper {
   background: #FFFFFF;
   border-radius: 24px;
@@ -2725,79 +2685,79 @@
   border: 1px solid rgba(122, 62, 29, 0.12);
 }
 
-.industrial-rest-grid-43 {
+.industrial-next-grid-232 {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
 }
 
-/* Hàng 1: 4 items (mỗi item 3 cột) */
-.industrial-rest-grid-43 .industrial-tag-item:nth-child(1),
-.industrial-rest-grid-43 .industrial-tag-item:nth-child(2),
-.industrial-rest-grid-43 .industrial-tag-item:nth-child(3),
-.industrial-rest-grid-43 .industrial-tag-item:nth-child(4) {
+/* Hàng 1: 2 items (mỗi item 3 cột = 50%) */
+.industrial-next-grid-232 .industrial-tag-item:nth-child(1),
+.industrial-next-grid-232 .industrial-tag-item:nth-child(2) {
   grid-column: span 3;
 }
 
-/* Hàng 2: 3 items (mỗi item 4 cột) */
-.industrial-rest-grid-43 .industrial-tag-item:nth-child(5),
-.industrial-rest-grid-43 .industrial-tag-item:nth-child(6),
-.industrial-rest-grid-43 .industrial-tag-item:nth-child(7) {
-  grid-column: span 4;
+/* Hàng 2: 3 items (mỗi item 2 cột = 33.33%) */
+.industrial-next-grid-232 .industrial-tag-item:nth-child(3),
+.industrial-next-grid-232 .industrial-tag-item:nth-child(4),
+.industrial-next-grid-232 .industrial-tag-item:nth-child(5) {
+  grid-column: span 2;
+}
+
+/* Hàng 3: 2 items (mỗi item 3 cột = 50%) */
+.industrial-next-grid-232 .industrial-tag-item:nth-child(6),
+.industrial-next-grid-232 .industrial-tag-item:nth-child(7) {
+  grid-column: span 3;
 }
 
 .industrial-tag-item {
   background: #FDFBF7;
   border: 1px solid rgba(213, 163, 63, 0.28);
   border-radius: 14px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  cursor: pointer;
+  gap: 12px;
+  cursor: default;
   transition: all 0.25s ease;
   box-shadow: 0 2px 6px rgba(59, 36, 23, 0.04);
 }
 
 .industrial-tag-item:hover {
   background: #FFFFFF;
-  border-color: var(--gt-orange, #E99035);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(233, 144, 53, 0.16);
+  border-color: rgba(233, 144, 53, 0.6);
+  box-shadow: 0 6px 16px rgba(233, 144, 53, 0.12);
 }
 
 .industrial-tag-content {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
+  flex: 1;
 }
 
 .industrial-tag-content i {
   color: var(--gt-orange, #E99035);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   flex-shrink: 0;
 }
 
 .industrial-tag-name {
-  font-size: 0.86rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--primary-coffee, #3B2417);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.industrial-tag-item:hover .industrial-tag-name {
-  color: var(--bazan-red, #A84524);
+  white-space: normal;
+  word-break: keep-all;
+  line-height: 1.35;
 }
 
 .industrial-tag-loc {
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   color: var(--gt-muted, #786960);
   background: rgba(122, 62, 29, 0.06);
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 8px;
   font-weight: 600;
   white-space: nowrap;
@@ -2819,16 +2779,16 @@
   .industrial-podium-card.rank-3 {
     order: 3;
   }
-  .industrial-rest-grid-43 {
+  .industrial-next-grid-232 {
     grid-template-columns: repeat(2, 1fr);
   }
-  .industrial-rest-grid-43 .industrial-tag-item {
+  .industrial-next-grid-232 .industrial-tag-item {
     grid-column: span 1 !important;
   }
 }
 
 @media (max-width: 640px) {
-  .industrial-rest-grid-43 {
+  .industrial-next-grid-232 {
     grid-template-columns: 1fr;
   }
   .industrial-tag-item {
