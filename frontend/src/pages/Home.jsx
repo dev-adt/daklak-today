@@ -530,8 +530,8 @@ const TOP_INDUSTRIAL_PARKS = {
       logo: '/images/industrial/kcn_hoa_phu.svg',
       highlight: 'KCN tập trung hiện hữu quy mô lớn nhất Đắk Lắk, trung tâm chế biến sâu cà phê, nông lâm sản xuất khẩu và chuỗi dịch vụ phụ trợ năng động.',
       highlightEn: 'The largest active industrial park in Dak Lak, premier hub for deep coffee processing, agro-exports, and dynamic ancillary services.',
-      pill: 'Quy mô 180 ha • Đang hoạt động • Lấp đầy >95%',
-      pillEn: 'Scale: 180 ha • Fully Operational',
+      pill: 'Ngành mũi nhọn: Chế biến cà phê & Nông sản xuất khẩu',
+      pillEn: 'Core: Coffee Processing & Agro-Exports',
       link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`
     },
     {
@@ -546,8 +546,8 @@ const TOP_INDUSTRIAL_PARKS = {
       logo: '/images/industrial/kcn_phu_xuan.svg',
       highlight: 'Đại dự án KCN sinh thái kiểu mẫu đa ngành, vị trí đắc địa gần trung tâm Buôn Ma Thuột, hạ tầng đồng bộ thu hút chế biến công nghệ cao.',
       highlightEn: 'Flagship modern eco-industrial zone, prime proximity to Buon Ma Thuot, built for high-tech processing and sustainable manufacturing.',
-      pill: 'Quy mô 338 ha • Trọng điểm thu hút mới',
-      pillEn: 'Scale: 338 ha • Major Attraction Hub',
+      pill: 'Ngành mũi nhọn: Công nghiệp sinh thái & Chế biến công nghệ cao',
+      pillEn: 'Core: Eco-Industrial & High-Tech Manufacturing',
       link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`
     },
     {
@@ -557,13 +557,13 @@ const TOP_INDUSTRIAL_PARKS = {
       nameEn: 'M\'Drak Industrial Park',
       location: 'Huyện M\'Đrắk (Cửa ngõ Đông Đắk Lắk)',
       locationEn: 'M\'Drak District (Eastern Gateway)',
-      scale: 'Quy mô 212 ha • Kết nối Cảng biển',
-      scaleEn: 'Scale: 212 ha • Seaport Expressway Link',
+      scale: 'Quy mô 212 ha • Trục cao tốc Khánh Hòa - Buôn Ma Thuột',
+      scaleEn: 'Scale: 212 ha • Khanh Hoa - BMT Expressway',
       logo: '/images/industrial/kcn_mdrak.svg',
       highlight: 'KCN cửa ngõ tiếp giáp trục Cao tốc Buôn Ma Thuột — Khánh Hòa, kết nối trực tiếp hải lộ và Cảng biển nước sâu Nam Vân Phong.',
       highlightEn: 'Strategic gateway park along Buon Ma Thuot - Khanh Hoa Expressway, seamlessly linked to Nam Van Phong deepwater seaport.',
-      pill: 'Cửa ngõ Cao tốc • Kết nối Cảng biển',
-      pillEn: 'Expressway Gateway • Seaport Connected',
+      pill: 'Ngành mũi nhọn: Công nghiệp phụ trợ & Hậu cần Cảng biển',
+      pillEn: 'Core: Ancillary Industry & Seaport Logistics',
       link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`
     }
   ],
@@ -1987,8 +1987,8 @@ export const Home = () => {
                       {currentLang === 'en' ? kcn2.highlightEn : kcn2.highlight}
                     </p>
                     <div className="industrial-footer-row">
-                      <span className="exporter-top3-pill">
-                        <i className="ti ti-award" /> {currentLang === 'en' ? kcn2.pillEn : kcn2.pill}
+                      <span className="industrial-focus-pill">
+                        <i className="ti ti-leaf" /> {currentLang === 'en' ? kcn2.pillEn : kcn2.pill}
                       </span>
                     </div>
                   </div>
@@ -2023,8 +2023,8 @@ export const Home = () => {
                       {currentLang === 'en' ? kcn1.highlightEn : kcn1.highlight}
                     </p>
                     <div className="industrial-footer-row">
-                      <span className="exporter-top3-pill gold-highlight">
-                        <i className="ti ti-flame" /> {currentLang === 'en' ? kcn1.pillEn : kcn1.pill}
+                      <span className="industrial-focus-pill gold-highlight">
+                        <i className="ti ti-coffee" /> {currentLang === 'en' ? kcn1.pillEn : kcn1.pill}
                       </span>
                     </div>
                   </div>
@@ -2059,8 +2059,8 @@ export const Home = () => {
                       {currentLang === 'en' ? kcn3.highlightEn : kcn3.highlight}
                     </p>
                     <div className="industrial-footer-row">
-                      <span className="exporter-top3-pill">
-                        <i className="ti ti-award" /> {currentLang === 'en' ? kcn3.pillEn : kcn3.pill}
+                      <span className="industrial-focus-pill">
+                        <i className="ti ti-truck-delivery" /> {currentLang === 'en' ? kcn3.pillEn : kcn3.pill}
                       </span>
                     </div>
                   </div>

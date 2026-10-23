@@ -2668,12 +2668,37 @@
 .industrial-footer-row {
   display: flex;
   align-items: center;
+  margin-top: auto;
 }
 
-.exporter-top3-pill.gold-highlight {
-  background: rgba(233, 144, 53, 0.18);
-  color: #9A3412;
-  border: 1px solid rgba(233, 144, 53, 0.35);
+.industrial-focus-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(122, 62, 29, 0.07);
+  color: #6B3410;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.77rem;
+  font-weight: 700;
+  line-height: 1.4;
+  border: 1px solid rgba(122, 62, 29, 0.12);
+}
+
+.industrial-focus-pill i {
+  color: var(--gt-orange, #E99035);
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.industrial-focus-pill.gold-highlight {
+  background: rgba(233, 144, 53, 0.15);
+  color: #92400E;
+  border: 1px solid rgba(233, 144, 53, 0.38);
+}
+
+.industrial-focus-pill.gold-highlight i {
+  color: #B45309;
 }
 
 /* 7 KCN CÒN LẠI: BỐ CỤC 2 - 3 - 2 */
