@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="200" height="80">
+  <rect width="200" height="80" rx="12" fill="#1E1B4B"/>
+  <!-- M'DRAK IP Emblem -->
+  <g transform="translate(26, 40)">
+    <circle cx="0" cy="0" r="18" fill="#312E81"/>
+    <!-- Highway & Gateway Anchor / Arrow -->
+    <path d="M-8,10 L-2,-10 L2,-10 L8,10 L3,10 L0,-2 L-3,10 Z" fill="#818CF8"/>
+    <circle cx="0" cy="-6" r="3" fill="#F97316"/>
+    <path d="M-10,4 C-4,1 4,1 10,4" stroke="#FBBF24" stroke-width="1.5" fill="none"/>
+  </g>
+  <!-- Typography -->
+  <text x="54" y="32" font-family="'Inter', sans-serif" font-size="13.5" font-weight="900" letter-spacing="1" fill="#FFFFFF">KCN M'ĐRẮK</text>
+  <text x="54" y="48" font-family="'Inter', sans-serif" font-size="8.5" font-weight="800" letter-spacing="0.8" fill="#818CF8">M'DRAK GATEWAY PARK</text>
+  <text x="54" y="62" font-family="'Inter', sans-serif" font-size="6.5" font-weight="600" letter-spacing="0.6" fill="#C7D2FE">EXPRESSWAY LINK • 212 HA</text>
+</svg>

@@ -511,6 +511,74 @@ const TOP_EXPORTERS_WORLD = {
   ]
 };
 
+// Dữ liệu Top 10 Khu & Cụm Công Nghiệp Tiêu Biểu Đắk Lắk
+const TOP_INDUSTRIAL_PARKS = {
+  title: 'Top 10 Khu & Cụm Công Nghiệp Tiêu Biểu',
+  titleEn: 'Top 10 Flagship Industrial Parks & Clusters',
+  sub: 'Các trung tâm công nghiệp chế biến sâu, logistics và hạ tầng trọng điểm thu hút đầu tư của tỉnh Đắk Lắk',
+  subEn: 'Core hubs for deep agro-processing, logistics corridors, and high-tech manufacturing driving Dak Lak investment',
+  top3: [
+    {
+      id: 'kcn-hoa-phu',
+      rank: 1,
+      name: 'Khu Công Nghiệp Hòa Phú',
+      nameEn: 'Hoa Phu Industrial Park',
+      location: 'Xã Hòa Phú, TP. Buôn Ma Thuột',
+      locationEn: 'Hoa Phu, Buon Ma Thuot City',
+      scale: 'Quy mô 180 ha • Lấp đầy >95%',
+      scaleEn: 'Scale: 180 ha • Occupancy >95%',
+      logo: '/images/industrial/kcn_hoa_phu.svg',
+      highlight: 'KCN tập trung hiện hữu quy mô lớn nhất Đắk Lắk, trung tâm chế biến sâu cà phê, nông lâm sản xuất khẩu và chuỗi dịch vụ phụ trợ năng động.',
+      highlightEn: 'The largest active industrial park in Dak Lak, premier hub for deep coffee processing, agro-exports, and dynamic ancillary services.',
+      pill: 'Top 1 Đắk Lắk • Đang hoạt động • Lấp đầy >95%',
+      pillEn: 'Top 1 Dak Lak • Fully Operational',
+      link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`
+    },
+    {
+      id: 'kcn-phu-xuan',
+      rank: 2,
+      name: 'Khu Công Nghiệp Phú Xuân',
+      nameEn: 'Phu Xuan Industrial Park',
+      location: 'Xã Ea Drơng, Huyện Cư M\'gar',
+      locationEn: 'Ea Drong, Cu M\'gar District',
+      scale: 'Quy mô 338 ha • Trọng điểm mới',
+      scaleEn: 'Scale: 338 ha • Flagship Eco-Hub',
+      logo: '/images/industrial/kcn_phu_xuan.svg',
+      highlight: 'Đại dự án KCN sinh thái kiểu mẫu đa ngành, vị trí đắc địa gần trung tâm Buôn Ma Thuột, hạ tầng đồng bộ thu hút chế biến công nghệ cao.',
+      highlightEn: 'Flagship modern eco-industrial zone, prime proximity to Buon Ma Thuot, built for high-tech processing and sustainable manufacturing.',
+      pill: 'Quy mô 338 ha • Trọng điểm thu hút mới',
+      pillEn: 'Scale: 338 ha • Major Attraction Hub',
+      link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`
+    },
+    {
+      id: 'kcn-mdrak',
+      rank: 3,
+      name: 'Khu Công Nghiệp M\'Đrắk',
+      nameEn: 'M\'Drak Industrial Park',
+      location: 'Huyện M\'Đrắk (Cửa ngõ Đông Đắk Lắk)',
+      locationEn: 'M\'Drak District (Eastern Gateway)',
+      scale: 'Quy mô 212 ha • Kết nối Cảng biển',
+      scaleEn: 'Scale: 212 ha • Seaport Expressway Link',
+      logo: '/images/industrial/kcn_mdrak.svg',
+      highlight: 'KCN cửa ngõ tiếp giáp trục Cao tốc Buôn Ma Thuột — Khánh Hòa, kết nối trực tiếp hải lộ và Cảng biển nước sâu Nam Vân Phong.',
+      highlightEn: 'Strategic gateway park along Buon Ma Thuot - Khanh Hoa Expressway, seamlessly linked to Nam Van Phong deepwater seaport.',
+      pill: 'Cửa ngõ Cao tốc • Kết nối Cảng biển',
+      pillEn: 'Expressway Gateway • Seaport Connected',
+      link: `/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`
+    }
+  ],
+  // 7 KCN / CCN còn lại chia 2 hàng 4 / 3
+  rest: [
+    { name: 'Cụm Công Nghiệp Tân An 1 & 2', nameEn: 'Tan An 1 & 2 Industrial Cluster', location: 'TP. Buôn Ma Thuột' },
+    { name: 'Cụm Công Nghiệp Ea Dar', nameEn: 'Ea Dar Industrial Cluster', location: 'Huyện Ea Kar' },
+    { name: 'Cụm Công Nghiệp Cư Kuin', nameEn: 'Cu Kuin Industrial Cluster', location: 'Huyện Cư Kuin' },
+    { name: 'Cụm Công Nghiệp Buôn Hồ', nameEn: 'Buon Ho Industrial Cluster', location: 'TX. Buôn Hồ' },
+    { name: 'Cụm Công Nghiệp Krông Búk', nameEn: 'Krong Buk Industrial Cluster', location: 'Huyện Krông Búk' },
+    { name: 'Cụm Công Nghiệp Cư M\'gar', nameEn: 'Cu M\'gar Industrial Cluster', location: 'Huyện Cư M\'gar' },
+    { name: 'Cụm Công Nghiệp Ea H\'leo', nameEn: 'Ea H\'leo Industrial Cluster', location: 'Huyện Ea H\'leo' }
+  ]
+};
+
 export const Home = () => {
   const { role, user, token } = useAuth();
   let storedMemberUser = null;
@@ -1864,6 +1932,174 @@ export const Home = () => {
                     ))}
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================
+            BLOCK: TOP 10 KHU & CỤM CÔNG NGHIỆP TIÊU BIỂU ĐẮK LẮK
+            (PODIUM 2-1-3: TOP 1 Ở CHÍNH GIỮA NHỈNH LÊN, TOP 2 TRÁI, TOP 3 PHẢI;
+             PHÍA DƯỚI LÀ 2 HÀNG 4/3 CHỈ HIỂN THỊ TÊN 7 KCN CÒN LẠI)
+            ======================================================== */}
+        <section className="daklak-industrial-parks-section" id="top-khu-cong-nghiep">
+          <div className="daklak-container">
+            <div className="industrial-header scroll-reveal scroll-reveal-down">
+              <span className="daklak-section-badge">
+                <i className="ti ti-building-factory-2" style={{ marginRight: '6px' }} />
+                {currentLang === 'en' ? 'Key Industrial Infrastructure' : 'Hạ Tầng Công Nghiệp & Động Lực Phát Triển'}
+              </span>
+              <h2 className="daklak-section-title">
+                {currentLang === 'en' ? TOP_INDUSTRIAL_PARKS.titleEn : TOP_INDUSTRIAL_PARKS.title}
+              </h2>
+              <p className="daklak-section-desc">
+                {currentLang === 'en' ? TOP_INDUSTRIAL_PARKS.subEn : TOP_INDUSTRIAL_PARKS.sub}
+              </p>
+            </div>
+
+            {/* TOP 3 PODIUM: 1 HÀNG 3 CỘT (TOP 2 BÊN TRÁI - TOP 1 Ở CHÍNH GIỮA NHỈNH LÊN - TOP 3 BÊN PHẢI) */}
+            <div className="industrial-podium-grid">
+              {/* Top 2 (Bên trái) */}
+              {(() => {
+                const kcn2 = TOP_INDUSTRIAL_PARKS.top3[1];
+                return (
+                  <div 
+                    key={kcn2.id} 
+                    className="industrial-podium-card rank-2 scroll-reveal scroll-reveal-left"
+                    onClick={() => navigate(kcn2.link)}
+                  >
+                    <span className="industrial-rank-badge silver">
+                      <i className="ti ti-medal" /> #2
+                    </span>
+                    <div className="industrial-card-top">
+                      <div className="exporter-logo-wrap">
+                        <img src={kcn2.logo} alt={kcn2.name} className="exporter-brand-logo" />
+                      </div>
+                      <div className="industrial-title-wrap">
+                        <h4 className="industrial-card-title">{currentLang === 'en' ? kcn2.nameEn : kcn2.name}</h4>
+                        <span className="industrial-card-loc">
+                          <i className="ti ti-map-pin" /> {currentLang === 'en' ? kcn2.locationEn : kcn2.location}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="industrial-scale-row">
+                      <span className="industrial-scale-pill">
+                        <i className="ti ti-chart-area-line" /> {currentLang === 'en' ? kcn2.scaleEn : kcn2.scale}
+                      </span>
+                    </div>
+                    <p className="industrial-highlight">
+                      {currentLang === 'en' ? kcn2.highlightEn : kcn2.highlight}
+                    </p>
+                    <div className="industrial-footer-row">
+                      <span className="exporter-top3-pill">
+                        <i className="ti ti-award" /> {currentLang === 'en' ? kcn2.pillEn : kcn2.pill}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Top 1 (Chính giữa - Nhỉnh lên 1 chút) */}
+              {(() => {
+                const kcn1 = TOP_INDUSTRIAL_PARKS.top3[0];
+                return (
+                  <div 
+                    key={kcn1.id} 
+                    className="industrial-podium-card rank-1 scroll-reveal scroll-reveal-up"
+                    onClick={() => navigate(kcn1.link)}
+                  >
+                    <span className="industrial-rank-badge gold">
+                      <i className="ti ti-crown" /> TOP 1
+                    </span>
+                    <div className="industrial-card-top">
+                      <div className="exporter-logo-wrap gold-border">
+                        <img src={kcn1.logo} alt={kcn1.name} className="exporter-brand-logo" />
+                      </div>
+                      <div className="industrial-title-wrap">
+                        <h4 className="industrial-card-title gold-text">{currentLang === 'en' ? kcn1.nameEn : kcn1.name}</h4>
+                        <span className="industrial-card-loc">
+                          <i className="ti ti-map-pin" /> {currentLang === 'en' ? kcn1.locationEn : kcn1.location}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="industrial-scale-row">
+                      <span className="industrial-scale-pill gold-pill">
+                        <i className="ti ti-chart-area-line" /> {currentLang === 'en' ? kcn1.scaleEn : kcn1.scale}
+                      </span>
+                    </div>
+                    <p className="industrial-highlight">
+                      {currentLang === 'en' ? kcn1.highlightEn : kcn1.highlight}
+                    </p>
+                    <div className="industrial-footer-row">
+                      <span className="exporter-top3-pill gold-highlight">
+                        <i className="ti ti-flame" /> {currentLang === 'en' ? kcn1.pillEn : kcn1.pill}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Top 3 (Bên phải) */}
+              {(() => {
+                const kcn3 = TOP_INDUSTRIAL_PARKS.top3[2];
+                return (
+                  <div 
+                    key={kcn3.id} 
+                    className="industrial-podium-card rank-3 scroll-reveal scroll-reveal-right"
+                    onClick={() => navigate(kcn3.link)}
+                  >
+                    <span className="industrial-rank-badge bronze">
+                      <i className="ti ti-medal" /> #3
+                    </span>
+                    <div className="industrial-card-top">
+                      <div className="exporter-logo-wrap">
+                        <img src={kcn3.logo} alt={kcn3.name} className="exporter-brand-logo" />
+                      </div>
+                      <div className="industrial-title-wrap">
+                        <h4 className="industrial-card-title">{currentLang === 'en' ? kcn3.nameEn : kcn3.name}</h4>
+                        <span className="industrial-card-loc">
+                          <i className="ti ti-map-pin" /> {currentLang === 'en' ? kcn3.locationEn : kcn3.location}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="industrial-scale-row">
+                      <span className="industrial-scale-pill">
+                        <i className="ti ti-chart-area-line" /> {currentLang === 'en' ? kcn3.scaleEn : kcn3.scale}
+                      </span>
+                    </div>
+                    <p className="industrial-highlight">
+                      {currentLang === 'en' ? kcn3.highlightEn : kcn3.highlight}
+                    </p>
+                    <div className="industrial-footer-row">
+                      <span className="exporter-top3-pill">
+                        <i className="ti ti-award" /> {currentLang === 'en' ? kcn3.pillEn : kcn3.pill}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* 7 CỤM / KHU CÔNG NGHIỆP CÒN LẠI (2 HÀNG 4 / 3 CHỈ HIỂN THỊ TÊN) */}
+            <div className="industrial-rest-wrapper scroll-reveal scroll-reveal-up">
+              <h5 className="exporter-rest-title">
+                <i className="ti ti-building-community" />
+                <span>{currentLang === 'en' ? 'Other Prominent Industrial Parks & Clusters' : 'Các khu & cụm công nghiệp tiêu biểu tiếp theo'}</span>
+              </h5>
+              <div className="industrial-rest-grid-43">
+                {TOP_INDUSTRIAL_PARKS.rest.map((park, idx) => (
+                  <div 
+                    key={idx} 
+                    className="industrial-tag-item"
+                    onClick={() => navigate(`/posts?category=${encodeURIComponent('Dự án & Đầu tư')}&sub_category=${encodeURIComponent('Khu & Cụm công nghiệp')}`)}
+                  >
+                    <div className="industrial-tag-content">
+                      <i className="ti ti-building-factory" />
+                      <span className="industrial-tag-name">{currentLang === 'en' ? (park.nameEn || park.name) : park.name}</span>
+                    </div>
+                    <span className="industrial-tag-loc">{park.location}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
