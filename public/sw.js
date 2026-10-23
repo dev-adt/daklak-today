@@ -3,14 +3,11 @@
  * Cung cấp khả năng tải nhanh và hoạt động offline cơ bản
  */
 
-const CACHE_NAME = 'dnvn-cache-v1';
+const CACHE_NAME = 'daklak-cache-v2';
 const PRECACHE_ASSETS = [
-  '/',
   '/manifest.json',
   '/favicon.png',
   '/logo_icon.png',
-  '/logo_doanhnghiepvn.png',
-  '/logo_doanhnghiepvn_dark.png',
   '/pwa-192x192.png',
   '/pwa-512x512.png'
 ];
