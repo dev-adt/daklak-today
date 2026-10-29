@@ -601,6 +601,16 @@ export const Home = () => {
   // Hero Site-wide Search Bar State
   const [heroSearchQuery, setHeroSearchQuery] = useState('');
 
+  // Hero Intro Video State & Language-synced Poster / Embed URL
+  const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(false);
+  const isViLang = !currentLang || currentLang === 'vi';
+  const heroVideoPoster = isViLang
+    ? '/images/daklak/poster_video_vi.webp'
+    : '/images/daklak/poster_video_en.webp';
+  const heroVideoEmbedSrc = isViLang
+    ? 'https://www.canva.com/design/DAHZXKaxX-w/wklYR9Ot9PE8mHjFsBZm8Q/watch?embed'
+    : 'https://www.canva.com/design/DAHZYNUMQ_E/uwsmnNJHVGPzGSOEi4TWFQ/watch?embed';
+
   // AI Special Topic Slider (Single Card 5s infinite auto-cycle)
   const [aiSlideIndex, setAiSlideIndex] = useState(0);
   const [isAiSlideHovered, setIsAiSlideHovered] = useState(false);
@@ -1347,32 +1357,45 @@ export const Home = () => {
               </div>
             </div>
 
-            {/* Right Column: Signature 3-Photo Staggered Composition (Enters from Right) */}
+            {/* Right Column: Hero Intro Video (16:9) & Sub-CTAs (Enters from Right) */}
             <div className="gt-hero-visuals scroll-reveal scroll-reveal-right">
-              <div className="gt-photo-group">
-                {/* Card 1: Tall Vertical Photo on Left */}
-                <div className="gt-photo-card tall" onClick={() => navigate(`/posts?category=${encodeURIComponent('Khám phá Đắk Lắk')}`)}>
-                  <img src="/images/daklak/daklak_thac_dray_nur.jpg" alt="Thác Dray Nur Hùng Vĩ" />
+              <div className="gt-hero-video-block">
+                <div className="gt-hero-video-frame">
+                  {!isHeroVideoPlaying ? (
+                    <button
+                      type="button"
+                      className="gt-hero-video-poster-btn"
+                      aria-label="Xem video giới thiệu Đắk Lắk"
+                      onClick={() => setIsHeroVideoPlaying(true)}
+                    >
+                      <img
+                        src={heroVideoPoster}
+                        alt="Xem video giới thiệu Đắk Lắk"
+                        className="gt-hero-video-poster-img"
+                        loading="eager"
+                        decoding="async"
+                      />
+                    </button>
+                  ) : (
+                    <iframe
+                      className="gt-hero-video-iframe"
+                      src={heroVideoEmbedSrc}
+                      title="Xem video giới thiệu Đắk Lắk"
+                      allow="fullscreen"
+                      allowFullScreen
+                    />
+                  )}
                 </div>
 
-                {/* Cards 2 & 3: Stack on Right */}
-                <div className="gt-photo-right-col">
-                  <div className="gt-photo-card medium" onClick={() => navigate(`/posts?category=${encodeURIComponent('Nông sản & Cà phê')}`)}>
-                    <img src="/images/daklak/daklak_doi_ca_phe.jpg" alt="Đồi Cà Phê Buôn Ma Thuột" />
-                  </div>
-                  <div className="gt-photo-card medium" onClick={() => navigate(`/posts?category=${encodeURIComponent('Du lịch & Trải nghiệm')}`)}>
-                    <img src="/images/daklak/daklak_cong_chieng.jpg" alt="Không Gian Văn Hóa Cồng Chiêng" />
-                  </div>
-                </div>
-
-                {/* Vintage Circular Travel Stamp Badge */}
-                <div className="gt-stamp-badge">
-                  <i className="ti ti-compass" />
-                </div>
-
-                {/* Airplane Badge */}
-                <div className="gt-plane-badge">
-                  <i className="ti ti-plane" />
+                <div className="gt-hero-video-cta-row">
+                  <Link to="/members" className="gt-hero-video-cta gt-hero-video-cta-primary">
+                    <i className="ti ti-building-community" aria-hidden="true" />
+                    <span>Tìm doanh nghiệp</span>
+                  </Link>
+                  <Link to="/ai-chat" className="gt-hero-video-cta gt-hero-video-cta-ai">
+                    <i className="ti ti-sparkles" aria-hidden="true" />
+                    <span>Hỏi Trợ lý AI</span>
+                  </Link>
                 </div>
               </div>
             </div>

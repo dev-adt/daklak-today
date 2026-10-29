@@ -3626,120 +3626,135 @@
   to { stroke-dashoffset: -28; }
 }
 
-/* Right Column: Signature 3-Photo Staggered Layout */
+/* Right Column: Hero 16:9 Video Frame & Quick CTAs */
 .gt-hero-visuals {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   animation: gtHeroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both;
 }
 
-.gt-photo-group {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  position: relative;
-}
-
-/* Card 1: Tall Vertical Card */
-.gt-photo-card {
-  position: relative;
-  overflow: hidden;
-  background: #E8E3D8;
-  transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-  cursor: pointer;
-}
-
-.gt-photo-card.tall {
-  width: 250px;
-  height: 380px;
-  border-radius: var(--gt-radius-lg);
-  box-shadow: 0 20px 45px rgba(30, 41, 38, 0.12), 0 6px 16px rgba(0,0,0,0.06);
-}
-
-.gt-photo-card.medium {
-  width: 220px;
-  height: 180px;
-  border-radius: var(--gt-radius-md);
-  box-shadow: 0 16px 36px rgba(30, 41, 38, 0.1);
-}
-
-.gt-photo-right-col {
+.gt-hero-video-block {
+  width: 100%;
+  max-width: 620px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
 
-.gt-photo-card img {
+.gt-hero-video-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--gt-radius-md, 22px);
+  overflow: hidden;
+  background: #1C0F08;
+  border: 2px solid rgba(213, 163, 63, 0.42);
+  box-shadow: 0 22px 48px rgba(30, 41, 38, 0.18), 0 6px 18px rgba(59, 36, 23, 0.1);
+  transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.32s ease;
+}
+
+.gt-hero-video-frame:hover {
+  border-color: rgba(233, 144, 53, 0.78);
+  box-shadow: 0 26px 56px rgba(30, 41, 38, 0.24), 0 8px 24px rgba(233, 144, 53, 0.18);
+}
+
+.gt-hero-video-poster-btn {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: block;
+  overflow: hidden;
+}
+
+.gt-hero-video-poster-btn:focus-visible {
+  outline: 3px solid var(--gt-orange, #E99035);
+  outline-offset: -3px;
+}
+
+.gt-hero-video-poster-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.gt-photo-card:hover {
-  transform: translateY(-6px);
+.gt-hero-video-poster-btn:hover .gt-hero-video-poster-img {
+  transform: scale(1.025);
 }
 
-.gt-photo-card:hover img {
-  transform: scale(1.06);
-}
-
-/* Vintage Circular Travel Stamp Badge with Sway Animation */
-.gt-stamp-badge {
+.gt-hero-video-iframe {
   position: absolute;
-  left: 205px;
-  top: 155px;
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  background: rgba(250, 248, 244, 0.96);
-  box-shadow: 0 10px 28px rgba(30, 41, 38, 0.14);
-  display: flex;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: #000000;
+}
+
+.gt-hero-video-cta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.gt-hero-video-cta {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px dashed rgba(233, 144, 53, 0.65);
-  z-index: 4;
-  transform: rotate(-10deg);
-  pointer-events: none;
-  animation: gtStampSway 6s ease-in-out infinite alternate;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-family: var(--gt-font);
+  font-size: 0.94rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-sizing: border-box;
 }
 
-@keyframes gtStampSway {
-  0% { transform: rotate(-10deg) scale(1); }
-  100% { transform: rotate(-3deg) scale(1.03); }
+.gt-hero-video-cta i {
+  font-size: 1.12rem;
+  flex-shrink: 0;
 }
 
-.gt-stamp-badge i {
-  font-size: 1.6rem;
-  color: var(--gt-orange);
+.gt-hero-video-cta-primary {
+  background: linear-gradient(135deg, #3B2417 0%, #5A3520 100%);
+  color: #FFFFFF !important;
+  border: 1.5px solid rgba(213, 163, 63, 0.45);
+  box-shadow: 0 8px 20px rgba(59, 36, 23, 0.16);
 }
 
-/* Airplane Badge with Gentle Float Animation */
-.gt-plane-badge {
-  position: absolute;
-  top: 25px;
-  right: -15px;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--gt-orange);
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.95rem;
-  box-shadow: 0 6px 18px rgba(233, 144, 53, 0.45);
-  transform: rotate(25deg);
-  z-index: 3;
-  animation: gtPlaneFloat 3.8s ease-in-out infinite;
+.gt-hero-video-cta-primary:hover {
+  background: linear-gradient(135deg, #4E2F1E 0%, #7A3E1D 100%);
+  border-color: #F3C562;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(59, 36, 23, 0.24);
 }
 
-@keyframes gtPlaneFloat {
-  0%, 100% { transform: rotate(25deg) translate(0, 0); }
-  50% { transform: rotate(28deg) translate(3px, -6px); }
+.gt-hero-video-cta-ai {
+  background: linear-gradient(135deg, #16734A 0%, #1F5A3A 100%);
+  color: #FFFFFF !important;
+  border: 1.5px solid rgba(243, 197, 98, 0.4);
+  box-shadow: 0 8px 20px rgba(22, 115, 74, 0.18);
+}
+
+.gt-hero-video-cta-ai:hover {
+  background: linear-gradient(135deg, #1B8757 0%, #16734A 100%);
+  border-color: #F3C562;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(22, 115, 74, 0.28);
 }
 
 /* ==============================================================================
@@ -4463,15 +4478,30 @@
 @media (max-width: 1080px) {
   .gt-hero-container {
     grid-template-columns: 1fr;
-    gap: 48px;
+    gap: 24px;
     text-align: center;
   }
+  .gt-hero-left {
+    display: contents;
+  }
+  .gt-hero-title {
+    order: 1;
+    margin-bottom: 0;
+  }
   .gt-hero-desc {
+    order: 2;
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 4px;
+  }
+  .gt-hero-visuals {
+    order: 3;
+    width: 100%;
   }
   .gt-hero-action-row {
+    order: 4;
     justify-content: center;
+    margin-top: 4px;
   }
   .gt-dest-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -4487,22 +4517,34 @@
 @media (max-width: 640px) {
   .gt-hero-container {
     padding: 0 16px;
-    gap: 28px;
+    gap: 20px;
     max-width: 100%;
     overflow-x: hidden;
   }
   .gt-hero-title {
     font-size: clamp(1.75rem, 6vw, 2.15rem);
     line-height: 1.2;
-    margin-bottom: 16px;
+    margin-bottom: 0;
     word-break: break-word;
     overflow-wrap: break-word;
   }
   .gt-hero-desc {
     font-size: 0.95rem;
     line-height: 1.6;
-    margin-bottom: 24px;
+    margin-bottom: 0;
     padding: 0 4px;
+  }
+  .gt-hero-video-frame {
+    border-radius: 16px;
+  }
+  .gt-hero-video-cta-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .gt-hero-video-cta {
+    padding: 11px 12px;
+    font-size: 0.88rem;
+    border-radius: 12px;
   }
   .gt-hero-action-row {
     flex-direction: column;
@@ -4525,40 +4567,6 @@
   }
   .spotlight-sub-grid {
     grid-template-columns: 1fr;
-  }
-  .gt-photo-group {
-    max-width: 100%;
-    justify-content: center;
-    gap: 12px;
-  }
-  .gt-photo-card.tall {
-    width: 145px;
-    height: 220px;
-    border-radius: 18px;
-  }
-  .gt-photo-card.medium {
-    width: 130px;
-    height: 104px;
-    border-radius: 14px;
-  }
-  .gt-photo-right-col {
-    gap: 12px;
-  }
-  .gt-stamp-badge {
-    left: 110px;
-    top: 80px;
-    width: 55px;
-    height: 55px;
-  }
-  .gt-stamp-badge i {
-    font-size: 1.1rem;
-  }
-  .gt-plane-badge {
-    right: 2px;
-    top: 15px;
-    width: 28px;
-    height: 28px;
-    font-size: 0.85rem;
   }
   .gt-dest-tabs {
     overflow-x: auto;
