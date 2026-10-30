@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import AdminLayout from '../components/AdminLayout';
 import RichTextEditor from '../components/RichTextEditor';
 import { formatVNTime } from '../utils/dateUtils';
+import { compressImageFileToBase64 } from '../utils/compressImageForUpload';
 
 export const AdminEvents = () => {
   const { getAuthHeaders } = useAuth();
@@ -854,7 +855,7 @@ export const AdminEvents = () => {
                         accept="image/*"
                         disabled={uploadingImage}
                         style={{ display: 'none' }}
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
                           if (file.size > 25 * 1024 * 1024) {
@@ -862,38 +863,34 @@ export const AdminEvents = () => {
                             return;
                           }
                           setUploadingImage(true);
-                          const reader = new FileReader();
-                          reader.onloadend = async () => {
+                          try {
+                            const compressed = await compressImageFileToBase64(file);
+                            const res = await fetch('/api/upload', {
+                              method: 'POST',
+                              headers: getAuthHeaders(),
+                              body: JSON.stringify({
+                                fileName: compressed.fileName,
+                                fileType: compressed.fileType,
+                                base64Data: compressed.base64Data
+                              })
+                            });
+                            const text = await res.text();
+                            let json;
                             try {
-                              const base64Data = reader.result.split(',')[1];
-                              const res = await fetch('/api/upload', {
-                                method: 'POST',
-                                headers: getAuthHeaders(),
-                                body: JSON.stringify({
-                                  fileName: file.name,
-                                  fileType: file.type,
-                                  base64Data
-                                })
-                              });
-                              const text = await res.text();
-                              let json;
-                              try {
-                                json = JSON.parse(text);
-                              } catch {
-                                throw new Error('Máy chủ phản hồi không đúng định dạng JSON.');
-                              }
-                              if (res.ok && json.success && json.url) {
-                                setFormData(prev => ({ ...prev, image_url: json.url }));
-                              } else {
-                                alert(json.error || 'Lỗi tải ảnh lên.');
-                              }
-                            } catch (err) {
-                              alert('Lỗi tải ảnh: ' + err.message);
-                            } finally {
-                              setUploadingImage(false);
+                              json = JSON.parse(text);
+                            } catch {
+                              throw new Error('Máy chủ phản hồi không đúng định dạng JSON.');
                             }
-                          };
-                          reader.readAsDataURL(file);
+                            if (res.ok && json.success && json.url) {
+                              setFormData(prev => ({ ...prev, image_url: json.url }));
+                            } else {
+                              alert(json.error || 'Lỗi tải ảnh lên.');
+                            }
+                          } catch (err) {
+                            alert('Lỗi tải ảnh: ' + err.message);
+                          } finally {
+                            setUploadingImage(false);
+                          }
                         }}
                       />
                     </label>

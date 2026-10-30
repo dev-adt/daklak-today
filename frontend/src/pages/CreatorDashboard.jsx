@@ -7,6 +7,7 @@ import Footer from '../components/Footer';
 import SEOHead from '../components/SEOHead';
 import RichTextEditor from '../components/RichTextEditor';
 import { CATEGORIES_DATA, getCategoryLabel } from '../constants/categories';
+import { compressImageFileToBase64 } from '../utils/compressImageForUpload';
 
 export const CreatorDashboard = () => {
   const { role, user, token, getAuthHeaders } = useAuth();
@@ -154,40 +155,36 @@ export const CreatorDashboard = () => {
     }
 
     setUploadingImage(true);
-    const reader = new FileReader();
-    reader.onloadend = async () => {
+    try {
+      const compressed = await compressImageFileToBase64(file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          fileName: compressed.fileName,
+          fileType: compressed.fileType,
+          base64Data: compressed.base64Data
+        })
+      });
+      
+      const responseText = await res.text();
+      let data;
       try {
-        const base64Data = reader.result.split(',')[1];
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({
-            fileName: file.name,
-            fileType: file.type,
-            base64Data
-          })
-        });
-        
-        const responseText = await res.text();
-        let data;
-        try {
-          data = JSON.parse(responseText);
-        } catch {
-          throw new Error('Máy chủ phản hồi lỗi. Vui lòng chọn tệp ảnh có dung lượng nhỏ hơn (dưới 50MB).');
-        }
-
-        if (res.ok && data.success) {
-          setNewPostData(prev => ({ ...prev, image_url: data.url }));
-        } else {
-          alert(data.error || 'Tải ảnh lên không thành công.');
-        }
-      } catch (err) {
-        alert('Lỗi khi tải ảnh lên: ' + err.message);
-      } finally {
-        setUploadingImage(false);
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error('Máy chủ phản hồi lỗi. Vui lòng chọn tệp ảnh có dung lượng nhỏ hơn (dưới 50MB).');
       }
-    };
-    reader.readAsDataURL(file);
+
+      if (res.ok && data.success) {
+        setNewPostData(prev => ({ ...prev, image_url: data.url }));
+      } else {
+        alert(data.error || 'Tải ảnh lên không thành công.');
+      }
+    } catch (err) {
+      alert('Lỗi khi tải ảnh lên: ' + err.message);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleCreateOrEditPost = async (isDraft = false) => {

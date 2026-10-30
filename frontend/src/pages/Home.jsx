@@ -2274,7 +2274,7 @@ export const Home = () => {
 
                     {/* Title */}
                     <h3 className="daklak-event-hero-title">
-                      <Link to={`/events/${heroEvent.id}`}>
+                      <Link to={`/events/${heroEvent.slug || heroEvent.id}`}>
                         {heroEvent.title}
                       </Link>
                     </h3>
@@ -2353,7 +2353,7 @@ export const Home = () => {
                           </div>
 
                           <h4 className="daklak-event-sub-title" title={evt.title}>
-                            <Link to={`/events/${evt.id}`}>{evt.title}</Link>
+                            <Link to={`/events/${evt.slug || evt.id}`}>{evt.title}</Link>
                           </h4>
 
                           <p className="daklak-event-sub-desc">
@@ -2365,7 +2365,7 @@ export const Home = () => {
                               <i className="ti ti-map-pin" />
                               <span>{evt.location || 'TP. Buôn Ma Thuột, Đắk Lắk'}</span>
                             </div>
-                            <Link to={`/events/${evt.id}`} className="daklak-event-sub-link">
+                            <Link to={`/events/${evt.slug || evt.id}`} className="daklak-event-sub-link">
                               <span>{currentLang === 'en' ? 'Details' : 'Chi tiết'}</span>
                               <i className="ti ti-chevron-right" />
                             </Link>

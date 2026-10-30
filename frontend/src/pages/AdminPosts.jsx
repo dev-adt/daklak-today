@@ -4,6 +4,7 @@ import AdminLayout from '../components/AdminLayout';
 import RichTextEditor from '../components/RichTextEditor';
 import { CATEGORIES_DATA } from '../constants/categories';
 import { fetchJsonWithTimeout } from '../utils/api';
+import { compressImageFileToBase64 } from '../utils/compressImageForUpload';
 
 export const AdminPosts = () => {
   const { getAuthHeaders } = useAuth();
@@ -181,37 +182,28 @@ export const AdminPosts = () => {
 
     setUploadingImage(true);
     try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          const base64Data = reader.result;
-          const res = await fetch('/api/upload', {
-            method: 'POST',
-            headers: {
-              ...getAuthHeaders(),
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              fileName: file.name,
-              fileType: file.type,
-              base64Data
-            })
-          });
-          const data = await res.json();
-          if (res.ok && data.url) {
-            setPostForm(prev => ({ ...prev, image_url: data.url }));
-          } else {
-            alert(data.error || 'Tải ảnh lên thất bại');
-          }
-        } catch (uploadErr) {
-          alert('Lỗi tải ảnh: ' + uploadErr.message);
-        } finally {
-          setUploadingImage(false);
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      alert('Lỗi đọc file: ' + err.message);
+      const compressed = await compressImageFileToBase64(file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fileName: compressed.fileName,
+          fileType: compressed.fileType,
+          base64Data: compressed.base64Data
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setPostForm(prev => ({ ...prev, image_url: data.url }));
+      } else {
+        alert(data.error || 'Tải ảnh lên thất bại');
+      }
+    } catch (uploadErr) {
+      alert('Lỗi tải ảnh: ' + uploadErr.message);
+    } finally {
       setUploadingImage(false);
     }
   };

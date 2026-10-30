@@ -316,6 +316,10 @@ export const Events = () => {
         .then(data => {
           if (data.success && data.data && isMounted) {
             setCurrentEvent(data.data);
+            if (data.data.slug && String(targetIdOrSlug) !== String(data.data.slug)) {
+              const prefix = window.location.pathname.startsWith('/su-kien') ? '/su-kien' : '/events';
+              window.history.replaceState(null, '', `${prefix}/${data.data.slug}${window.location.search || ''}`);
+            }
           } else if (isMounted) {
             setDetailError(data.error || 'Không tìm thấy thông tin sự kiện.');
           }

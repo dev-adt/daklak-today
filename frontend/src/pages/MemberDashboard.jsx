@@ -8,6 +8,7 @@ import RichTextEditor from '../components/RichTextEditor';
 import { useTranslation } from '../contexts/LanguageContext';
 import { CATEGORIES_DATA, ALL_CATEGORIES, getSubcategoriesByCategory, getCategoryLabel } from '../constants/categories';
 import { formatVNDateTime } from '../utils/dateUtils';
+import { compressImageFileToBase64 } from '../utils/compressImageForUpload';
 
 export const MemberDashboard = () => {
   const { user, token, getAuthHeaders, logout } = useAuth();
@@ -286,40 +287,36 @@ export const MemberDashboard = () => {
     } catch (_) {}
 
     setUploadingImage(true);
-    const reader = new FileReader();
-    reader.onloadend = async () => {
+    try {
+      const compressed = await compressImageFileToBase64(file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          fileName: compressed.fileName,
+          fileType: compressed.fileType,
+          base64Data: compressed.base64Data
+        })
+      });
+
+      const responseText = await res.text();
+      let data;
       try {
-        const base64Data = reader.result.split(',')[1];
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({
-            fileName: file.name,
-            fileType: file.type,
-            base64Data
-          })
-        });
-
-        const responseText = await res.text();
-        let data;
-        try {
-          data = JSON.parse(responseText);
-        } catch {
-          throw new Error('Máy chủ phản hồi lỗi. Vui lòng chọn tệp ảnh có dung lượng nhỏ hơn (dưới 50MB).');
-        }
-
-        if (res.ok && data.success) {
-          setNewPostData(prev => ({ ...prev, image_url: data.url }));
-        } else {
-          alert(data.error || t('error_occurred'));
-        }
-      } catch (err) {
-        alert(t('error_occurred') + ': ' + err.message);
-      } finally {
-        setUploadingImage(false);
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error('Máy chủ phản hồi lỗi. Vui lòng chọn tệp ảnh có dung lượng nhỏ hơn (dưới 50MB).');
       }
-    };
-    reader.readAsDataURL(file);
+
+      if (res.ok && data.success) {
+        setNewPostData(prev => ({ ...prev, image_url: data.url }));
+      } else {
+        alert(data.error || t('error_occurred'));
+      }
+    } catch (err) {
+      alert(t('error_occurred') + ': ' + err.message);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleStartEditPost = async (id) => {

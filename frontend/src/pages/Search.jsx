@@ -281,7 +281,7 @@ export const Search = () => {
                           </p>
                           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '10px', marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--text-muted)' }}>
                             <span>{p.company_name}</span>
-                            <Link to={`/posts/${p.id}`} className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '11px', textDecoration: 'none', borderRadius: '4px' }}>
+                            <Link to={`/posts/${p.slug || p.id}`} className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '11px', textDecoration: 'none', borderRadius: '4px' }}>
                               Đọc thêm
                             </Link>
                           </div>
@@ -325,7 +325,7 @@ export const Search = () => {
                             <i className="ti ti-map-pin"></i> {ev.location}
                           </div>
                           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '10px', marginTop: 'auto', display: 'flex', justifyContent: 'flex-end' }}>
-                            <Link to={ev.id ? `/events/${ev.id}` : "/events"} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', textDecoration: 'none', borderRadius: '6px', backgroundColor: 'rgba(12,35,64,0.06)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)' }}>
+                            <Link to={(ev.slug || ev.id) ? `/events/${ev.slug || ev.id}` : "/events"} className="btn" style={{ padding: '6px 12px', fontSize: '11.5px', textDecoration: 'none', borderRadius: '6px', backgroundColor: 'rgba(12,35,64,0.06)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)' }}>
                               Chi tiết sự kiện
                             </Link>
                           </div>

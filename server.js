@@ -296,7 +296,7 @@ try {
     for (const f of files2) {
       const p1 = path.join(dir1, f);
       const p2 = path.join(dir2, f);
-      if (fs.statSync(p2).isFile() && !fs.existsSync(p1)) {
+      if (fs.statSync(p2).isFile() && (!fs.existsSync(p1) || fs.statSync(p2).size < fs.statSync(p1).size)) {
         try { fs.copyFileSync(p2, p1); } catch (_) {}
       }
     }
@@ -733,6 +733,15 @@ db.query(`
       const [eventsSlugCols] = await db.query("SHOW COLUMNS FROM events LIKE 'slug'");
       if (!eventsSlugCols.length) {
         await db.query("ALTER TABLE events ADD COLUMN slug VARCHAR(255) DEFAULT NULL AFTER title");
+      }
+      // Tự động tạo hoặc chuẩn hóa slug từ tiêu đề cho các sự kiện chưa có slug hoặc slug đang để dạng số ID
+      const [missingSlugEvents] = await db.query("SELECT id, title, slug FROM events WHERE slug IS NULL OR slug = '' OR slug REGEXP '^[0-9]+$'");
+      if (missingSlugEvents && missingSlugEvents.length > 0) {
+        for (const ev of missingSlugEvents) {
+          const baseSlug = slugify(ev.title) || `su-kien-${ev.id}`;
+          await db.query("UPDATE events SET slug = ? WHERE id = ?", [baseSlug, ev.id]);
+        }
+        console.log(`✅ Đã tự động cập nhật URL slug SEO cho ${missingSlugEvents.length} sự kiện.`);
       }
       const [eventsPaidCols] = await db.query("SHOW COLUMNS FROM events LIKE 'is_paid'");
       if (!eventsPaidCols.length) {
@@ -5253,8 +5262,15 @@ function extractFirstImageFromHtml(htmlContent) {
   return match && match[1] ? match[1].trim() : '';
 }
 
-function resolveImageUrl(imgUrl, baseUrl) {
-  if (!imgUrl || typeof imgUrl !== 'string') return `${baseUrl}/og-image.png?v=3`;
+function resolveImageUrl(imgUrl, baseUrl, fallbackOgFile = '') {
+  if (fallbackOgFile) {
+    const p1 = path.join(__dirname, 'public', 'uploads', fallbackOgFile);
+    const p2 = path.join(__dirname, 'uploads', fallbackOgFile);
+    if (fs.existsSync(p1) || fs.existsSync(p2)) {
+      return `${baseUrl}/uploads/${fallbackOgFile}?v=4`;
+    }
+  }
+  if (!imgUrl || typeof imgUrl !== 'string') return `${baseUrl}/og-image.png?v=4`;
   const trimmed = imgUrl.trim();
   if (
     !trimmed ||
@@ -5263,12 +5279,20 @@ function resolveImageUrl(imgUrl, baseUrl) {
     trimmed.includes('photo-1514432324607-a09d9b4aefdd') ||
     trimmed.includes('placeholder')
   ) {
-    return `${baseUrl}/og-image.png?v=3`;
+    return `${baseUrl}/og-image.png?v=4`;
   }
-  // Chuẩn hóa link /uploads/... nếu bị lưu kèm localhost hoặc domain dev
-  const uploadsMatch = trimmed.match(/^https?:\/\/[^/]+(\/uploads\/.+)$/i);
+  // Chuẩn hóa link /uploads/... và ưu tiên bản .og.jpg (<250KB, 1200x630) để Zalo/FB tải tức thì không bao giờ bị quá 2MB
+  const uploadsMatch = trimmed.match(/^(?:https?:\/\/[^/]+)?\/uploads\/([^?#]+)/i);
   if (uploadsMatch && uploadsMatch[1]) {
-    return `${baseUrl}${uploadsMatch[1]}`;
+    const fname = path.basename(uploadsMatch[1]);
+    const ogVariant = `${fname}.og.jpg`;
+    if (
+      fs.existsSync(path.join(__dirname, 'public', 'uploads', ogVariant)) ||
+      fs.existsSync(path.join(__dirname, 'uploads', ogVariant))
+    ) {
+      return `${baseUrl}/uploads/${ogVariant}?v=4`;
+    }
+    return `${baseUrl}/uploads/${fname}?v=4`;
   }
   // External image: proxy through our server to guarantee accessibility to Zalo/FB crawlers
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
@@ -5295,6 +5319,8 @@ function injectMetaTags(html, { title, description, image, url, type = 'website'
   resHtml = resHtml.replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>\s*/gi, '');
   resHtml = resHtml.replace(/<link\s+rel=["']canonical["'][^>]*>\s*/gi, '');
 
+  const imgMime = (image.includes('.png') && !image.includes('.og.jpg')) ? 'image/png' : 'image/jpeg';
+
   let newMeta = `    <meta name="description" content="${escapeHtml(description)}" />\n`;
   newMeta += `    <link rel="canonical" href="${escapeHtml(url)}" />\n`;
   newMeta += `    <meta property="og:site_name" content="DakLak.today" />\n`;
@@ -5305,6 +5331,7 @@ function injectMetaTags(html, { title, description, image, url, type = 'website'
   newMeta += `    <meta property="og:description" content="${escapeHtml(description)}" />\n`;
   newMeta += `    <meta property="og:image" content="${escapeHtml(image)}" />\n`;
   newMeta += `    <meta property="og:image:secure_url" content="${escapeHtml(image)}" />\n`;
+  newMeta += `    <meta property="og:image:type" content="${imgMime}" />\n`;
   newMeta += `    <meta property="og:image:width" content="1200" />\n`;
   newMeta += `    <meta property="og:image:height" content="630" />\n`;
   newMeta += `    <meta property="og:image:alt" content="${escapeHtml(title)}" />\n`;
@@ -5341,7 +5368,7 @@ app.get('*', async (req, res) => {
   let meta = {
     title: 'DakLak.today — Cổng thông tin, dữ liệu và kết nối đầu tư Đắk Lắk',
     description: 'DakLak.today kết nối con người, doanh nghiệp, sản phẩm, du lịch, dữ liệu và cơ hội đầu tư của tỉnh Đắk Lắk bằng nền tảng số và trí tuệ nhân tạo.',
-    image: `${baseUrl}/og-image.png?v=3`,
+    image: `${baseUrl}/og-image.png?v=4`,
     url: currentUrl,
     type: 'website'
   };
@@ -5366,8 +5393,8 @@ app.get('*', async (req, res) => {
           meta.title = `${post.title} — DakLak.today`;
           meta.description = cleanDescription(post.summary, post.body, meta.description);
           const coverImg = post.image_url || extractFirstImageFromHtml(post.body);
-          meta.image = resolveImageUrl(coverImg, baseUrl);
-          meta.url = `${baseUrl}/posts/${post.slug || post.id}`;
+          meta.image = resolveImageUrl(coverImg, baseUrl, `post-${post.id}.og.jpg`);
+          meta.url = currentUrl;
           meta.type = 'article';
         }
       }
@@ -5386,7 +5413,7 @@ app.get('*', async (req, res) => {
           meta.title = `${displayName} — Hội viên DakLak.today`;
           meta.description = cleanDescription(m.description, '', `Hồ sơ doanh nghiệp ${displayName} trên Cổng thông tin Đắk Lắk.`);
           meta.image = resolveImageUrl(m.logo_url || m.cover_url || m.avatar_url, baseUrl);
-          meta.url = `${baseUrl}/members/${m.id}`;
+          meta.url = currentUrl;
         }
       }
     }
@@ -5407,7 +5434,7 @@ app.get('*', async (req, res) => {
           meta.description = cleanDescription(ev.short_desc || ev.summary, ev.description || ev.content, meta.description);
           const evCover = ev.image_url || extractFirstImageFromHtml(ev.content || ev.description);
           meta.image = resolveImageUrl(evCover, baseUrl);
-          meta.url = `${baseUrl}/events/${ev.slug || ev.id}`;
+          meta.url = currentUrl;
           meta.type = 'article';
         }
       }
@@ -5416,17 +5443,17 @@ app.get('*', async (req, res) => {
     else if (rawPath === '/posts') {
       meta.title = 'Cơ hội giao thương & Tin tức — DakLak.today';
       meta.description = 'Cập nhật tin tức, cơ hội giao thương, danh mục kêu gọi đầu tư và tiềm năng phát triển tỉnh Đắk Lắk.';
-      meta.image = `${baseUrl}/og-image.png?v=3`;
+      meta.image = `${baseUrl}/og-image.png?v=4`;
     }
     else if (rawPath === '/members') {
       meta.title = 'Doanh nghiệp & Hội viên — DakLak.today';
       meta.description = 'Danh bạ cộng đồng doanh nghiệp, nhà đầu tư, hợp tác xã và thương hiệu tiêu biểu tỉnh Đắk Lắk.';
-      meta.image = `${baseUrl}/og-image.png?v=3`;
+      meta.image = `${baseUrl}/og-image.png?v=4`;
     }
     else if (rawPath === '/events' || rawPath === '/su-kien') {
       meta.title = 'Sự kiện & Hội nghị xúc tiến — DakLak.today';
       meta.description = 'Thông tin các sự kiện xúc tiến thương mại, hội nghị đầu tư, lễ hội cà phê và diễn đàn kinh tế Đắk Lắk.';
-      meta.image = `${baseUrl}/og-image.png?v=3`;
+      meta.image = `${baseUrl}/og-image.png?v=4`;
     }
   } catch (err) {
     console.error('Lỗi truy vấn OpenGraph SSR:', err.message);
