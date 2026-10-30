@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/LanguageContext';
@@ -601,15 +601,86 @@ export const Home = () => {
   // Hero Site-wide Search Bar State
   const [heroSearchQuery, setHeroSearchQuery] = useState('');
 
-  // Hero Intro Video State & Language-synced Poster / Embed URL
+  // Hero Intro Video State, Refs & Language-synced Poster / Direct MP4 Sources
   const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(false);
+  const [isHeroVideoEnded, setIsHeroVideoEnded] = useState(false);
+  const [isHeroInView, setIsHeroInView] = useState(true);
+  const heroSectionRef = useRef(null);
+  const heroBgVideoRef = useRef(null);
+  const heroMainVideoRef = useRef(null);
+
   const isViLang = !currentLang || currentLang === 'vi';
   const heroVideoPoster = isViLang
     ? '/images/daklak/poster_video_vi.webp'
     : '/images/daklak/poster_video_en.webp';
-  const heroVideoEmbedSrc = isViLang
-    ? 'https://www.canva.com/design/DAHZXKaxX-w/wklYR9Ot9PE8mHjFsBZm8Q/watch?embed'
-    : 'https://www.canva.com/design/DAHZYNUMQ_E/uwsmnNJHVGPzGSOEi4TWFQ/watch?embed';
+  const heroMainVideoSrc = isViLang
+    ? '/videos/intro_daklak_vi.mp4'
+    : '/videos/intro_daklak_en.mp4';
+  const heroBgVideoSrc = isViLang
+    ? '/videos/hero_bg_vi.mp4'
+    : '/videos/hero_bg_en.mp4';
+
+  // Reset trạng thái video chính khi người dùng đổi ngôn ngữ
+  useEffect(() => {
+    setIsHeroVideoPlaying(false);
+    setIsHeroVideoEnded(false);
+    if (heroMainVideoRef.current) {
+      heroMainVideoRef.current.pause();
+      heroMainVideoRef.current.currentTime = 0;
+    }
+  }, [isViLang]);
+
+  // Tự động tạm dừng video nền khi cuộn khỏi vùng Hero để tiết kiệm tài nguyên CPU/GPU
+  useEffect(() => {
+    const sectionEl = heroSectionRef.current;
+    if (!sectionEl || typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsHeroInView(entry.isIntersecting);
+      },
+      { threshold: 0.08 }
+    );
+    observer.observe(sectionEl);
+    return () => observer.disconnect();
+  }, []);
+
+  // Điều khiển phát / tạm dừng video nền tự động dựa vào vị trí cuộn & trạng thái video chính
+  useEffect(() => {
+    const bgVideo = heroBgVideoRef.current;
+    if (!bgVideo) return;
+    bgVideo.muted = true;
+    if (isHeroInView && (!isHeroVideoPlaying || isHeroVideoEnded)) {
+      const p = bgVideo.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    } else {
+      bgVideo.pause();
+    }
+  }, [isHeroInView, isHeroVideoPlaying, isHeroVideoEnded, heroBgVideoSrc]);
+
+  const handleStartHeroVideo = () => {
+    setIsHeroVideoEnded(false);
+    setIsHeroVideoPlaying(true);
+    const mainVideo = heroMainVideoRef.current;
+    if (mainVideo) {
+      mainVideo.currentTime = 0;
+      mainVideo.muted = false;
+      const p = mainVideo.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    }
+  };
+
+  const handleReplayHeroVideo = () => {
+    setIsHeroVideoEnded(false);
+    setIsHeroVideoPlaying(true);
+    const mainVideo = heroMainVideoRef.current;
+    if (mainVideo) {
+      mainVideo.currentTime = 0;
+      mainVideo.muted = false;
+      const p = mainVideo.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    }
+  };
 
   // AI Special Topic Slider (Single Card 5s infinite auto-cycle)
   const [aiSlideIndex, setAiSlideIndex] = useState(0);
@@ -1302,7 +1373,23 @@ export const Home = () => {
         {/* ========================================================
             SECTION 1: HERO GLOBE TREKKER - THIẾT KẾ TINH TẾ, THOÁNG ĐÃNG
             ======================================================== */}
-        <section className="gt-hero-section" id="home">
+        <section className="gt-hero-section" id="home" ref={heroSectionRef}>
+          {/* Ambient Background Video (Muted, Infinite Loop while in Hero viewport, Pauses on scroll) */}
+          <div className="gt-hero-bg-video-wrap" aria-hidden="true">
+            <video
+              ref={heroBgVideoRef}
+              className="gt-hero-bg-video"
+              src={heroBgVideoSrc}
+              poster={heroVideoPoster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+            />
+            <div className="gt-hero-bg-video-overlay" />
+          </div>
+
           {/* Lightweight Ambient Glow Orbs with Prominent Breathing Pulse */}
           <div className="gt-hero-ambient-glow orb-1" aria-hidden="true" />
           <div className="gt-hero-ambient-glow orb-2" aria-hidden="true" />
@@ -1357,16 +1444,29 @@ export const Home = () => {
               </div>
             </div>
 
-            {/* Right Column: Hero Intro Video (16:9) & Sub-CTAs (Enters from Right) */}
+            {/* Right Column: Hero Intro Video (16:9) & End-Screen Centered CTAs (Enters from Right) */}
             <div className="gt-hero-visuals scroll-reveal scroll-reveal-right">
               <div className="gt-hero-video-block">
                 <div className="gt-hero-video-frame">
-                  {!isHeroVideoPlaying ? (
+                  <video
+                    ref={heroMainVideoRef}
+                    className={`gt-hero-video-player ${isHeroVideoPlaying ? 'is-active' : ''}`}
+                    src={heroMainVideoSrc}
+                    poster={heroVideoPoster}
+                    controls={isHeroVideoPlaying && !isHeroVideoEnded}
+                    playsInline
+                    preload="metadata"
+                    title="Xem video giới thiệu Đắk Lắk"
+                    onPlay={() => setIsHeroVideoEnded(false)}
+                    onEnded={() => setIsHeroVideoEnded(true)}
+                  />
+
+                  {!isHeroVideoPlaying && (
                     <button
                       type="button"
                       className="gt-hero-video-poster-btn"
                       aria-label="Xem video giới thiệu Đắk Lắk"
-                      onClick={() => setIsHeroVideoPlaying(true)}
+                      onClick={handleStartHeroVideo}
                     >
                       <img
                         src={heroVideoPoster}
@@ -1376,26 +1476,33 @@ export const Home = () => {
                         decoding="async"
                       />
                     </button>
-                  ) : (
-                    <iframe
-                      className="gt-hero-video-iframe"
-                      src={heroVideoEmbedSrc}
-                      title="Xem video giới thiệu Đắk Lắk"
-                      allow="fullscreen"
-                      allowFullScreen
-                    />
                   )}
-                </div>
 
-                <div className="gt-hero-video-cta-row">
-                  <Link to="/members" className="gt-hero-video-cta gt-hero-video-cta-primary">
-                    <i className="ti ti-building-community" aria-hidden="true" />
-                    <span>Tìm doanh nghiệp</span>
-                  </Link>
-                  <Link to="/ai-chat" className="gt-hero-video-cta gt-hero-video-cta-ai">
-                    <i className="ti ti-sparkles" aria-hidden="true" />
-                    <span>Hỏi Trợ lý AI</span>
-                  </Link>
+                  {isHeroVideoPlaying && isHeroVideoEnded && (
+                    <div className="gt-hero-video-ended-overlay">
+                      <p className="gt-hero-video-ended-title">
+                        {isViLang ? 'Khám phá & Kết nối cùng Đắk Lắk' : 'Explore & Connect with Dak Lak'}
+                      </p>
+                      <div className="gt-hero-video-cta-row">
+                        <Link to="/members" className="gt-hero-video-cta gt-hero-video-cta-primary">
+                          <i className="ti ti-building-community" aria-hidden="true" />
+                          <span>Tìm doanh nghiệp</span>
+                        </Link>
+                        <Link to="/ai-chat" className="gt-hero-video-cta gt-hero-video-cta-ai">
+                          <i className="ti ti-sparkles" aria-hidden="true" />
+                          <span>Hỏi Trợ lý AI</span>
+                        </Link>
+                      </div>
+                      <button
+                        type="button"
+                        className="gt-hero-video-replay-btn"
+                        onClick={handleReplayHeroVideo}
+                      >
+                        <i className="ti ti-rotate-clockwise" aria-hidden="true" />
+                        <span>{isViLang ? 'Xem lại video' : 'Replay video'}</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

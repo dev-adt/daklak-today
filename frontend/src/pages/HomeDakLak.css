@@ -3376,6 +3376,40 @@
   padding: 56px 0 42px;
 }
 
+/* Ambient Background Video Layer (Muted, Blurred, Sunken behind Hero content) */
+.gt-hero-bg-video-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gt-hero-bg-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(5px) saturate(1.12);
+  -webkit-filter: blur(5px) saturate(1.12);
+  transform: scale(1.04);
+  opacity: 0.34;
+  display: block;
+}
+
+.gt-hero-bg-video-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(250, 248, 244, 0.72) 0%,
+    rgba(250, 248, 244, 0.56) 48%,
+    rgba(250, 248, 244, 0.92) 100%
+  );
+  pointer-events: none;
+}
+
 /* Ambient Glow Orbs - Prominent Breathing & Pulsing (Sáng bừng lên rồi mờ dần liên tục) */
 .gt-hero-ambient-glow {
   position: absolute;
@@ -3673,6 +3707,7 @@
   cursor: pointer;
   display: block;
   overflow: hidden;
+  z-index: 3;
 }
 
 .gt-hero-video-poster-btn:focus-visible {
@@ -3692,30 +3727,64 @@
   transform: scale(1.025);
 }
 
-.gt-hero-video-iframe {
+.gt-hero-video-player {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: cover;
   border: 0;
   display: block;
   background: #000000;
+  z-index: 1;
+}
+
+/* End-Screen Centered Overlay when Video Finishes */
+.gt-hero-video-ended-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: radial-gradient(circle at center, rgba(28, 15, 8, 0.78) 0%, rgba(18, 10, 5, 0.9) 100%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 24px;
+  gap: 14px;
+  text-align: center;
+  animation: gtHeroFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.gt-hero-video-ended-title {
+  margin: 0;
+  font-family: var(--gt-font);
+  font-size: clamp(1rem, 1.8vw, 1.22rem);
+  font-weight: 800;
+  color: #F3C562;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
 }
 
 .gt-hero-video-cta-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
+  flex-wrap: wrap;
   width: 100%;
+  max-width: 460px;
 }
 
 .gt-hero-video-cta {
+  flex: 1 1 180px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 12px 18px;
-  border-radius: 14px;
+  border-radius: 999px;
   font-family: var(--gt-font);
   font-size: 0.94rem;
   font-weight: 700;
@@ -3730,31 +3799,53 @@
 }
 
 .gt-hero-video-cta-primary {
-  background: linear-gradient(135deg, #3B2417 0%, #5A3520 100%);
+  background: linear-gradient(135deg, #E99035 0%, #C86D1B 100%);
   color: #FFFFFF !important;
-  border: 1.5px solid rgba(213, 163, 63, 0.45);
-  box-shadow: 0 8px 20px rgba(59, 36, 23, 0.16);
+  border: 1.5px solid rgba(255, 255, 255, 0.32);
+  box-shadow: 0 10px 24px rgba(233, 144, 53, 0.35);
 }
 
 .gt-hero-video-cta-primary:hover {
-  background: linear-gradient(135deg, #4E2F1E 0%, #7A3E1D 100%);
-  border-color: #F3C562;
-  transform: translateY(-2px);
-  box-shadow: 0 12px 26px rgba(59, 36, 23, 0.24);
+  background: linear-gradient(135deg, #F59E42 0%, #E99035 100%);
+  border-color: #FFFFFF;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 14px 28px rgba(233, 144, 53, 0.48);
 }
 
 .gt-hero-video-cta-ai {
   background: linear-gradient(135deg, #16734A 0%, #1F5A3A 100%);
   color: #FFFFFF !important;
-  border: 1.5px solid rgba(243, 197, 98, 0.4);
-  box-shadow: 0 8px 20px rgba(22, 115, 74, 0.18);
+  border: 1.5px solid rgba(243, 197, 98, 0.45);
+  box-shadow: 0 10px 24px rgba(22, 115, 74, 0.35);
 }
 
 .gt-hero-video-cta-ai:hover {
-  background: linear-gradient(135deg, #1B8757 0%, #16734A 100%);
+  background: linear-gradient(135deg, #1E8E5A 0%, #16734A 100%);
   border-color: #F3C562;
-  transform: translateY(-2px);
-  box-shadow: 0 12px 26px rgba(22, 115, 74, 0.28);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 14px 28px rgba(22, 115, 74, 0.48);
+}
+
+.gt-hero-video-replay-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #F1ECE6;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: var(--gt-font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gt-hero-video-replay-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  color: #FFFFFF;
+  border-color: rgba(243, 197, 98, 0.6);
 }
 
 /* ==============================================================================
@@ -4537,14 +4628,24 @@
   .gt-hero-video-frame {
     border-radius: 16px;
   }
+  .gt-hero-video-ended-overlay {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+  .gt-hero-video-ended-title {
+    font-size: 0.92rem;
+  }
   .gt-hero-video-cta-row {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
   }
   .gt-hero-video-cta {
-    padding: 11px 12px;
-    font-size: 0.88rem;
-    border-radius: 12px;
+    flex: 1 1 135px;
+    padding: 9px 10px;
+    font-size: 0.82rem;
+  }
+  .gt-hero-video-replay-btn {
+    padding: 4px 12px;
+    font-size: 0.74rem;
   }
   .gt-hero-action-row {
     flex-direction: column;
