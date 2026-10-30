@@ -52,7 +52,9 @@ const SEOHead = ({
     const pageDesc = description || brandConfig.description;
     const pageKeywords = keywords || `${brandConfig.brandName}, ${brandConfig.brandShortName}, Đắk Lắk, Buôn Ma Thuột, cà phê Đắk Lắk, doanh nghiệp Đắk Lắk, đầu tư Đắk Lắk, du lịch Tây Nguyên, AI Matching`;
     const canonicalUrl = url ? (url.startsWith('http') ? url : `${siteUrl}${url}`) : window.location.href;
-    const ogImage = image || `${siteUrl}/assets/og-image.jpg`;
+    const ogImage = (image && typeof image === 'string' && image.trim() && image !== 'null' && image !== 'undefined')
+      ? (image.trim().startsWith('http') ? image.trim() : `${siteUrl}${image.trim().startsWith('/') ? '' : '/'}${image.trim()}`)
+      : `${siteUrl}/og-image.png?v=3`;
 
     setMetaTag('name', 'description', pageDesc);
     setMetaTag('name', 'keywords', pageKeywords);

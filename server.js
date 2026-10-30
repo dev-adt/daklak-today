@@ -5166,7 +5166,7 @@ app.use((req, res, next) => {
 app.get('/api/og-image', async (req, res) => {
   const targetUrl = req.query.url;
   const baseUrl = getBaseUrl(req);
-  if (!targetUrl) return res.redirect(`${baseUrl}/logo_icon.png`);
+  if (!targetUrl) return res.redirect(`${baseUrl}/og-image.png?v=2`);
   try {
     const upstream = await fetch(targetUrl, {
       redirect: 'follow',
@@ -5176,14 +5176,14 @@ app.get('/api/og-image', async (req, res) => {
         'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
       }
     });
-    if (!upstream.ok) return res.redirect(`${baseUrl}/logo_icon.png`);
+    if (!upstream.ok) return res.redirect(`${baseUrl}/og-image.png?v=2`);
     const contentType = upstream.headers.get('content-type') || 'image/jpeg';
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
     const arrayBuffer = await upstream.arrayBuffer();
     return res.send(Buffer.from(arrayBuffer));
   } catch (err) {
-    return res.redirect(`${baseUrl}/logo_icon.png`);
+    return res.redirect(`${baseUrl}/og-image.png?v=2`);
   }
 });
 
@@ -5247,15 +5247,28 @@ function getBaseUrl(req) {
   return `${proto}://${host}`.replace(/\/+$/, '');
 }
 
+function extractFirstImageFromHtml(htmlContent) {
+  if (!htmlContent || typeof htmlContent !== 'string') return '';
+  const match = htmlContent.match(/<img[^>]+src=["']([^"']+)["']/i);
+  return match && match[1] ? match[1].trim() : '';
+}
+
 function resolveImageUrl(imgUrl, baseUrl) {
-  if (!imgUrl || typeof imgUrl !== 'string') return `${baseUrl}/logo_icon.png`;
+  if (!imgUrl || typeof imgUrl !== 'string') return `${baseUrl}/og-image.png?v=3`;
   const trimmed = imgUrl.trim();
   if (
-    !trimmed || 
+    !trimmed ||
+    trimmed === 'null' ||
+    trimmed === 'undefined' ||
     trimmed.includes('photo-1514432324607-a09d9b4aefdd') ||
     trimmed.includes('placeholder')
   ) {
-    return `${baseUrl}/logo_icon.png`;
+    return `${baseUrl}/og-image.png?v=3`;
+  }
+  // Chuẩn hóa link /uploads/... nếu bị lưu kèm localhost hoặc domain dev
+  const uploadsMatch = trimmed.match(/^https?:\/\/[^/]+(\/uploads\/.+)$/i);
+  if (uploadsMatch && uploadsMatch[1]) {
+    return `${baseUrl}${uploadsMatch[1]}`;
   }
   // External image: proxy through our server to guarantee accessibility to Zalo/FB crawlers
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
@@ -5282,8 +5295,6 @@ function injectMetaTags(html, { title, description, image, url, type = 'website'
   resHtml = resHtml.replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>\s*/gi, '');
   resHtml = resHtml.replace(/<link\s+rel=["']canonical["'][^>]*>\s*/gi, '');
 
-  const isSquareLogo = image.endsWith('/logo_icon.png');
-
   let newMeta = `    <meta name="description" content="${escapeHtml(description)}" />\n`;
   newMeta += `    <link rel="canonical" href="${escapeHtml(url)}" />\n`;
   newMeta += `    <meta property="og:site_name" content="DakLak.today" />\n`;
@@ -5294,11 +5305,8 @@ function injectMetaTags(html, { title, description, image, url, type = 'website'
   newMeta += `    <meta property="og:description" content="${escapeHtml(description)}" />\n`;
   newMeta += `    <meta property="og:image" content="${escapeHtml(image)}" />\n`;
   newMeta += `    <meta property="og:image:secure_url" content="${escapeHtml(image)}" />\n`;
-
-  if (isSquareLogo) {
-    newMeta += `    <meta property="og:image:width" content="512" />\n`;
-    newMeta += `    <meta property="og:image:height" content="512" />\n`;
-  }
+  newMeta += `    <meta property="og:image:width" content="1200" />\n`;
+  newMeta += `    <meta property="og:image:height" content="630" />\n`;
   newMeta += `    <meta property="og:image:alt" content="${escapeHtml(title)}" />\n`;
 
   newMeta += `    <meta name="twitter:card" content="summary_large_image" />\n`;
@@ -5314,16 +5322,12 @@ app.get('*', async (req, res) => {
   const userAgent = (req.headers['user-agent'] || '').toLowerCase();
   const isCrawler = /zalo|facebookexternalhit|twitterbot|telegrambot|whatsapp|linkedinbot|slackbot|googlebot|bingbot|baiduspider|yandex/i.test(userAgent);
 
-  // Bot cào link preview chỉ cache nếu là bài viết cụ thể, trang chủ luôn no-cache để không dính bundle cũ trên Cloudflare Edge
-  if (isCrawler && req.path.startsWith('/posts/')) {
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-  } else {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.setHeader('CDN-Cache-Control', 'no-store');
-    res.setHeader('Cloudflare-CDN-Cache-Control', 'no-store');
-  }
+  // Bot cào link preview hoặc người dùng: luôn trả mới nhất để cập nhật ngay khi đổi ảnh bìa bài viết/sự kiện
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('CDN-Cache-Control', 'no-store');
+  res.setHeader('Cloudflare-CDN-Cache-Control', 'no-store');
 
   const baseHtml = getBaseIndexHtml();
   if (!baseHtml) {
@@ -5337,7 +5341,7 @@ app.get('*', async (req, res) => {
   let meta = {
     title: 'DakLak.today — Cổng thông tin, dữ liệu và kết nối đầu tư Đắk Lắk',
     description: 'DakLak.today kết nối con người, doanh nghiệp, sản phẩm, du lịch, dữ liệu và cơ hội đầu tư của tỉnh Đắk Lắk bằng nền tảng số và trí tuệ nhân tạo.',
-    image: `${baseUrl}/logo_icon.png`,
+    image: `${baseUrl}/og-image.png?v=3`,
     url: currentUrl,
     type: 'website'
   };
@@ -5351,22 +5355,18 @@ app.get('*', async (req, res) => {
       if (segment) {
         const decoded = decodeURIComponent(segment);
         const isNumeric = /^\d+$/.test(decoded);
-        let q = 'SELECT id, title, slug, summary, body, image_url, category FROM posts WHERE ';
-        let p = [];
-        if (isNumeric) {
-          q += 'id = ? OR slug = ? LIMIT 1';
-          p = [parseInt(decoded, 10), decoded];
-        } else {
-          q += 'slug = ? LIMIT 1';
-          p = [decoded];
-        }
+        const q = isNumeric
+          ? 'SELECT * FROM posts WHERE id = ? OR slug = ? LIMIT 1'
+          : 'SELECT * FROM posts WHERE slug = ? LIMIT 1';
+        const p = isNumeric ? [parseInt(decoded, 10), decoded] : [decoded];
 
         const [postRows] = await db.query(q, p);
         if (postRows.length) {
           const post = postRows[0];
           meta.title = `${post.title} — DakLak.today`;
           meta.description = cleanDescription(post.summary, post.body, meta.description);
-          meta.image = resolveImageUrl(post.image_url, baseUrl);
+          const coverImg = post.image_url || extractFirstImageFromHtml(post.body);
+          meta.image = resolveImageUrl(coverImg, baseUrl);
           meta.url = `${baseUrl}/posts/${post.slug || post.id}`;
           meta.type = 'article';
         }
@@ -5377,14 +5377,15 @@ app.get('*', async (req, res) => {
       const segment = rawPath.replace(/^\/members\/?/, '').split('/')[0].trim();
       if (segment && /^\d+$/.test(segment)) {
         const [memRows] = await db.query(
-          'SELECT id, name, company_name, description, logo_url, avatar_url FROM members WHERE id = ? LIMIT 1',
+          'SELECT * FROM members WHERE id = ? LIMIT 1',
           [parseInt(segment, 10)]
         );
         if (memRows.length) {
           const m = memRows[0];
-          meta.title = `${m.company_name || m.name} — Hội viên DakLak.today`;
-          meta.description = cleanDescription(m.description, '', `Hồ sơ doanh nghiệp ${m.company_name || m.name} trên Cổng thông tin Đắk Lắk.`);
-          meta.image = resolveImageUrl(m.logo_url || m.avatar_url, baseUrl);
+          const displayName = m.company_name || m.name;
+          meta.title = `${displayName} — Hội viên DakLak.today`;
+          meta.description = cleanDescription(m.description, '', `Hồ sơ doanh nghiệp ${displayName} trên Cổng thông tin Đắk Lắk.`);
+          meta.image = resolveImageUrl(m.logo_url || m.cover_url || m.avatar_url, baseUrl);
           meta.url = `${baseUrl}/members/${m.id}`;
         }
       }
@@ -5396,16 +5397,18 @@ app.get('*', async (req, res) => {
         const decoded = decodeURIComponent(segment);
         const isNum = /^\d+$/.test(decoded);
         const [evRows] = await db.query(
-          isNum ? 'SELECT id, title, slug, summary, image_url FROM events WHERE id = ? LIMIT 1'
-                : 'SELECT id, title, slug, summary, image_url FROM events WHERE slug = ? LIMIT 1',
-          [decoded]
+          isNum ? 'SELECT * FROM events WHERE id = ? OR slug = ? LIMIT 1'
+                : 'SELECT * FROM events WHERE slug = ? LIMIT 1',
+          isNum ? [parseInt(decoded, 10), decoded] : [decoded]
         );
         if (evRows.length) {
           const ev = evRows[0];
           meta.title = `${ev.title} — Sự kiện DakLak.today`;
-          meta.description = cleanDescription(ev.summary, '', meta.description);
-          meta.image = resolveImageUrl(ev.image_url, baseUrl);
+          meta.description = cleanDescription(ev.short_desc || ev.summary, ev.description || ev.content, meta.description);
+          const evCover = ev.image_url || extractFirstImageFromHtml(ev.content || ev.description);
+          meta.image = resolveImageUrl(evCover, baseUrl);
           meta.url = `${baseUrl}/events/${ev.slug || ev.id}`;
+          meta.type = 'article';
         }
       }
     }
@@ -5413,17 +5416,17 @@ app.get('*', async (req, res) => {
     else if (rawPath === '/posts') {
       meta.title = 'Cơ hội giao thương & Tin tức — DakLak.today';
       meta.description = 'Cập nhật tin tức, cơ hội giao thương, danh mục kêu gọi đầu tư và tiềm năng phát triển tỉnh Đắk Lắk.';
-      meta.image = `${baseUrl}/logo_icon.png`;
+      meta.image = `${baseUrl}/og-image.png?v=3`;
     }
     else if (rawPath === '/members') {
       meta.title = 'Doanh nghiệp & Hội viên — DakLak.today';
       meta.description = 'Danh bạ cộng đồng doanh nghiệp, nhà đầu tư, hợp tác xã và thương hiệu tiêu biểu tỉnh Đắk Lắk.';
-      meta.image = `${baseUrl}/logo_icon.png`;
+      meta.image = `${baseUrl}/og-image.png?v=3`;
     }
     else if (rawPath === '/events' || rawPath === '/su-kien') {
       meta.title = 'Sự kiện & Hội nghị xúc tiến — DakLak.today';
       meta.description = 'Thông tin các sự kiện xúc tiến thương mại, hội nghị đầu tư, lễ hội cà phê và diễn đàn kinh tế Đắk Lắk.';
-      meta.image = `${baseUrl}/logo_icon.png`;
+      meta.image = `${baseUrl}/og-image.png?v=3`;
     }
   } catch (err) {
     console.error('Lỗi truy vấn OpenGraph SSR:', err.message);

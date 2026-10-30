@@ -518,6 +518,8 @@ export const Events = () => {
           title={`${currentEvent.title} — ${brandConfig.brandName}`}
           description={currentEvent.short_desc || currentEvent.description}
           image={currentEvent.image_url}
+          url={`/events/${currentEvent.slug || currentEvent.id}`}
+          type="article"
         />
         <Navbar />
 
