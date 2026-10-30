@@ -2672,131 +2672,59 @@ export const Home = () => {
         </section>
 
         {/* ========================================================
-            SECTION 4: 4 THẾ MẠNH HỘI TỤ ĐẮK LẮK
-            ======================================================== */}
-        <section className="daklak-section" style={{ backgroundColor: 'var(--cream-alt)' }}>
-          <div className="daklak-container">
-            <div className="daklak-section-header scroll-reveal scroll-reveal-down">
-              <span className="daklak-section-badge">{currentLang === 'en' ? 'Natural Advantages' : 'Thế Mạnh Nổi Bật'}</span>
-              <h2 className="daklak-section-title">
-                {currentLang === 'en' ? 'Convergence of Coffee, Culture & the Great Highlands' : 'Đắk Lắk – Hội Tụ Cà Phê, Văn Hóa & Đại Ngàn Tây Nguyên'}
-              </h2>
-              <p className="daklak-section-desc">
-                {currentLang === 'en'
-                  ? 'Endowed with fertile red basalt soil and a unique climate, Dak Lak possesses immense advantages for comprehensive socio-economic development.'
-                  : 'Sở hữu dải đất đỏ bazan màu mỡ cùng khí hậu đặc trưng, Đắk Lắk hội tụ những tiềm năng vượt trội để bứt phá kinh tế trong kỷ nguyên mới.'}
-              </p>
-            </div>
-
-            <div className="strengths-grid">
-              {/* Strength 1 (From Left) */}
-              <div className="strength-card scroll-reveal scroll-reveal-left stagger-1">
-                <div className="strength-img-box">
-                  <img src="/images/daklak/daklak_doi_ca_phe.jpg" alt="Cà phê Đắk Lắk" />
-                  <span className="strength-tag">{currentLang === 'en' ? 'Strategic Commodity' : 'Trụ cột Kinh tế'}</span>
-                </div>
-                <div className="strength-body">
-                  <h3>{currentLang === 'en' ? 'Coffee & Specialty Agro-Products' : 'Cà Phê & Nông Sản Đặc Hữu'}</h3>
-                  <p>{currentLang === 'en' ? 'Over 213,000 hectares of coffee, producing 560,000+ tons annually. Alongside durian, macadamia, and black pepper reaching top global exports.' : 'Hơn 213.000 ha cà phê, sản lượng trên 560.000 tấn/năm. Cùng sầu riêng, mắc ca, hồ tiêu đạt chuẩn xuất khẩu chất lượng cao vào EU, Mỹ, Nhật.'}</p>
-                  <Link to={`/posts?category=${encodeURIComponent('Nông sản & Cà phê')}`} className="quick-access-link">{currentLang === 'en' ? 'Explore value chain →' : 'Khám phá chuỗi giá trị →'}</Link>
-                </div>
-              </div>
-
-              {/* Strength 2 (From Up) */}
-              <div className="strength-card scroll-reveal scroll-reveal-up stagger-2">
-                <div className="strength-img-box">
-                  <img src="/images/daklak/daklak_cong_chieng.jpg" alt="Văn hóa Du lịch Cồng Chiêng" />
-                  <span className="strength-tag" style={{ background: 'rgba(31, 90, 58, 0.9)' }}>{currentLang === 'en' ? 'Living Heritage' : 'Di sản Sống'}</span>
-                </div>
-                <div className="strength-body">
-                  <h3>{currentLang === 'en' ? 'Ecotourism & Gong Culture' : 'Du Lịch Sinh Thái & Di Sản Cồng Chiêng'}</h3>
-                  <p>{currentLang === 'en' ? 'UNESCO Intangible Cultural Heritage of Humanity, majestic Dray Nur waterfalls, Yok Don National Park, and serene Lake Lak.' : 'Không gian văn hóa cồng chiêng được UNESCO vinh danh, hệ thống thác nước hùng vĩ, Vườn quốc gia Yok Đôn và vẻ đẹp thơ mộng của Hồ Lắk.'}</p>
-                  <Link to={`/posts?category=${encodeURIComponent('Du lịch & Trải nghiệm')}`} className="quick-access-link">{currentLang === 'en' ? 'Experience culture →' : 'Trải nghiệm văn hóa →'}</Link>
-                </div>
-              </div>
-
-              {/* Strength 3 (From Up) */}
-              <div className="strength-card scroll-reveal scroll-reveal-up stagger-3">
-                <div className="strength-img-box">
-                  <img src="https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&w=800&q=80" alt="Năng lượng tái tạo" />
-                  <span className="strength-tag" style={{ background: 'rgba(213, 163, 63, 0.9)', color: '#26160E' }}>{currentLang === 'en' ? 'Clean Energy' : 'Năng Lượng Xanh'}</span>
-                </div>
-                <div className="strength-body">
-                  <h3>{currentLang === 'en' ? 'Renewable Energy & Infrastructure' : 'Năng Lượng Tái Tạo & Công Nghiệp'}</h3>
-                  <p>{currentLang === 'en' ? 'Centrally positioned wind & solar farm hubs; developing Buon Ma Thuot - Khanh Hoa highway opening swift coastal trade access.' : 'Trung tâm điện gió, điện mặt trời quy mô lớn; tuyến cao tốc Buôn Ma Thuột — Khánh Hòa mở toang cửa ngõ giao thương hướng biển.'}</p>
-                  <Link to={`/posts?category=${encodeURIComponent('Dự án & Đầu tư')}`} className="quick-access-link">{currentLang === 'en' ? 'View infrastructure →' : 'Xem hạ tầng KCN →'}</Link>
-                </div>
-              </div>
-
-              {/* Strength 4 (From Right) */}
-              <div className="strength-card scroll-reveal scroll-reveal-right stagger-4">
-                <div className="strength-img-box">
-                  <img src="/images/daklak/daklak_dau_tu_logistics.jpg" alt="Không gian phát triển Đắk Lắk" />
-                  <span className="strength-tag" style={{ background: 'rgba(122, 62, 29, 0.9)' }}>{currentLang === 'en' ? 'Urban Hub' : 'Đô Thị Trung Tâm'}</span>
-                </div>
-                <div className="strength-body">
-                  <h3>{currentLang === 'en' ? 'Open Regional Development Space' : 'Không Gian Phát Triển Vùng Mở'}</h3>
-                  <p>{currentLang === 'en' ? 'Buon Ma Thuot is oriented as the center of the Central Highlands region, featuring dynamic innovation, healthcare, and education.' : 'Buôn Ma Thuột định hướng trở thành đô thị trung tâm vùng Tây Nguyên, hạt nhân đổi mới sáng tạo, tài chính, giáo dục và y tế chuyên sâu.'}</p>
-                  <Link to={`/posts?category=${encodeURIComponent('Dự án & Đầu tư')}`} className="quick-access-link">{currentLang === 'en' ? 'Economic data →' : 'Không gian phát triển →'}</Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ========================================================
-            SECTION 5: 3 TẦNG GIÁ TRỊ (MEDIA - DATA - PLATFORM)
+            SECTION 4: HỘI VIÊN TIÊU BIỂU (CỘNG ĐỒNG DOANH NGHIỆP ĐẮK LẮK)
             ======================================================== */}
         <section className="daklak-section">
           <div className="daklak-container">
             <div className="daklak-section-header scroll-reveal scroll-reveal-down">
-              <span className="daklak-section-badge">{currentLang === 'en' ? 'Architecture' : 'Kiến Trúc Nền Tảng'}</span>
+              <span className="daklak-section-badge">{currentLang === 'en' ? 'Verified Directory' : 'Hội Viên Tiêu Biểu'}</span>
               <h2 className="daklak-section-title">
-                {currentLang === 'en' ? 'From Information Portal to Investment Platform' : 'Từ Trang Thông Tin Đến Nền Tảng Kết Nối Đầu Tư'}
+                {currentLang === 'en' ? 'Leading Enterprises & Ecosystem Partners' : 'Cộng Đồng Doanh Nghiệp Đắk Lắk'}
               </h2>
               <p className="daklak-section-desc">
                 {currentLang === 'en'
-                  ? 'DakLak.today builds 3 interconnected value layers that form a compounding growth engine for the local business community.'
-                  : 'Mô hình 3 tầng giá trị Media — Data — Platform giúp nền tảng phát triển bền vững, giữ vị thế độc lập và tạo giao dịch kinh tế thực tế.'}
+                  ? 'Verified profiles of top local companies and strategic investment partners in Dak Lak.'
+                  : 'Hồ sơ năng lực của các doanh nghiệp đầu ngành đã xác thực, tiên phong nâng tầm chuỗi giá trị và hội nhập quốc tế.'}
               </p>
             </div>
 
-            <div className="layers-grid">
-              {/* Layer 1: Media (From Left) */}
-              <div className="layer-card scroll-reveal scroll-reveal-left stagger-1">
-                <span className="layer-badge">1. MEDIA • Truyền thông</span>
-                <h3>{currentLang === 'en' ? 'Media & Storytelling' : 'Tin Tức & Kể Chuyện Địa Phương'}</h3>
-                <ul>
-                  <li><i className="ti ti-check" /> Phóng sự chuyên sâu về con người, buôn làng và nông sản Đắk Lắk.</li>
-                  <li><i className="ti ti-check" /> Chuyên mục phân tích ngành hàng cà phê, hồ tiêu, sầu riêng xuất khẩu.</li>
-                  <li><i className="ti ti-check" /> Gương mặt doanh nhân tiêu biểu, mô hình khởi nghiệp đổi mới sáng tạo.</li>
-                  <li><i className="ti ti-check" /> Cập nhật chính sách, quy hoạch và chỉ đạo điều hành tỉnh Đắk Lắk.</li>
-                </ul>
-              </div>
+            <div className={`members-grid count-${Math.min(4, featuredMembers.length || 3)}`}>
+              {featuredMembers.map((m, mIdx) => (
+                <div key={m.id} className={`member-card scroll-reveal scroll-reveal-up stagger-${(mIdx % 3) + 1}`}>
+                  <div className="member-card-header">
+                    <img 
+                      src={m.logo_url || 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80'} 
+                      alt={m.company_name || m.name} 
+                      className="member-logo"
+                      onError={(e) => {
+                        e.target.src = 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80';
+                      }}
+                    />
+                    <div className="member-info">
+                      <h4>{m.company_name || m.name}</h4>
+                      <span className="member-tier-pill">⭐ {m.tier || 'Thành viên'} Partner</span>
+                    </div>
+                  </div>
 
-              {/* Layer 2: Data (From Up) */}
-              <div className="layer-card layer-data scroll-reveal scroll-reveal-up stagger-2">
-                <span className="layer-badge">2. DATA • Cơ sở dữ liệu</span>
-                <h3>{currentLang === 'en' ? 'Structured Data Assets' : 'Dữ Liệu Doanh Nghiệp & Dự Án'}</h3>
-                <ul>
-                  <li><i className="ti ti-check" /> Danh bạ hồ sơ năng lực 12.000+ doanh nghiệp đã xác thực thông tin.</li>
-                  <li><i className="ti ti-check" /> Bản đồ dữ liệu quy hoạch quỹ đất công nghiệp, vùng nguyên liệu sạch.</li>
-                  <li><i className="ti ti-check" /> Báo cáo biến động giá nông sản, thị trường cà phê thế giới theo ngày.</li>
-                  <li><i className="ti ti-check" /> Hồ sơ năng lực các dự án trọng điểm đang kêu gọi dòng vốn đầu tư.</li>
-                </ul>
-              </div>
+                  <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: '1.5', flexGrow: 1 }}>
+                    {m.bio || m.description || `Lĩnh vực hoạt động: ${m.industry || 'Sản xuất & kinh doanh nông sản'}.`}
+                  </p>
 
-              {/* Layer 3: Platform (From Right) */}
-              <div className="layer-card layer-platform scroll-reveal scroll-reveal-right stagger-3">
-                <span className="layer-badge">3. PLATFORM • Nền tảng số</span>
-                <h3>{currentLang === 'en' ? 'Smart Connection Platform' : 'Kết Nối Đầu Tư & AI Matching'}</h3>
-                <ul>
-                  <li><i className="ti ti-check" /> Cơ chế gửi yêu cầu kết nối giao thương B2B trực tiếp tới doanh nghiệp.</li>
-                  <li><i className="ti ti-check" /> AI Matching: Tự động ghép nối nhà đầu tư với quỹ đất và dự án tối ưu.</li>
-                  <li><i className="ti ti-check" /> Hệ thống cấp vé điện tử QR, soát vé thời gian thực cho sự kiện diễn đàn.</li>
-                  <li><i className="ti ti-check" /> Dịch vụ Data Room hỗ trợ thẩm định dự án và xúc tiến đầu tư một cửa.</li>
-                </ul>
-              </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid rgba(122, 62, 29, 0.08)' }}>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>📍 {m.address || 'TP. Buôn Ma Thuột'}</span>
+                    <Link to="/members" className="quick-access-link" style={{ fontSize: '0.85rem' }}>
+                      Xem Showroom →
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="scroll-reveal scroll-reveal-up" style={{ textAlign: 'center', marginTop: '35px' }}>
+              <Link to="/members" className="btn-daklak-primary">
+                <i className="ti ti-address-book" />
+                <span>{currentLang === 'en' ? 'Explore Full Enterprise Directory' : 'Tra cứu Danh bạ Toàn bộ Doanh nghiệp'}</span>
+              </Link>
             </div>
           </div>
         </section>
@@ -2935,68 +2863,6 @@ export const Home = () => {
                 <div className="data-stat-label">Độ che phủ Rừng</div>
                 <div className="data-stat-sub">Lợi thế hấp thụ Carbon & Tín chỉ ESG</div>
               </div>
-            </div>
-          </div>
-        </section>
-
-
-
-
-
-        {/* ========================================================
-            SECTION 10: DOANH NGHIỆP ĐẮK LẮK TIÊU BIỂU (DYNAMIC MEMBERS)
-            ======================================================== */}
-        <section className="daklak-section">
-          <div className="daklak-container">
-            <div className="daklak-section-header scroll-reveal scroll-reveal-down">
-              <span className="daklak-section-badge">{currentLang === 'en' ? 'Verified Directory' : 'Hội Viên Tiêu Biểu'}</span>
-              <h2 className="daklak-section-title">
-                {currentLang === 'en' ? 'Leading Enterprises & Ecosystem Partners' : 'Cộng Đồng Doanh Nghiệp Đắk Lắk'}
-              </h2>
-              <p className="daklak-section-desc">
-                {currentLang === 'en'
-                  ? 'Verified profiles of top local companies and strategic investment partners in Dak Lak.'
-                  : 'Hồ sơ năng lực của các doanh nghiệp đầu ngành đã xác thực, tiên phong nâng tầm chuỗi giá trị và hội nhập quốc tế.'}
-              </p>
-            </div>
-
-            <div className={`members-grid count-${Math.min(4, featuredMembers.length || 3)}`}>
-              {featuredMembers.map((m, mIdx) => (
-                <div key={m.id} className={`member-card scroll-reveal scroll-reveal-up stagger-${(mIdx % 3) + 1}`}>
-                  <div className="member-card-header">
-                    <img 
-                      src={m.logo_url || 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80'} 
-                      alt={m.company_name || m.name} 
-                      className="member-logo"
-                      onError={(e) => {
-                        e.target.src = 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80';
-                      }}
-                    />
-                    <div className="member-info">
-                      <h4>{m.company_name || m.name}</h4>
-                      <span className="member-tier-pill">⭐ {m.tier || 'Thành viên'} Partner</span>
-                    </div>
-                  </div>
-
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: '1.5', flexGrow: 1 }}>
-                    {m.bio || m.description || `Lĩnh vực hoạt động: ${m.industry || 'Sản xuất & kinh doanh nông sản'}.`}
-                  </p>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid rgba(122, 62, 29, 0.08)' }}>
-                    <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>📍 {m.address || 'TP. Buôn Ma Thuột'}</span>
-                    <Link to="/members" className="quick-access-link" style={{ fontSize: '0.85rem' }}>
-                      Xem Showroom →
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="scroll-reveal scroll-reveal-up" style={{ textAlign: 'center', marginTop: '35px' }}>
-              <Link to="/members" className="btn-daklak-primary">
-                <i className="ti ti-address-book" />
-                <span>{currentLang === 'en' ? 'Explore Full Enterprise Directory' : 'Tra cứu Danh bạ Toàn bộ Doanh nghiệp'}</span>
-              </Link>
             </div>
           </div>
         </section>
