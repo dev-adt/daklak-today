@@ -75,7 +75,7 @@ export const Sidebar = ({ isOpen = false, onClose }) => {
             style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', flex: 1, borderBottom: 'none' }}
           >
             <div className="sb-logo-icon" style={{ overflow: 'hidden', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#2A160D', width: '32px', height: '32px', flexShrink: 0, border: '1px solid rgba(213, 163, 63, 0.4)' }}>
-              <img src="/logo_icon.svg" alt="DakLak.today" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.src = '/logo_icon.png'; }} />
+              <img src="/logo_icon.png" alt="DakLak.today" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.src = '/pwa-192x192.png'; }} />
             </div>
             <div>
               <div className="sb-logo-name">DakLak<span style={{ color: '#D5A33F' }}>.today</span></div>

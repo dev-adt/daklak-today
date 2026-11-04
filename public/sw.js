@@ -3,7 +3,7 @@
  * Cung cấp khả năng tải nhanh và hoạt động offline cơ bản
  */
 
-const CACHE_NAME = 'daklak-cache-v2';
+const CACHE_NAME = 'daklak-cache-v3';
 const PRECACHE_ASSETS = [
   '/manifest.json',
   '/favicon.png',

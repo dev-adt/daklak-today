@@ -224,7 +224,7 @@ export const PWAInstallPrompt = () => {
       {isInstallable && !bannerDismissed && (
         <aside className="dnvn-pwa-banner" aria-label="Cài đặt ứng dụng">
           <div className="dnvn-pwa-icon">
-            <img src="/logo_icon.svg" alt="DakLak.today Logo" onError={(e) => { e.target.src = '/logo_icon.png'; }} />
+            <img src="/logo_icon.png" alt="DakLak.today Logo" onError={(e) => { e.target.src = '/pwa-192x192.png'; }} />
           </div>
           <div className="dnvn-pwa-content">
             <div className="dnvn-pwa-title">Cài đặt {brandConfig.brandName}</div>
@@ -264,7 +264,7 @@ export const PWAInstallPrompt = () => {
               border: '1.5px solid rgba(213, 163, 63, 0.4)',
               boxShadow: '0 4px 16px rgba(213, 163, 63, 0.4)'
             }}>
-              <img src="/logo_icon.svg" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.src = '/logo_icon.png'; }} />
+              <img src="/logo_icon.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.src = '/pwa-192x192.png'; }} />
             </div>
 
             <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', marginBottom: '8px' }}>

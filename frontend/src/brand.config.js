@@ -30,9 +30,9 @@ export const brandConfig = {
   logo: {
     primary: '/logo_daklak.png',
     dark: '/logo_daklak_dark.png',
-    icon: '/logo_icon.svg',
+    icon: '/logo_icon.png',
     alt: 'DakLak.today Logo',
-    favicon: '/favicon.svg',
+    favicon: '/favicon.png',
     defaultThumbnail: '/images/daklak/daklak_doi_ca_phe.jpg',
     fallbackCompanyLogo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80'
   },

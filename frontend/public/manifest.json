@@ -12,37 +12,37 @@
   "categories": ["business", "news", "travel", "investment"],
   "icons": [
     {
-      "src": "/favicon.png",
+      "src": "/favicon.png?v=5",
       "sizes": "64x64",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/pwa-192x192.png",
+      "src": "/pwa-192x192.png?v=5",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/pwa-192x192.png",
+      "src": "/pwa-192x192.png?v=5",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/pwa-512x512.png",
+      "src": "/pwa-512x512.png?v=5",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/pwa-512x512.png",
+      "src": "/pwa-512x512.png?v=5",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/logo_icon.png",
+      "src": "/logo_icon.png?v=5",
       "sizes": "256x256",
       "type": "image/png",
       "purpose": "any"
@@ -54,21 +54,21 @@
       "short_name": "Cà phê",
       "description": "Khám phá chuỗi giá trị và thương hiệu cà phê",
       "url": "/posts?category=Cà%20phê%20Đắk%20Lắk",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192.png?v=5", "sizes": "192x192" }]
     },
     {
       "name": "Trợ lý AI Đắk Lắk",
       "short_name": "AI Assistant",
       "description": "Hỏi đáp đầu tư và dữ liệu cùng Trợ lý AI",
       "url": "/ai-chat",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192.png?v=5", "sizes": "192x192" }]
     },
     {
       "name": "Cơ hội Đầu tư & Doanh nghiệp",
       "short_name": "Đầu tư",
       "description": "Tra cứu dự án và danh bạ doanh nghiệp",
       "url": "/members",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192.png?v=5", "sizes": "192x192" }]
     }
   ]
 }

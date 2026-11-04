@@ -46,11 +46,11 @@ export const Footer = () => {
                   flexShrink: 0
                 }}>
                   <img 
-                    src="/logo_icon.svg" 
+                    src="/logo_icon.png" 
                     alt="DakLak.today Logo" 
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => { 
-                      e.target.src = '/logo_icon.png';
+                      e.target.src = '/pwa-192x192.png';
                       e.target.onerror = () => {
                         e.target.style.display = 'none';
                         e.target.parentNode.innerText = 'DL';

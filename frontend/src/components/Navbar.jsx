@@ -521,11 +521,11 @@ export const Navbar = () => {
           >
             <div className="dnvn-brand-icon notranslate" translate="no">
               <img 
-                src="/logo_icon.svg" 
+                src="/logo_icon.png" 
                 alt="DakLak.today Logo" 
                 className="dnvn-brand-icon-img"
                 onError={(e) => { 
-                  e.target.src = '/logo_icon.png';
+                  e.target.src = '/pwa-192x192.png';
                   e.target.onerror = () => {
                     e.target.style.display = 'none';
                     e.target.parentNode.innerText = 'DL';
