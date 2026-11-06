@@ -1666,10 +1666,6 @@ export const Home = () => {
                   {currentLang === 'en' ? 'Latest News & Dak Lak Updates' : 'Tin Tức Mới Nhất & Nhịp Đập Đắk Lắk Hôm Nay'}
                 </h2>
               </div>
-              <Link to="/gia-ca-phe" className="spotlight-view-all">
-                <span>{currentLang === 'en' ? 'View all' : 'Xem tất cả'}</span>
-                <i className="ti ti-arrow-right" />
-              </Link>
             </div>
 
             {(() => {
