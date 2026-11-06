@@ -622,10 +622,10 @@ export const AdminPosts = () => {
                             >
                               <i className="ti ti-external-link"></i> Xem ở trang chủ
                             </a>
-                            {p.status !== 'approved' && !isExpired && (
+                            {p.status !== 'approved' && (
                               <button className="quick-btn quick-btn-approve" onClick={() => handleApprove(p.id, p.title)} style={{ padding: '4px 8px', fontSize: '11px' }}>Duyệt</button>
                             )}
-                            {p.status === 'approved' && !isExpired && (
+                            {p.status === 'approved' && !isHidden && (
                               <button className="quick-btn" onClick={() => handleHide(p.id, p.title)} style={{ padding: '4px 8px', fontSize: '11px', background: '#F59E0B', color: '#fff', border: '1px solid #F59E0B', borderRadius: '4px', cursor: 'pointer' }}>Ẩn bài</button>
                             )}
                             {p.status === 'pending' && (

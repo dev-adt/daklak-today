@@ -998,6 +998,48 @@ db.query(`
       console.warn('⚠️ Lỗi kiểm tra chuyên mục Giá cà phê:', e.message);
     }
 
+    // Khởi tạo bảng coffee_price_images và coffee_videos cho chức năng "Quản lý giá cafe"
+    try {
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS coffee_price_images (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          title VARCHAR(255) DEFAULT 'Bảng giá cà phê hôm nay',
+          image_url VARCHAR(1000) NOT NULL,
+          is_selected TINYINT(1) DEFAULT 1,
+          order_index INT DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB COMMENT='Quản lý các ảnh bảng giá cà phê'
+      `);
+
+      const [existingCoffeeImgs] = await db.query('SELECT COUNT(*) as count FROM coffee_price_images');
+      if (existingCoffeeImgs[0].count === 0) {
+        await db.query(
+          `INSERT INTO coffee_price_images (title, image_url, is_selected, order_index) VALUES
+           ('Bảng giá cà phê Đắk Lắk & Tây Nguyên (Mẫu 1)', '/images/bang-gia-ca-phe-1.jpg', 1, 1),
+           ('Bảng giá cà phê Nội địa & Thế giới (Mẫu 2)', '/images/bang-gia-ca-phe-2.jpg', 1, 2)`
+        );
+        console.log('✅ Đã khởi tạo 2 ảnh bảng giá cà phê mặc định trong coffee_price_images');
+      }
+
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS coffee_videos (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          title VARCHAR(500) NOT NULL,
+          video_url TEXT NOT NULL,
+          summary TEXT DEFAULT NULL,
+          thumbnail_url VARCHAR(1000) DEFAULT NULL,
+          source VARCHAR(255) DEFAULT NULL,
+          is_active TINYINT(1) DEFAULT 1,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB COMMENT='Quản lý video chuyên mục Giá cà phê'
+      `);
+      console.log('✅ Bảng coffee_price_images và coffee_videos đã sẵn sàng');
+    } catch (e) {
+      console.warn('⚠️ Lỗi khởi tạo bảng quản lý giá cà phê:', e.message);
+    }
+
     // Tạo thư mục kiến thức
     const KB_DIR = path.join(__dirname, 'knowledge_base');
     if (!fs.existsSync(KB_DIR)) {
@@ -5250,6 +5292,174 @@ app.get('/api/og-image', async (req, res) => {
     return res.send(Buffer.from(arrayBuffer));
   } catch (err) {
     return res.redirect(`${baseUrl}/og-image.png?v=2`);
+  }
+});
+
+// ════════════════════════════════════════════
+// API QUẢN LÝ CHUYÊN MỤC GIÁ CÀ PHÊ (ẢNH BẢNG GIÁ & VIDEO THỊ TRƯỜNG)
+// ════════════════════════════════════════════
+
+// Public API: Lấy danh sách ảnh giá cà phê đang được chọn hiển thị & danh sách video thị trường cà phê
+app.get('/api/coffee-page-data', async (req, res) => {
+  try {
+    const [images] = await db.query(
+      'SELECT * FROM coffee_price_images WHERE is_selected = 1 ORDER BY order_index ASC, id DESC'
+    );
+    const [videos] = await db.query(
+      'SELECT * FROM coffee_videos WHERE is_active = 1 ORDER BY created_at DESC, id DESC'
+    );
+    res.json({
+      success: true,
+      images: images || [],
+      videos: videos || []
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Lấy toàn bộ ảnh giá cà phê (cả đang chọn và không chọn) & toàn bộ video để quản trị
+app.get('/api/admin/coffee-management', authMiddleware, async (req, res) => {
+  try {
+    const [images] = await db.query(
+      'SELECT * FROM coffee_price_images ORDER BY is_selected DESC, order_index ASC, id DESC'
+    );
+    const [videos] = await db.query(
+      'SELECT * FROM coffee_videos ORDER BY created_at DESC, id DESC'
+    );
+    res.json({
+      success: true,
+      images: images || [],
+      videos: videos || []
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Tải lên / Thêm ảnh bảng giá cà phê mới
+app.post('/api/admin/coffee-images', authMiddleware, async (req, res) => {
+  const { title, image_url, is_selected, order_index } = req.body;
+  if (!image_url || !String(image_url).trim()) {
+    return res.status(400).json({ success: false, error: 'Vui lòng tải lên hoặc nhập đường dẫn ảnh bảng giá cà phê.' });
+  }
+  try {
+    const selectedVal = is_selected === undefined ? 1 : (is_selected ? 1 : 0);
+    const orderVal = Number.isFinite(Number(order_index)) ? Number(order_index) : 0;
+    const [result] = await db.query(
+      'INSERT INTO coffee_price_images (title, image_url, is_selected, order_index) VALUES (?, ?, ?, ?)',
+      [(title || 'Bảng giá cà phê hôm nay').trim(), String(image_url).trim(), selectedVal, orderVal]
+    );
+    res.status(201).json({
+      success: true,
+      id: result.insertId,
+      message: 'Đã thêm ảnh bảng giá cà phê thành công!'
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Cập nhật trạng thái chọn hiển thị / tiêu đề / thứ tự ảnh giá cà phê
+app.put('/api/admin/coffee-images/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { title, image_url, is_selected, order_index } = req.body;
+  try {
+    const [existing] = await db.query('SELECT * FROM coffee_price_images WHERE id = ?', [id]);
+    if (!existing.length) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy ảnh bảng giá cà phê.' });
+    }
+    const cur = existing[0];
+    const nextTitle = title !== undefined ? String(title).trim() : cur.title;
+    const nextUrl = image_url !== undefined ? String(image_url).trim() : cur.image_url;
+    const nextSelected = is_selected !== undefined ? (is_selected ? 1 : 0) : cur.is_selected;
+    const nextOrder = order_index !== undefined ? Number(order_index) : cur.order_index;
+
+    await db.query(
+      'UPDATE coffee_price_images SET title = ?, image_url = ?, is_selected = ?, order_index = ? WHERE id = ?',
+      [nextTitle, nextUrl, nextSelected, nextOrder, id]
+    );
+    res.json({ success: true, message: 'Đã cập nhật ảnh bảng giá cà phê!' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Xóa ảnh bảng giá cà phê
+app.delete('/api/admin/coffee-images/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query('DELETE FROM coffee_price_images WHERE id = ?', [id]);
+    res.json({ success: true, message: 'Đã xóa ảnh bảng giá cà phê!' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Thêm video thị trường cà phê mới
+app.post('/api/admin/coffee-videos', authMiddleware, async (req, res) => {
+  const { title, video_url, summary, thumbnail_url, source } = req.body;
+  if (!title || !String(title).trim()) {
+    return res.status(400).json({ success: false, error: 'Vui lòng nhập Tiêu đề video.' });
+  }
+  if (!video_url || !String(video_url).trim()) {
+    return res.status(400).json({ success: false, error: 'Vui lòng nhập Link URL video.' });
+  }
+  try {
+    const [result] = await db.query(
+      'INSERT INTO coffee_videos (title, video_url, summary, thumbnail_url, source, is_active) VALUES (?, ?, ?, ?, ?, 1)',
+      [
+        String(title).trim(),
+        String(video_url).trim(),
+        summary && String(summary).trim() ? String(summary).trim() : null,
+        thumbnail_url && String(thumbnail_url).trim() ? String(thumbnail_url).trim() : null,
+        source && String(source).trim() ? String(source).trim() : null
+      ]
+    );
+    res.status(201).json({
+      success: true,
+      id: result.insertId,
+      message: 'Đã thêm video thị trường cà phê thành công!'
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Sửa thông tin video thị trường cà phê
+app.put('/api/admin/coffee-videos/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { title, video_url, summary, thumbnail_url, source, is_active } = req.body;
+  if (!title || !String(title).trim() || !video_url || !String(video_url).trim()) {
+    return res.status(400).json({ success: false, error: 'Tiêu đề video và Link URL video là bắt buộc.' });
+  }
+  try {
+    await db.query(
+      'UPDATE coffee_videos SET title = ?, video_url = ?, summary = ?, thumbnail_url = ?, source = ?, is_active = ? WHERE id = ?',
+      [
+        String(title).trim(),
+        String(video_url).trim(),
+        summary && String(summary).trim() ? String(summary).trim() : null,
+        thumbnail_url && String(thumbnail_url).trim() ? String(thumbnail_url).trim() : null,
+        source && String(source).trim() ? String(source).trim() : null,
+        is_active === undefined ? 1 : (is_active ? 1 : 0),
+        id
+      ]
+    );
+    res.json({ success: true, message: 'Đã cập nhật thông tin video thành công!' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Xóa video thị trường cà phê
+app.delete('/api/admin/coffee-videos/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query('DELETE FROM coffee_videos WHERE id = ?', [id]);
+    res.json({ success: true, message: 'Đã xóa video thị trường cà phê!' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

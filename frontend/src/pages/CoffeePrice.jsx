@@ -4,46 +4,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import SEOHead from '../components/SEOHead';
 import { useTranslation } from '../contexts/LanguageContext';
+import { resolveVideoEmbed, getVideoDisplayThumbnail } from './AdminCoffee';
 import './CoffeePrice.css';
-
-const FALLBACK_COFFEE_NEWS = [
-  {
-    id: 'cp-fallback-1',
-    isFallback: true,
-    title: 'Giá cà phê Đắk Lắk hôm nay duy trì đà tăng, vượt mốc 124.000 đồng/kg',
-    summary: 'Giá cà phê nhân xô tại Đắk Lắk và khu vực Tây Nguyên tiếp tục duy trì ở mức cao nhờ nhu cầu xuất khẩu ổn định và nguồn cung trong dân không còn nhiều...',
-    body: `<p>Thị trường cà phê nội địa tại Đắk Lắk và các tỉnh Tây Nguyên tiếp tục ghi nhận phiên giao dịch khởi sắc khi giá cà phê nhân xô duy trì đà tăng vững chắc, vượt mốc 124.000 đồng/kg tại các vùng trọng điểm như Cư M'gar, Buôn Hồ, Krông Pắc và Ea H'leo.</p><p>Theo các doanh nghiệp xuất khẩu nông sản tại Buôn Ma Thuột, nhu cầu thu mua từ các nhà rang xay châu Âu và châu Á đang tăng trưởng ổn định, trong khi lượng hàng tồn kho trong dân cuối vụ không còn dồi dào. Điều này tạo lực đỡ quan trọng cho giá cà phê Robusta Việt Nam trên cả thị trường nội địa lẫn sàn giao dịch London.</p>`,
-    image_url: '/images/daklak/daklak_ca_phe.jpg',
-    date_display: '24/04/2026'
-  },
-  {
-    id: 'cp-fallback-2',
-    isFallback: true,
-    title: 'Giá cà phê Tây Nguyên giữ mức cao, giao dịch nội địa sôi động',
-    summary: 'Tại các vùng trồng trọng điểm như Cư M\'gar, Buôn Hồ, Krông Pắc, hoạt động thu mua diễn ra ổn định với mức giá khả quan...',
-    body: `<p>Tại các vùng trồng cà phê trọng điểm của tỉnh Đắk Lắk như Cư M'gar, Buôn Hồ, Krông Pắc và Krông Năng, hoạt động giao dịch cà phê nhân xô diễn ra sôi động ngay từ đầu tuần.</p><p>Các hợp tác xã và đại lý thu mua cho biết chất lượng hạt cà phê niên vụ năm nay được đánh giá cao nhờ quy trình thu hái chín và chế biến ướt, phơi sấy đạt chuẩn xuất khẩu.</p>`,
-    image_url: '/images/daklak/daklak_doi_ca_phe.jpg',
-    date_display: '23/04/2026'
-  },
-  {
-    id: 'cp-fallback-3',
-    isFallback: true,
-    title: 'Thị trường Robusta thế giới biến động, giá cà phê trong nước được hỗ trợ',
-    summary: 'Diễn biến tích cực trên sàn London tiếp tục tạo lực đỡ cho giá cà phê tại thị trường Việt Nam trong ngắn hạn...',
-    body: `<p>Trên thị trường thế giới, giá cà phê Robusta kỳ hạn trên sàn ICE Futures Europe (London) và Arabica trên sàn New York liên tục có những nhịp tăng điểm ấn tượng do lo ngại về thời tiết tại các quốc gia sản xuất lớn.</p><p>Nhờ vị thế là thủ phủ cà phê Robusta hàng đầu, nông sản Đắk Lắk đang hưởng lợi trực tiếp từ mặt bằng giá quốc tế thuận lợi.</p>`,
-    image_url: '/images/daklak/daklak_dau_tu_logistics.jpg',
-    date_display: '22/04/2026'
-  },
-  {
-    id: 'cp-fallback-4',
-    isFallback: true,
-    title: 'Nông dân và doanh nghiệp Đắk Lắk theo dõi sát diễn biến giá cà phê vụ mới',
-    summary: 'Biến động thời tiết, chi phí đầu vào và nhu cầu xuất khẩu là những yếu tố đang tác động trực tiếp đến thị trường...',
-    body: `<p>Nhiều hộ nông dân và hợp tác xã nông nghiệp công nghệ cao tại Đắk Lắk đang chủ động áp dụng quy trình canh tác bền vững, tiết kiệm nước và đạt chứng nhận EUDR để nâng cao giá trị gia tăng cho hạt cà phê địa phương.</p>`,
-    image_url: '/images/daklak/daklak_le_hoi_nha_rong.jpg',
-    date_display: '20/04/2026'
-  }
-];
 
 const DEFAULT_PRICE_BOARDS = [
   {
@@ -58,39 +20,12 @@ const DEFAULT_PRICE_BOARDS = [
   }
 ];
 
-const COFFEE_VIDEOS = [
-  {
-    id: 'vid-1',
-    title: 'Toàn cảnh thị trường cà phê Tây Nguyên tuần qua',
-    date: '23/04/2026',
-    duration: '04:05',
-    thumbnail: '/images/daklak/daklak_doi_ca_phe.jpg',
-    description: 'Tổng hợp diễn biến giá cà phê nhân xô tại Đắk Lắk, Lâm Đồng, Gia Lai, Đắk Nông và xu hướng xuất khẩu tuần qua.'
-  },
-  {
-    id: 'vid-2',
-    title: 'Phân tích xu hướng giá cà phê Robusta năm 2026',
-    date: '21/04/2026',
-    duration: '03:50',
-    thumbnail: '/images/daklak/daklak_ca_phe.jpg',
-    description: 'Góc nhìn chuyên gia về cung - cầu cà phê Robusta toàn cầu và cơ hội cho doanh nghiệp xuất khẩu Đắk Lắk.'
-  },
-  {
-    id: 'vid-3',
-    title: 'Cận cảnh quy trình thu hoạch và chế biến cà phê Đắk Lắk',
-    date: '19/04/2026',
-    duration: '05:12',
-    thumbnail: '/images/daklak/daklak_nha_rong_ede.jpg',
-    description: 'Khám phá chuỗi giá trị cà phê đặc sản Buôn Ma Thuột từ nông trại canh tác hữu cơ đến nhà máy chế biến sâu.'
-  }
-];
-
-const formatVNDate = (post) => {
-  if (post?.date_display) return post.date_display;
-  const raw = post?.deadline || post?.published_at || post?.created_at;
-  if (!raw) return '24/04/2026';
+const formatVNDate = (item) => {
+  if (item?.date_display) return item.date_display;
+  const raw = item?.deadline || item?.published_at || item?.created_at;
+  if (!raw) return '';
   const d = new Date(raw);
-  if (isNaN(d.getTime())) return '24/04/2026';
+  if (isNaN(d.getTime())) return '';
   return d.toLocaleDateString('vi-VN', {
     day: '2-digit',
     month: '2-digit',
@@ -112,9 +47,11 @@ export default function CoffeePrice() {
   const { currentLang } = useTranslation();
   const [coffeePosts, setCoffeePosts] = useState([]);
   const [priceBoards, setPriceBoards] = useState(DEFAULT_PRICE_BOARDS);
+  const [coffeeVideos, setCoffeeVideos] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
   const [lightboxImg, setLightboxImg] = useState(null);
-  const [previewItem, setPreviewItem] = useState(null);
+  const [activeVideoModal, setActiveVideoModal] = useState(null);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState('');
   const [submittingLead, setSubmittingLead] = useState(false);
@@ -122,23 +59,39 @@ export default function CoffeePrice() {
   useEffect(() => {
     let isMounted = true;
     const loadCoffeeData = async () => {
+      setLoadingData(true);
       try {
-        const [resCoffee, resAll] = await Promise.all([
+        const [resPageData, resCoffeePosts, resAllPosts] = await Promise.all([
+          fetch('/api/coffee-page-data'),
           fetch('/api/posts?category=' + encodeURIComponent('Giá cà phê')),
           fetch('/api/posts')
         ]);
 
+        // 1. Lấy danh sách ảnh giá cà phê & danh sách video từ Admin quản trị
+        if (resPageData.ok) {
+          const jsonPage = await resPageData.json();
+          if (jsonPage.success && isMounted) {
+            if (Array.isArray(jsonPage.images) && jsonPage.images.length > 0) {
+              setPriceBoards(jsonPage.images);
+            } else {
+              setPriceBoards(DEFAULT_PRICE_BOARDS);
+            }
+            setCoffeeVideos(Array.isArray(jsonPage.videos) ? jsonPage.videos : []);
+          }
+        }
+
+        // 2. Lấy danh sách bài viết chuyên mục Giá cà phê
         let directCoffee = [];
-        if (resCoffee.ok) {
-          const jsonCoffee = await resCoffee.json();
+        if (resCoffeePosts.ok) {
+          const jsonCoffee = await resCoffeePosts.json();
           if (jsonCoffee.success && Array.isArray(jsonCoffee.data)) {
             directCoffee = jsonCoffee.data;
           }
         }
 
         let relatedCoffee = [];
-        if (resAll.ok) {
-          const jsonAll = await resAll.json();
+        if (resAllPosts.ok && directCoffee.length < 4) {
+          const jsonAll = await resAllPosts.json();
           if (jsonAll.success && Array.isArray(jsonAll.data)) {
             relatedCoffee = jsonAll.data.filter(p => {
               if (directCoffee.some(dc => dc.id === p.id)) return false;
@@ -154,42 +107,13 @@ export default function CoffeePrice() {
           }
         }
 
-        if (!isMounted) return;
-
-        // Cập nhật danh sách ảnh bảng giá cà phê từ các bài đăng thuộc chuyên mục "Giá cà phê" (nếu có ảnh) + ảnh bảng giá mặc định
-        const uploadedBoards = directCoffee
-          .filter(p => p.image_url && String(p.image_url).trim() !== '')
-          .map(p => ({
-            id: `post-board-${p.id}`,
-            image_url: p.image_url,
-            title: p.title,
-            postSlugOrId: p.slug || p.id
-          }));
-
-        const mergedBoards = [...uploadedBoards, ...DEFAULT_PRICE_BOARDS];
-        // Loại bỏ trùng lặp URL
-        const uniqueBoards = [];
-        const seenUrls = new Set();
-        for (const b of mergedBoards) {
-          if (!seenUrls.has(b.image_url)) {
-            seenUrls.add(b.image_url);
-            uniqueBoards.push(b);
-          }
+        if (isMounted) {
+          setCoffeePosts([...directCoffee, ...relatedCoffee]);
         }
-        setPriceBoards(uniqueBoards.slice(0, 5));
-
-        // Gộp tin tức: ưu tiên bài trong chuyên mục "Giá cà phê", sau đó bài liên quan cà phê, và bổ sung bài mẫu nếu chưa đủ 4 bài
-        const combinedNews = [...directCoffee, ...relatedCoffee];
-        if (combinedNews.length < 4) {
-          const needed = 4 - combinedNews.length;
-          combinedNews.push(...FALLBACK_COFFEE_NEWS.slice(0, needed));
-        }
-        setCoffeePosts(combinedNews);
       } catch (err) {
         console.warn('Error loading coffee price page data:', err);
-        if (isMounted) {
-          setCoffeePosts(FALLBACK_COFFEE_NEWS);
-        }
+      } finally {
+        if (isMounted) setLoadingData(false);
       }
     };
 
@@ -199,9 +123,8 @@ export default function CoffeePrice() {
     };
   }, []);
 
-  const displayPosts = coffeePosts.length > 0 ? coffeePosts : FALLBACK_COFFEE_NEWS;
-  const featuredPost = displayPosts[0];
-  const sideNewsList = displayPosts.slice(1, 7);
+  const featuredPost = coffeePosts.length > 0 ? coffeePosts[0] : null;
+  const sideNewsList = coffeePosts.length > 1 ? coffeePosts.slice(1, 7) : [];
 
   const handlePrevSlide = (e) => {
     e.stopPropagation();
@@ -306,41 +229,23 @@ export default function CoffeePrice() {
                 <div className="cp-sec-line"></div>
               </div>
 
-              {/* Bài viết tiêu điểm trên cùng */}
-              {featuredPost && (
-                featuredPost.isFallback ? (
-                  <div
-                    className="cp-featured-card"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => setPreviewItem(featuredPost)}
-                  >
-                    <div className="cp-featured-thumb">
-                      <img
-                        src={featuredPost.image_url || '/images/daklak/daklak_ca_phe.jpg'}
-                        alt={featuredPost.title}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = '/images/daklak/daklak_ca_phe.jpg';
-                        }}
-                      />
-                    </div>
-                    <div className="cp-featured-body">
-                      <div>
-                        <div className="cp-meta-date">
-                          <i className="ti ti-calendar-event"></i>
-                          <span>{formatVNDate(featuredPost)}</span>
-                        </div>
-                        <h3 className="cp-featured-title">{featuredPost.title}</h3>
-                        <p className="cp-featured-desc">{getCleanExcerpt(featuredPost, 180)}</p>
-                      </div>
-                      <div className="cp-featured-footer">
-                        <span className="cp-readmore-btn">
-                          {currentLang === 'en' ? 'Read more' : 'Đọc tiếp'} <i className="ti ti-arrow-right"></i>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
+              {!featuredPost ? (
+                <div
+                  style={{
+                    background: '#FFFFFF',
+                    borderRadius: '14px',
+                    border: '1px dashed rgba(139, 90, 43, 0.25)',
+                    padding: '40px 24px',
+                    textAlign: 'center',
+                    color: '#7A5C43',
+                    fontSize: '14.5px'
+                  }}
+                >
+                  {loadingData ? 'Đang tải bản tin giá cà phê...' : 'Chưa có bài viết trong chuyên mục Giá cà phê.'}
+                </div>
+              ) : (
+                <>
+                  {/* Bài viết tiêu điểm trên cùng */}
                   <Link
                     to={`/posts/${featuredPost.slug || featuredPost.id}`}
                     className="cp-featured-card"
@@ -371,78 +276,50 @@ export default function CoffeePrice() {
                       </div>
                     </div>
                   </Link>
-                )
+
+                  {/* Danh sách bài viết phía dưới */}
+                  {sideNewsList.length > 0 && (
+                    <div className="cp-news-list">
+                      {sideNewsList.map((post, idx) => {
+                        const fallbackImages = [
+                          '/images/daklak/daklak_doi_ca_phe.jpg',
+                          '/images/daklak/daklak_dau_tu_logistics.jpg',
+                          '/images/daklak/daklak_le_hoi_nha_rong.jpg',
+                          '/images/daklak/daklak_ca_phe.jpg'
+                        ];
+                        const thumbUrl = post.image_url || fallbackImages[idx % fallbackImages.length];
+
+                        return (
+                          <Link
+                            key={post.id || idx}
+                            to={`/posts/${post.slug || post.id}`}
+                            className="cp-news-item"
+                          >
+                            <div className="cp-news-thumb">
+                              <img
+                                src={thumbUrl}
+                                alt={post.title}
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = fallbackImages[idx % fallbackImages.length];
+                                }}
+                              />
+                            </div>
+                            <div className="cp-news-info">
+                              <div className="cp-meta-date">
+                                <i className="ti ti-calendar-event"></i>
+                                <span>{formatVNDate(post)}</span>
+                              </div>
+                              <h3 className="cp-news-title">{post.title}</h3>
+                              <p className="cp-news-desc">{getCleanExcerpt(post, 140)}</p>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
               )}
-
-              {/* Danh sách bài viết phía dưới */}
-              <div className="cp-news-list">
-                {sideNewsList.map((post, idx) => {
-                  const fallbackImages = [
-                    '/images/daklak/daklak_doi_ca_phe.jpg',
-                    '/images/daklak/daklak_dau_tu_logistics.jpg',
-                    '/images/daklak/daklak_le_hoi_nha_rong.jpg',
-                    '/images/daklak/daklak_ca_phe.jpg'
-                  ];
-                  const thumbUrl = post.image_url || fallbackImages[idx % fallbackImages.length];
-
-                  if (post.isFallback) {
-                    return (
-                      <div
-                        key={post.id || idx}
-                        className="cp-news-item"
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => setPreviewItem(post)}
-                      >
-                        <div className="cp-news-thumb">
-                          <img
-                            src={thumbUrl}
-                            alt={post.title}
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = fallbackImages[idx % fallbackImages.length];
-                            }}
-                          />
-                        </div>
-                        <div className="cp-news-info">
-                          <div className="cp-meta-date">
-                            <i className="ti ti-calendar-event"></i>
-                            <span>{formatVNDate(post)}</span>
-                          </div>
-                          <h3 className="cp-news-title">{post.title}</h3>
-                          <p className="cp-news-desc">{getCleanExcerpt(post, 140)}</p>
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <Link
-                      key={post.id || idx}
-                      to={`/posts/${post.slug || post.id}`}
-                      className="cp-news-item"
-                    >
-                      <div className="cp-news-thumb">
-                        <img
-                          src={thumbUrl}
-                          alt={post.title}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = fallbackImages[idx % fallbackImages.length];
-                          }}
-                        />
-                      </div>
-                      <div className="cp-news-info">
-                        <div className="cp-meta-date">
-                          <i className="ti ti-calendar-event"></i>
-                          <span>{formatVNDate(post)}</span>
-                        </div>
-                        <h3 className="cp-news-title">{post.title}</h3>
-                        <p className="cp-news-desc">{getCleanExcerpt(post, 140)}</p>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
             </div>
 
             {/* CỘT PHẢI: BẢNG GIÁ CÀ PHÊ HÔM NAY (SLIDER ẢNH) + NHẬN BẢN TIN */}
@@ -498,17 +375,19 @@ export default function CoffeePrice() {
                   )}
                 </div>
 
-                <div className="cp-slider-dots">
-                  {priceBoards.map((b, i) => (
-                    <button
-                      key={b.id || i}
-                      type="button"
-                      className={`cp-slider-dot ${i === activeSlide ? 'active' : ''}`}
-                      onClick={() => setActiveSlide(i)}
-                      aria-label={`Xem bảng giá ${i + 1}`}
-                    />
-                  ))}
-                </div>
+                {priceBoards.length > 1 && (
+                  <div className="cp-slider-dots">
+                    {priceBoards.map((b, i) => (
+                      <button
+                        key={b.id || i}
+                        type="button"
+                        className={`cp-slider-dot ${i === activeSlide ? 'active' : ''}`}
+                        onClick={() => setActiveSlide(i)}
+                        aria-label={`Xem bảng giá ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Khung Nhận bản tin thị trường cà phê */}
@@ -558,41 +437,70 @@ export default function CoffeePrice() {
                 {currentLang === 'en' ? 'COFFEE MARKET VIDEOS' : 'VIDEO THỊ TRƯỜNG CÀ PHÊ'}
               </h2>
               <div className="cp-sec-line"></div>
-              <Link to="/posts?category=Giá%20cà%20phê" className="cp-sec-more">
-                {currentLang === 'en' ? 'View all' : 'Xem tất cả'} <i className="ti ti-arrow-right"></i>
-              </Link>
             </div>
 
-            <div className="cp-video-grid">
-              {COFFEE_VIDEOS.map((vid) => (
-                <div
-                  key={vid.id}
-                  className="cp-video-card"
-                  onClick={() => setPreviewItem({
-                    title: vid.title,
-                    date_display: vid.date,
-                    image_url: vid.thumbnail,
-                    summary: vid.description,
-                    body: `<p>${vid.description}</p>`
-                  })}
-                >
-                  <div className="cp-video-thumb">
-                    <img src={vid.thumbnail} alt={vid.title} />
-                    <div className="cp-video-play">
-                      <i className="ti ti-player-play-filled"></i>
+            {coffeeVideos.length === 0 ? (
+              <div
+                style={{
+                  background: '#FFFFFF',
+                  borderRadius: '14px',
+                  border: '1px dashed rgba(139, 90, 43, 0.25)',
+                  padding: '36px 24px',
+                  textAlign: 'center',
+                  color: '#7A5C43',
+                  fontSize: '15px',
+                  fontWeight: 600
+                }}
+              >
+                {currentLang === 'en' ? 'No videos yet' : 'Chưa có video'}
+              </div>
+            ) : (
+              <div className="cp-video-grid">
+                {coffeeVideos.map((vid) => {
+                  const thumb = getVideoDisplayThumbnail(vid);
+                  return (
+                    <div
+                      key={vid.id}
+                      className="cp-video-card"
+                      onClick={() => setActiveVideoModal(vid)}
+                    >
+                      <div className="cp-video-thumb">
+                        <img
+                          src={thumb}
+                          alt={vid.title}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/images/daklak/daklak_doi_ca_phe.jpg';
+                          }}
+                        />
+                        <div className="cp-video-play">
+                          <i className="ti ti-player-play-filled"></i>
+                        </div>
+                      </div>
+                      <div className="cp-video-body">
+                        <h3 className="cp-video-title">{vid.title}</h3>
+                        {vid.summary && (
+                          <p className="cp-news-desc" style={{ marginBottom: '8px' }}>
+                            {vid.summary}
+                          </p>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <div className="cp-meta-date" style={{ marginBottom: 0 }}>
+                            <i className="ti ti-calendar-event"></i>
+                            <span>{formatVNDate(vid)}</span>
+                          </div>
+                          {vid.source && (
+                            <span style={{ fontSize: '12px', color: '#78350F', fontWeight: 600 }}>
+                              Nguồn: {vid.source}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <span className="cp-video-duration">{vid.duration}</span>
-                  </div>
-                  <div className="cp-video-body">
-                    <h3 className="cp-video-title">{vid.title}</h3>
-                    <div className="cp-meta-date" style={{ marginBottom: 0 }}>
-                      <i className="ti ti-calendar-event"></i>
-                      <span>{vid.date}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
         </div>
       </main>
@@ -614,65 +522,83 @@ export default function CoffeePrice() {
         </div>
       )}
 
-      {/* Modal đọc nhanh cho bài mẫu / video khi chưa có bài DB tương ứng */}
-      {previewItem && (
-        <div className="cp-lightbox" onClick={() => setPreviewItem(null)}>
+      {/* Modal phát Video nhúng trực tiếp */}
+      {activeVideoModal && (
+        <div className="cp-lightbox" onClick={() => setActiveVideoModal(null)}>
           <div
             style={{
               background: '#FFFFFF',
               borderRadius: '18px',
-              maxWidth: '720px',
+              maxWidth: '860px',
               width: '100%',
-              maxHeight: '88vh',
-              overflowY: 'auto',
-              padding: '28px 32px',
+              overflow: 'hidden',
               position: 'relative',
-              boxShadow: '0 24px 60px rgba(0,0,0,0.45)'
+              boxShadow: '0 24px 60px rgba(0,0,0,0.5)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              onClick={() => setPreviewItem(null)}
-              style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                border: 'none',
-                background: '#F3E5D0',
-                color: '#3B2314',
-                cursor: 'pointer',
-                fontSize: '18px'
-              }}
-            >
-              <i className="ti ti-x"></i>
-            </button>
-            <div className="cp-meta-date" style={{ marginBottom: '10px' }}>
-              <i className="ti ti-calendar-event"></i>
-              <span>{formatVNDate(previewItem)}</span>
+            <div style={{ padding: '16px 22px', borderBottom: '1px solid rgba(139, 90, 43, 0.14)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+              <h3 style={{ margin: 0, fontFamily: 'var(--font-title)', fontSize: '19px', fontWeight: 800, color: '#2C1810' }}>
+                {activeVideoModal.title}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setActiveVideoModal(null)}
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: '#F3E5D0',
+                  color: '#3B2314',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  flexShrink: 0
+                }}
+              >
+                <i className="ti ti-x"></i>
+              </button>
             </div>
-            <h2 style={{ fontFamily: 'var(--font-title)', fontSize: '24px', fontWeight: 800, color: '#2C1810', margin: '0 0 16px 0', lineHeight: 1.35 }}>
-              {previewItem.title}
-            </h2>
-            {previewItem.image_url && (
-              <img
-                src={previewItem.image_url}
-                alt={previewItem.title}
-                style={{ width: '100%', maxHeight: '340px', objectFit: 'cover', borderRadius: '12px', marginBottom: '18px' }}
-              />
+
+            <div style={{ position: 'relative', aspectRatio: '16 / 9', background: '#000000' }}>
+              {(() => {
+                const embed = resolveVideoEmbed(activeVideoModal.video_url);
+                if (embed.type === 'video') {
+                  return (
+                    <video
+                      src={embed.src}
+                      controls
+                      autoPlay
+                      style={{ width: '100%', height: '100%', display: 'block' }}
+                    />
+                  );
+                }
+                return (
+                  <iframe
+                    src={embed.src}
+                    title={activeVideoModal.title}
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                );
+              })()}
+            </div>
+
+            {(activeVideoModal.summary || activeVideoModal.source) && (
+              <div style={{ padding: '16px 22px', background: '#FBF8F3' }}>
+                {activeVideoModal.source && (
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#B45309', marginBottom: activeVideoModal.summary ? '6px' : 0 }}>
+                    Nguồn: {activeVideoModal.source}
+                  </div>
+                )}
+                {activeVideoModal.summary && (
+                  <p style={{ margin: 0, fontSize: '14.5px', color: '#4A3B32', lineHeight: 1.65 }}>
+                    {activeVideoModal.summary}
+                  </p>
+                )}
+              </div>
             )}
-            {previewItem.summary && (
-              <p style={{ fontWeight: 700, fontStyle: 'italic', fontSize: '15.5px', color: '#2C1810', marginBottom: '1.5em', lineHeight: 1.7 }}>
-                {previewItem.summary}
-              </p>
-            )}
-            <div
-              style={{ fontSize: '15.5px', color: '#4A3B32', lineHeight: 1.8 }}
-              dangerouslySetInnerHTML={{ __html: previewItem.body || '' }}
-            />
           </div>
         </div>
       )}
@@ -681,4 +607,3 @@ export default function CoffeePrice() {
     </div>
   );
 }
-

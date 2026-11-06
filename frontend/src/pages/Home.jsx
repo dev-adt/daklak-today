@@ -875,18 +875,25 @@ export const Home = () => {
     return { wardAi: null, orion: null, edunow: null };
   });
 
+  // Ảnh bảng giá cà phê hiển thị ở Trang chủ (do Admin chọn trong Quản lý giá cafe)
+  const [homeCoffeeBoardImg, setHomeCoffeeBoardImg] = useState('/images/bang-gia-ca-phe-1.jpg');
+
   // Tải dữ liệu song song từ API (Promise.allSettled) có Timeout 8s
   useEffect(() => {
     let isMounted = true;
     const fetchHomeData = async () => {
       try {
-        const [postsRes, eventsRes, membersRes] = await Promise.allSettled([
+        const [postsRes, eventsRes, membersRes, coffeeRes] = await Promise.allSettled([
           fetchJsonWithTimeout('/api/posts?limit=12', {}, 8000),
           fetchJsonWithTimeout('/api/events?limit=4', {}, 8000),
-          fetchJsonWithTimeout('/api/members?limit=3', {}, 8000)
+          fetchJsonWithTimeout('/api/members?limit=3', {}, 8000),
+          fetchJsonWithTimeout('/api/coffee-page-data', {}, 8000)
         ]);
 
         if (isMounted) {
+          if (coffeeRes.status === 'fulfilled' && coffeeRes.value?.success && Array.isArray(coffeeRes.value.images) && coffeeRes.value.images.length > 0) {
+            setHomeCoffeeBoardImg(coffeeRes.value.images[0].image_url || '/images/bang-gia-ca-phe-1.jpg');
+          }
           if (postsRes.status === 'fulfilled' && postsRes.value?.success && Array.isArray(postsRes.value.data) && postsRes.value.data.length > 0) {
             setLatestPosts(postsRes.value.data);
             try {
@@ -1660,20 +1667,14 @@ export const Home = () => {
                 </h2>
               </div>
               <Link to="/gia-ca-phe" className="spotlight-view-all">
-                <span>{currentLang === 'en' ? 'View all coffee price bulletins' : 'Xem tất cả bản tin giá cà phê'}</span>
+                <span>{currentLang === 'en' ? 'View all' : 'Xem tất cả'}</span>
                 <i className="ti ti-arrow-right" />
               </Link>
             </div>
 
             {(() => {
-              const latestCoffeeBoardPost = latestPosts.find(
-                p => (p.category === 'Giá cà phê' || (p.category || '').toLowerCase() === 'giá cà phê') && p.image_url
-              );
-              const coffeeBoardImg = latestCoffeeBoardPost?.image_url || '/images/bang-gia-ca-phe-1.jpg';
-              const newsItems = latestPosts
-                .filter(p => !latestCoffeeBoardPost || p.id !== latestCoffeeBoardPost.id)
-                .slice(0, 3);
-              const displayNews = newsItems.length > 0 ? newsItems : latestPosts.slice(0, 3);
+              const coffeeBoardImg = homeCoffeeBoardImg || '/images/bang-gia-ca-phe-1.jpg';
+              const displayNews = latestPosts.slice(0, 3);
 
               return (
                 <div className="spotlight-coffee-news-grid">
@@ -1685,7 +1686,7 @@ export const Home = () => {
                   >
                     <img
                       src={coffeeBoardImg}
-                      alt={latestCoffeeBoardPost?.title || 'Bảng giá cà phê Đắk Lắk hôm nay'}
+                      alt="Bảng giá cà phê Đắk Lắk hôm nay"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = '/images/bang-gia-ca-phe-1.jpg';

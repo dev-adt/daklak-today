@@ -31,6 +31,7 @@ const AdminPosts = React.lazy(() => import('./pages/AdminPosts'));
 const AdminConfig = React.lazy(() => import('./pages/AdminConfig'));
 const AdminEvents = React.lazy(() => import('./pages/AdminEvents'));
 const AdminCategories = React.lazy(() => import('./pages/AdminCategories'));
+const AdminCoffee = React.lazy(() => import('./pages/AdminCoffee'));
 const AdminCreators = React.lazy(() => import('./pages/AdminCreators'));
 const AdminOrganizers = React.lazy(() => import('./pages/AdminOrganizers'));
 const AdminLeads = React.lazy(() => import('./pages/AdminLeads'));
@@ -197,6 +198,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminCategories />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin-coffee" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminCoffee />
                 </ProtectedRoute>
               } 
             />

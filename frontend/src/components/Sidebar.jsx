@@ -152,6 +152,15 @@ export const Sidebar = ({ isOpen = false, onClose }) => {
         </NavLink>
 
         <NavLink 
+          to="/admin-coffee" 
+          onClick={handleNavClick}
+          className={({ isActive }) => `sb-item ${isActive ? 'active' : ''}`}
+          style={{ textDecoration: 'none' }}
+        >
+          <i className="ti ti-coffee"></i> Quản lý giá cafe
+        </NavLink>
+
+        <NavLink 
           to="/admin-creators" 
           onClick={handleNavClick}
           className={({ isActive }) => `sb-item ${isActive ? 'active' : ''}`}
