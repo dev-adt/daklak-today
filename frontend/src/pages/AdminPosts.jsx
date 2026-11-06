@@ -51,12 +51,35 @@ export const AdminPosts = () => {
 
   const [postForm, setPostForm] = useState(initialPostForm);
 
+  const toDateTimeLocalInput = (val) => {
+    if (!val) return '';
+    const s = String(val).trim();
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) return s.slice(0, 16);
+    if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s)) return s.replace(/\s+/, 'T').slice(0, 16);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return `${s}T08:00`;
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const formatScheduleTime = (val) => {
+    if (!val) return '';
+    const d = new Date(String(val).replace(' ', 'T'));
+    if (isNaN(d.getTime())) return String(val);
+    return d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
   useEffect(() => {
     const fetchCats = async () => {
       try {
         const res = await fetchJsonWithTimeout('/api/categories', {}, 5000);
         if (res.success && Array.isArray(res.data) && res.data.length > 0) {
-          setCategoriesList(res.data);
+          const hasCoffee = res.data.some(c => c.name === 'Giá cà phê' || c.slug === 'gia-ca-phe');
+          const list = hasCoffee
+            ? res.data
+            : [...res.data, { id: 'gia-ca-phe', name: 'Giá cà phê', name_en: 'Coffee Prices', slug: 'gia-ca-phe', subcategories: [] }];
+          setCategoriesList(list);
         }
       } catch (e) {
         // Fallback to CATEGORIES_DATA
@@ -163,7 +186,7 @@ export const AdminPosts = () => {
       contact_info: fullPost.contact_info || '',
       source_url: fullPost.source_url || '',
       tags: tagsStr,
-      deadline: fullPost.deadline ? String(fullPost.deadline).slice(0, 10) : '',
+      deadline: toDateTimeLocalInput(fullPost.deadline),
       image_url: fullPost.image_url || '',
       status: fullPost.status || 'approved',
       is_featured: fullPost.is_featured === 1
@@ -381,9 +404,9 @@ export const AdminPosts = () => {
   const filteredPosts = posts.filter(p => {
     // 1. Status Filter
     if (statusFilter === 'pending' && p.status !== 'pending') return false;
-    if (statusFilter === 'approved' && (p.status !== 'approved' || (p.deadline && new Date(p.deadline) < new Date()))) return false;
+    if (statusFilter === 'approved' && p.status !== 'approved') return false;
     if (statusFilter === 'rejected' && p.status !== 'rejected') return false;
-    if (statusFilter === 'hidden' && (p.status === 'hidden' || p.status === 'rejected' || (p.deadline && new Date(p.deadline) < new Date())) === false) return false;
+    if (statusFilter === 'hidden' && (p.status === 'hidden' || p.status === 'rejected') === false) return false;
 
     // 2. Category Filter
     if (categoryFilter !== 'all' && p.category !== categoryFilter) return false;
@@ -498,8 +521,8 @@ export const AdminPosts = () => {
                 </thead>
                 <tbody>
                   {paginatedPosts.map((p) => {
-                    const isExpired = p.deadline && new Date(p.deadline) < new Date();
-                    const isHiddenOrExpired = p.status === 'hidden' || isExpired;
+                    const isScheduledFuture = p.deadline && new Date(String(p.deadline).replace(' ', 'T')) > new Date();
+                    const isHidden = p.status === 'hidden';
 
                     return (
                       <tr key={p.id} style={{ borderBottom: '1px solid #E2E8F0' }}>
@@ -524,10 +547,10 @@ export const AdminPosts = () => {
                         </td>
                         <td style={{ padding: '12px 16px', color: '#475569' }}>
                           <div>{p.category || 'Chưa phân loại'}</div>
-                          <div style={{ fontSize: '10.5px', color: '#94A3B8' }}>{p.sub_category}</div>
+                          <div style={{ fontSize: '10.5px', color: '#94A3B8' }}>{p.sub_category || '—'}</div>
                         </td>
                         <td style={{ padding: '12px 16px' }}>
-                          {p.status === 'approved' && !isExpired ? (
+                          {p.status === 'approved' && !isHidden ? (
                             <button 
                               onClick={() => handleToggleFeatured(p.id, p.is_featured === 1)}
                               style={{
@@ -551,8 +574,16 @@ export const AdminPosts = () => {
                           {new Date(p.created_at).toLocaleDateString('vi-VN')}
                         </td>
                         <td style={{ padding: '12px 16px' }}>
-                          <span className={`badge ${isHiddenOrExpired ? 'rejected' : p.status === 'approved' ? 'approved' : p.status === 'rejected' ? 'rejected' : 'pending'}`}>
-                            {isHiddenOrExpired ? '❌ Đã bị ẩn (Hết hạn)' : p.status === 'approved' ? 'Đã duyệt' : p.status === 'rejected' ? 'Từ chối' : 'Chờ duyệt'}
+                          <span className={`badge ${isHidden ? 'rejected' : isScheduledFuture ? 'pending' : p.status === 'approved' ? 'approved' : p.status === 'rejected' ? 'rejected' : 'pending'}`}>
+                            {isHidden
+                              ? '❌ Đã ẩn'
+                              : isScheduledFuture
+                              ? `⏰ Hẹn giờ: ${formatScheduleTime(p.deadline)}`
+                              : p.status === 'approved'
+                              ? 'Đã duyệt'
+                              : p.status === 'rejected'
+                              ? 'Từ chối'
+                              : 'Chờ duyệt'}
                           </span>
                           {p.status === 'rejected' && p.reject_reason && (
                             <div style={{ fontSize: '10px', color: '#EF4444', marginTop: '4px', maxWidth: '150px', whiteSpace: 'normal' }}>Lý do: {p.reject_reason}</div>
@@ -883,7 +914,7 @@ export const AdminPosts = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '6px' }}>
-                    Lĩnh vực con / Phân nhóm
+                    Lĩnh vực con (Không bắt buộc)
                   </label>
                   {(() => {
                     const currentCatObj = categoriesList.find(c => c.name === postForm.category);
@@ -895,10 +926,11 @@ export const AdminPosts = () => {
                           onChange={(e) => setPostForm(prev => ({ ...prev, sub_category: e.target.value }))}
                           style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', outline: 'none', background: '#fff', boxSizing: 'border-box' }}
                         >
-                          <option value="">-- Chọn lĩnh vực --</option>
-                          {subList.map(sub => (
-                            <option key={sub} value={sub}>{sub}</option>
-                          ))}
+                          <option value="">-- Không bắt buộc / Chọn lĩnh vực --</option>
+                          {subList.map((sub, sIdx) => {
+                            const subVal = typeof sub === 'object' ? sub.name : sub;
+                            return <option key={subVal || sIdx} value={subVal}>{subVal}</option>;
+                          })}
                         </select>
                       );
                     }
@@ -907,8 +939,8 @@ export const AdminPosts = () => {
                         type="text" 
                         value={postForm.sub_category} 
                         onChange={(e) => setPostForm(prev => ({ ...prev, sub_category: e.target.value }))}
-                        placeholder="Nhập phân nhóm (nếu có)..."
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                        placeholder="Chuyên mục này không yêu cầu lĩnh vực con..."
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', outline: 'none', background: '#F8FAFC', boxSizing: 'border-box' }}
                       />
                     );
                   })()}
@@ -1043,14 +1075,17 @@ export const AdminPosts = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#1E293B', marginBottom: '5px' }}>
-                    Hạn đăng bài (Tùy chọn)
+                    ⏰ Đặt lịch đăng bài (Tùy chọn)
                   </label>
                   <input 
-                    type="date" 
+                    type="datetime-local" 
                     value={postForm.deadline} 
                     onChange={(e) => setPostForm(prev => ({ ...prev, deadline: e.target.value }))}
                     style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12.5px', outline: 'none', boxSizing: 'border-box' }}
                   />
+                  <div style={{ fontSize: '11px', color: '#64748B', marginTop: '3px' }}>
+                    Để trống nếu đăng ngay; chọn giờ để đến giờ đó bài tự động hiện công khai.
+                  </div>
                 </div>
 
                 <div>

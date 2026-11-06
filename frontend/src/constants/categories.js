@@ -52,10 +52,18 @@ export const CATEGORIES_DATA = [
     ]
   },
   {
+    id: 'gia-ca-phe',
+    name: 'Giá cà phê',
+    name_en: 'Coffee Prices',
+    slug: 'gia-ca-phe',
+    order_index: 5,
+    subcategories: []
+  },
+  {
     id: 'du-lich-trai-nghiem',
     name: 'Du lịch & Trải nghiệm',
     name_en: 'Tourism & Experiences',
-    order_index: 5,
+    order_index: 6,
     subcategories: [
       'Hành trình 2N1Đ & 3N2Đ',
       'Du lịch Sinh thái & Bản làng'
@@ -65,7 +73,7 @@ export const CATEGORIES_DATA = [
     id: 'kinh-te-bien',
     name: 'Kinh tế Biển',
     name_en: 'Marine Economy',
-    order_index: 6,
+    order_index: 7,
     subcategories: [
       'Cảng biển & Logistics',
       'Thủy sản & Kinh tế Biển',
@@ -76,7 +84,7 @@ export const CATEGORIES_DATA = [
     id: 'su-kien-dien-dan',
     name: 'Sự kiện & Diễn đàn',
     name_en: 'Events & Forums',
-    order_index: 7,
+    order_index: 8,
     subcategories: [
       'Lễ hội Cà phê Buôn Ma Thuột',
       'Diễn đàn Xúc tiến Đầu tư'
@@ -98,6 +106,7 @@ export const CATEGORY_LABELS = {
   'Dự án & Đầu tư': { vi: 'Dự án & Đầu tư', en: 'Investment & Projects', zh: '投资与项目', ja: '投資・プロジェクト', ko: '투자 및 프로젝트' },
   'Đầu tư & Dự án': { vi: 'Dự án & Đầu tư', en: 'Investment & Projects', zh: '投资与项目', ja: '投資・プロジェクト', ko: '투자 및 프로젝트' },
   'Nông sản & Cà phê': { vi: 'Nông sản & Cà phê', en: 'Agri & Coffee', zh: '农产品与咖啡', ja: '農産物・コーヒー', ko: '농산물 및 커피' },
+  'Giá cà phê': { vi: 'Giá cà phê', en: 'Coffee Prices', zh: '咖啡价格', ja: 'コーヒー価格', ko: '커피 가격' },
   'Cà phê Đắk Lắk': { vi: 'Nông sản & Cà phê', en: 'Agri & Coffee', zh: '农产品与咖啡', ja: '農産物・コーヒー', ko: '농산물 및 커피' },
   'Du lịch & Trải nghiệm': { vi: 'Du lịch & Trải nghiệm', en: 'Tourism & Experiences', zh: '旅游与体验', ja: '観光・体験', ko: '관광 및 체험' },
   'Kinh tế Biển': { vi: 'Kinh tế Biển', en: 'Marine Economy', zh: '海洋经济', ja: '海洋経済', ko: '해양 경제' },

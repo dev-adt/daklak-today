@@ -74,7 +74,11 @@ export const MemberDashboard = () => {
         if (res.ok) {
           const data = await res.json();
           if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-            setCategoriesList(data.data);
+            const list = [...data.data];
+            if (!list.some(c => c.slug === 'gia-ca-phe' || c.name === 'Giá cà phê')) {
+              list.push({ id: 'gia-ca-phe', name: 'Giá cà phê', slug: 'gia-ca-phe', subcategories: [] });
+            }
+            setCategoriesList(list);
           }
         }
       } catch (err) {
@@ -339,7 +343,16 @@ export const MemberDashboard = () => {
           }
           let formattedDeadline = '';
           if (p.deadline) {
-            formattedDeadline = new Date(p.deadline).toISOString().substring(0, 10);
+            const rawStr = String(p.deadline).trim();
+            if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}/.test(rawStr) && !rawStr.endsWith('Z')) {
+              formattedDeadline = rawStr.replace(' ', 'T').substring(0, 16);
+            } else {
+              const d = new Date(p.deadline);
+              if (!isNaN(d.getTime())) {
+                const pad = (n) => String(n).padStart(2, '0');
+                formattedDeadline = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+              }
+            }
           }
           setNewPostData({
             title: p.title || '',
@@ -374,10 +387,6 @@ export const MemberDashboard = () => {
     }
     if (!newPostData.category) {
       alert('Vui lòng chọn Chuyên mục cho bài viết (bắt buộc).');
-      return;
-    }
-    if (!newPostData.sub_category) {
-      alert('Vui lòng chọn Lĩnh vực cho bài viết (bắt buộc).');
       return;
     }
     if (!newPostData.body) {
@@ -540,16 +549,15 @@ export const MemberDashboard = () => {
                   </div>
 
                   <div className="fg">
-                    <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Lĩnh vực <span style={{ color: 'var(--rose)' }}>*</span></label>
+                    <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Lĩnh vực (Tùy chọn)</label>
                     <select 
                       id="sub_category" 
                       value={newPostData.sub_category} 
                       onChange={(e) => setNewPostData(prev => ({ ...prev, sub_category: e.target.value }))}
-                      disabled={!newPostData.category}
+                      disabled={!newPostData.category || (categoriesList.find(c => c.name === newPostData.category)?.subcategories || []).length === 0}
                       style={{ fontSize: '14px', padding: '11px 14px', borderRadius: '8px' }}
-                      required
                     >
-                      <option value="">-- {currentLang === 'en' ? 'Select sector' : 'Chọn Lĩnh vực'} --</option>
+                      <option value="">-- {(categoriesList.find(c => c.name === newPostData.category)?.subcategories || []).length === 0 ? 'Không có lĩnh vực con' : (currentLang === 'en' ? 'Select sector (Optional)' : 'Chọn Lĩnh vực (Không bắt buộc)')} --</option>
                       {((categoriesList.find(c => c.name === newPostData.category)?.subcategories || []).map(s => typeof s === 'string' ? s : s.name)).map(sub => (
                         <option key={sub} value={sub}>{getCategoryLabel(sub, currentLang)}</option>
                       ))}
@@ -614,8 +622,8 @@ export const MemberDashboard = () => {
                   </div>
 
                   <div className="fg">
-                    <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Hạn đăng bài (Tự động ẩn khi đến hạn, để trống nếu hiển thị vĩnh viễn)</label>
-                    <input type="date" id="deadline" value={newPostData.deadline} onChange={handleNewPostChange} style={{ fontSize: '14px', padding: '11px 14px', borderRadius: '8px' }} />
+                    <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>⏰ Đặt lịch đăng bài (Để trống nếu đăng ngay, hoặc chọn ngày giờ xuất bản)</label>
+                    <input type="datetime-local" id="deadline" value={newPostData.deadline} onChange={handleNewPostChange} style={{ fontSize: '14px', padding: '11px 14px', borderRadius: '8px' }} />
                   </div>
                 </div>
 
@@ -1154,8 +1162,8 @@ export const MemberDashboard = () => {
                           </button>
                         </div>
                       </div>
-                      <span className={`badge ${(p.status === 'hidden' || (p.deadline && new Date(p.deadline) < new Date())) ? 'rejected' : p.status === 'approved' ? 'approved' : p.status === 'rejected' ? 'rejected' : p.status === 'draft' ? 'draft' : 'pending'}`}>
-                        {(p.status === 'hidden' || (p.deadline && new Date(p.deadline) < new Date())) ? '❌ Đã bị ẩn (Hết hạn)' : p.status === 'approved' ? t('status_approved') : p.status === 'rejected' ? t('status_rejected') : p.status === 'draft' ? t('status_draft') : t('status_pending')}
+                      <span className={`badge ${p.status === 'hidden' ? 'rejected' : (p.status === 'approved' && p.deadline && new Date(p.deadline) > new Date()) ? 'pending' : p.status === 'approved' ? 'approved' : p.status === 'rejected' ? 'rejected' : p.status === 'draft' ? 'draft' : 'pending'}`}>
+                        {p.status === 'hidden' ? '❌ Đã ẩn' : (p.status === 'approved' && p.deadline && new Date(p.deadline) > new Date()) ? `⏰ Hẹn giờ: ${new Date(p.deadline).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}` : p.status === 'approved' ? t('status_approved') : p.status === 'rejected' ? t('status_rejected') : p.status === 'draft' ? t('status_draft') : t('status_pending')}
                       </span>
                     </div>
                   ))}

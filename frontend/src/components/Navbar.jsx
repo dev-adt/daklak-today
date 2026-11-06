@@ -19,13 +19,46 @@ export const Navbar = () => {
     name: 'Tiếng Việt',
     flag: '🇻🇳'
   };
+  const ensureCoffeePriceCategory = (list) => {
+    if (!Array.isArray(list)) return CATEGORIES_DATA;
+    const hasCoffee = list.some(c => {
+      const n = (c?.name || '').trim().toLowerCase();
+      const s = (c?.slug || '').trim().toLowerCase();
+      return n === 'giá cà phê' || s === 'gia-ca-phe';
+    });
+    if (hasCoffee) return list;
+    const coffeeCat = {
+      id: 'gia-ca-phe',
+      name: 'Giá cà phê',
+      name_en: 'Coffee Prices',
+      slug: 'gia-ca-phe',
+      order_index: 5,
+      subcategories: []
+    };
+    const next = [...list];
+    const insertIdx = Math.min(4, next.length);
+    next.splice(insertIdx, 0, coffeeCat);
+    return next;
+  };
+
+  const isCoffeePriceCat = (cat) => {
+    const n = (cat?.name || '').trim().toLowerCase();
+    const s = (cat?.slug || '').trim().toLowerCase();
+    return n === 'giá cà phê' || s === 'gia-ca-phe';
+  };
+
+  const getCatHref = (cat) => {
+    if (isCoffeePriceCat(cat)) return '/gia-ca-phe';
+    return `/posts?category=${encodeURIComponent(cat.name)}`;
+  };
+
   // Khởi tạo ngay lập tức từ bộ nhớ đệm hoặc CATEGORIES_DATA chuẩn để Header luôn hiện 0ms không bao giờ bị trắng
   const [categoriesList, setCategoriesList] = useState(() => {
     try {
       const cached = localStorage.getItem('dnvn_cached_categories');
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return ensureCoffeePriceCategory(parsed);
       }
     } catch (e) {}
     return CATEGORIES_DATA;
@@ -69,8 +102,10 @@ export const Navbar = () => {
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data) && isMounted) {
-            // Sắp xếp theo order_index tăng dần do admin thiết lập
-            const sorted = [...json.data].sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+            // Sắp xếp theo order_index tăng dần do admin thiết lập và đảm bảo chuyên mục Giá cà phê luôn có mặt
+            const sorted = ensureCoffeePriceCategory(
+              [...json.data].sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+            );
             setCategoriesList(sorted);
             try {
               localStorage.setItem('dnvn_cached_categories', JSON.stringify(sorted));
@@ -553,7 +588,9 @@ export const Navbar = () => {
               const subs = getSubList(cat);
               const hasSubs = subs.length > 0;
               const isOpen = activeDropdownId === (cat.id || cat.name);
-              const isCatActive = location.pathname === '/posts' && location.search.includes(encodeURIComponent(cat.name));
+              const isCatActive = isCoffeePriceCat(cat)
+                ? location.pathname === '/gia-ca-phe'
+                : (location.pathname === '/posts' && location.search.includes(encodeURIComponent(cat.name)));
               const catDisplayName = getCategoryName(cat);
 
               return (
@@ -564,7 +601,7 @@ export const Navbar = () => {
                   onMouseLeave={handleMouseLeave}
                 >
                   <Link
-                    to={`/posts?category=${encodeURIComponent(cat.name)}`}
+                    to={getCatHref(cat)}
                     className={`dnvn-nav-item-btn ${isCatActive ? 'active' : ''}`}
                     aria-expanded={isOpen}
                     aria-haspopup={hasSubs ? 'true' : 'false'}
@@ -989,7 +1026,7 @@ export const Navbar = () => {
                 <div key={cat.id || cat.name} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Link
-                      to={`/posts?category=${encodeURIComponent(cat.name)}`}
+                      to={getCatHref(cat)}
                       onClick={() => setMobileMenuOpen(false)}
                       style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '600', fontSize: '13.5px', flex: 1, padding: '6px 0' }}
                     >

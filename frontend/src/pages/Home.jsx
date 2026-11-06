@@ -1545,14 +1545,18 @@ export const Home = () => {
               </div>
               <div className="gt-hero-search-tags">
                 <span className="gt-search-tag-label">{currentLang === 'en' ? 'Popular:' : 'Chủ đề hot:'}</span>
-                {['Cà phê Robusta', 'Xuất khẩu cà phê', 'Đầu tư Đắk Lắk', 'Thác Dray Nur', 'Chuyển đổi số'].map((tag, idx) => (
+                {['Giá cà phê hôm nay', 'Xuất khẩu cà phê', 'Đầu tư Đắk Lắk', 'Thác Dray Nur', 'Chuyển đổi số'].map((tag, idx) => (
                   <button
                     key={idx}
                     type="button"
                     className="gt-search-tag-pill"
                     onClick={() => {
-                      setHeroSearchQuery(tag);
-                      navigate(`/posts?search=${encodeURIComponent(tag)}`);
+                      if (tag === 'Giá cà phê hôm nay') {
+                        navigate('/gia-ca-phe');
+                      } else {
+                        setHeroSearchQuery(tag);
+                        navigate(`/posts?search=${encodeURIComponent(tag)}`);
+                      }
                     }}
                   >
                     #{tag}
@@ -1641,8 +1645,7 @@ export const Home = () => {
         </section>
 
         {/* ========================================================
-            SECTION 3: TIÊU ĐIỂM & TIN TỨC MỚI NHẤT (THE GLOBAL WIRE STYLE)
-            ĐƯA LÊN NỬA TRÊN TRANG CHỦ - GIẢI QUYẾT TRIỆT ĐỂ BÀI MỚI ĐĂNG
+            SECTION 3: TIÊU ĐIỂM & TIN TỨC MỚI NHẤT + BẢNG GIÁ CÀ PHÊ HÔM NAY
             ======================================================== */}
         <section className="news-spotlight-section" id="tin-tuc-tieu-diem">
           <div className="daklak-container">
@@ -1656,121 +1659,91 @@ export const Home = () => {
                   {currentLang === 'en' ? 'Latest News & Dak Lak Updates' : 'Tin Tức Mới Nhất & Nhịp Đập Đắk Lắk Hôm Nay'}
                 </h2>
               </div>
-              <Link to="/posts" className="spotlight-view-all">
-                <span>{currentLang === 'en' ? 'View all newsroom' : 'Xem tất cả bài viết'}</span>
+              <Link to="/gia-ca-phe" className="spotlight-view-all">
+                <span>{currentLang === 'en' ? 'View all coffee price bulletins' : 'Xem tất cả bản tin giá cà phê'}</span>
                 <i className="ti ti-arrow-right" />
               </Link>
             </div>
 
-            {/* Layout dạng tạp chí hiện đại: 1 bài Lead Story lớn bên trái + Feed tin mới bên phải */}
-            <div className="spotlight-main-grid">
-              {/* Lead Story (Enters from Left) */}
-              {latestPosts.length > 0 && (
-                <div className="spotlight-lead-card scroll-reveal scroll-reveal-left" onClick={() => navigate(`/posts/${latestPosts[0].slug || latestPosts[0].id}`)}>
-                  <div className="spotlight-lead-img-wrap">
-                    <img
-                      src={getPostThumb(latestPosts[0], 0)}
-                      alt={latestPosts[0].title}
-                      onError={(e) => { e.target.src = FALLBACK_POST_IMAGES[0]; }}
-                    />
-                    <span className="spotlight-lead-badge">{latestPosts[0].category || 'Tiêu Điểm Đặc Biệt'}</span>
-                  </div>
-                  <div className="spotlight-lead-content">
-                    <div className="spotlight-meta">
-                      <span className="spotlight-meta-item">
-                        <i className="ti ti-calendar" />
-                        {latestPosts[0].created_at ? new Date(latestPosts[0].created_at).toLocaleDateString('vi-VN') : 'Hôm nay'}
-                      </span>
-                      {latestPosts[0].author_name && (
-                        <span className="spotlight-meta-item">
-                          <i className="ti ti-user" />
-                          {latestPosts[0].author_name}
-                        </span>
-                      )}
-                      <span className="spotlight-meta-item spotlight-tag-live">
-                        <span className="live-dot" /> Mới cập nhật
-                      </span>
-                    </div>
-                    <h3 className="spotlight-lead-title">{latestPosts[0].title}</h3>
-                    <p className="spotlight-lead-summary">
-                      {latestPosts[0].summary || latestPosts[0].short_desc || 'Bấm để đọc toàn bộ bài viết, phân tích sâu và nhận định chi tiết...'}
-                    </p>
-                    <div className="spotlight-lead-cta">
-                      <span>Đọc toàn bộ bài viết →</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+            {(() => {
+              const latestCoffeeBoardPost = latestPosts.find(
+                p => (p.category === 'Giá cà phê' || (p.category || '').toLowerCase() === 'giá cà phê') && p.image_url
+              );
+              const coffeeBoardImg = latestCoffeeBoardPost?.image_url || '/images/bang-gia-ca-phe-1.jpg';
+              const newsItems = latestPosts
+                .filter(p => !latestCoffeeBoardPost || p.id !== latestCoffeeBoardPost.id)
+                .slice(0, 3);
+              const displayNews = newsItems.length > 0 ? newsItems : latestPosts.slice(0, 3);
 
-              {/* Feed tin mới bên phải (Enters from Right) */}
-              <div className="spotlight-feed-list scroll-reveal scroll-reveal-right">
-                <div className="spotlight-feed-header">
-                  <h4><i className="ti ti-bolt" /> Cập nhật mới nhất</h4>
-                  <span className="feed-counter">{latestPosts.length} bài viết</span>
-                </div>
-
-                <div className="spotlight-feed-items">
-                  {latestPosts.slice(1, 5).map((post, idx) => (
-                    <div
-                      key={post.id || post.slug || idx}
-                      className="spotlight-feed-item"
-                      onClick={() => navigate(`/posts/${post.slug || post.id}`)}
-                    >
-                      <div className="feed-item-thumb">
-                        <img
-                          src={getPostThumb(post, idx + 1)}
-                          alt={post.title}
-                          onError={(e) => { e.target.src = FALLBACK_POST_IMAGES[(idx + 1) % FALLBACK_POST_IMAGES.length]; }}
-                        />
-                      </div>
-                      <div className="feed-item-info">
-                        <div className="feed-item-cat">{post.category || 'Tin tức'}</div>
-                        <h5 className="feed-item-title">{post.title}</h5>
-                        <span className="feed-item-time">
-                          <i className="ti ti-clock" />
-                          {post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : 'Gần đây'}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {latestPosts.length <= 1 && (
-                    <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      Đang đồng bộ hóa dữ liệu bài viết mới...
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Grid 3 bài tiếp theo dạng cards */}
-            {latestPosts.length > 5 && (
-              <div className="spotlight-sub-grid">
-                {latestPosts.slice(5, 8).map((post, idx) => (
+              return (
+                <div className="spotlight-coffee-news-grid">
+                  {/* CỘT TRÁI: ẢNH BẢNG GIÁ CÀ PHÊ HÔM NAY */}
                   <div
-                    key={post.id || post.slug || idx}
-                    className="spotlight-sub-card"
-                    onClick={() => navigate(`/posts/${post.slug || post.id}`)}
+                    className="spotlight-coffee-board-card scroll-reveal scroll-reveal-left"
+                    onClick={() => navigate('/gia-ca-phe')}
+                    title="Xem chi tiết chuyên mục Giá cà phê hôm nay"
                   >
-                    <div className="sub-card-img-wrap">
-                      <img
-                        src={getPostThumb(post, idx + 5)}
-                        alt={post.title}
-                        onError={(e) => { e.target.src = FALLBACK_POST_IMAGES[(idx + 5) % FALLBACK_POST_IMAGES.length]; }}
-                      />
-                      <span className="sub-card-cat">{post.category || 'Tin thời sự'}</span>
+                    <img
+                      src={coffeeBoardImg}
+                      alt={latestCoffeeBoardPost?.title || 'Bảng giá cà phê Đắk Lắk hôm nay'}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/images/bang-gia-ca-phe-1.jpg';
+                      }}
+                    />
+                  </div>
+
+                  {/* CỘT PHẢI: DANH SÁCH 3 BÀI TIN MỚI NHẤT + LINK XEM TẤT CẢ BÀI VIẾT */}
+                  <div className="spotlight-right-news-col scroll-reveal scroll-reveal-right">
+                    <div className="spotlight-right-news-list">
+                      {displayNews.map((post, idx) => {
+                        const rawDate = post.deadline || post.published_at || post.created_at;
+                        const formattedDate = rawDate
+                          ? new Date(rawDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                          : 'Hôm nay';
+                        const rawSummary = post.summary || post.short_desc || (post.body ? String(post.body).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '');
+
+                        return (
+                          <div
+                            key={post.id || post.slug || idx}
+                            className="spotlight-right-news-card"
+                            onClick={() => navigate(`/posts/${post.slug || post.id}`)}
+                          >
+                            <div className="spotlight-right-news-thumb">
+                              <img
+                                src={getPostThumb(post, idx)}
+                                alt={post.title}
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = FALLBACK_POST_IMAGES[idx % FALLBACK_POST_IMAGES.length];
+                                }}
+                              />
+                            </div>
+                            <div className="spotlight-right-news-body">
+                              <div className="spotlight-right-news-date">
+                                <i className="ti ti-calendar-event" />
+                                <span>{formattedDate}</span>
+                              </div>
+                              <h3 className="spotlight-right-news-title">{post.title}</h3>
+                              <p className="spotlight-right-news-desc">
+                                {rawSummary || 'Bấm để đọc toàn bộ bài viết, phân tích sâu và nhận định chi tiết...'}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="sub-card-body">
-                      <div className="sub-card-date">
-                        <i className="ti ti-calendar" />
-                        <span>{post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : 'Mới'}</span>
-                      </div>
-                      <h4 className="sub-card-title">{post.title}</h4>
-                      <p className="sub-card-desc">{post.summary || post.short_desc || ''}</p>
+
+                    <div className="spotlight-bottom-more-row">
+                      <Link to="/posts" className="spotlight-bottom-more-link">
+                        <span>{currentLang === 'en' ? 'View all articles' : 'Xem tất cả bài viết'}</span>
+                        <i className="ti ti-arrow-right" />
+                      </Link>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              );
+            })()}
           </div>
         </section>
 

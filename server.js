@@ -678,8 +678,14 @@ db.query(`
       console.log('✅ Đã thêm cột tags vào bảng posts');
     }
     if (!postColNames.includes('deadline')) {
-      await db.query("ALTER TABLE posts ADD COLUMN deadline DATE DEFAULT NULL AFTER contact_info");
+      await db.query("ALTER TABLE posts ADD COLUMN deadline DATETIME DEFAULT NULL AFTER contact_info");
       console.log('✅ Đã thêm cột deadline vào bảng posts');
+    } else {
+      try {
+        await db.query("ALTER TABLE posts MODIFY COLUMN deadline DATETIME DEFAULT NULL");
+      } catch (e) {
+        // Ignored
+      }
     }
     if (!postColNames.includes('featured_requested')) {
       await db.query("ALTER TABLE posts ADD COLUMN featured_requested TINYINT(1) DEFAULT 0 AFTER is_featured");
@@ -977,6 +983,21 @@ db.query(`
       console.log('✅ Khởi tạo/đồng bộ 7 Chuyên mục & Lĩnh vực DakLak.today hoàn tất!');
     }
 
+    // Đảm bảo chuyên mục 'Giá cà phê' (không bắt buộc lĩnh vực con) luôn tồn tại trong DB
+    try {
+      const [coffeeCat] = await db.query(
+        "SELECT id FROM categories WHERE name = 'Giá cà phê' OR slug = 'gia-ca-phe' LIMIT 1"
+      );
+      if (coffeeCat.length === 0) {
+        await db.query(
+          "INSERT INTO categories (name, name_en, slug, order_index, status) VALUES ('Giá cà phê', 'Coffee Prices', 'gia-ca-phe', 5, 'active')"
+        );
+        console.log('✅ Đã tự động bổ sung chuyên mục Giá cà phê vào bảng categories');
+      }
+    } catch (e) {
+      console.warn('⚠️ Lỗi kiểm tra chuyên mục Giá cà phê:', e.message);
+    }
+
     // Tạo thư mục kiến thức
     const KB_DIR = path.join(__dirname, 'knowledge_base');
     if (!fs.existsSync(KB_DIR)) {
@@ -1059,14 +1080,14 @@ async function cleanupExpiredTiers() {
   }
 }
 
-// Chạy bảo trì dữ liệu định kỳ mỗi 30 phút ở chế độ nền (không làm chậm các request đọc bài viết)
+// Chạy bảo trì dữ liệu định kỳ ở chế độ nền (không làm chậm các request đọc bài viết)
 async function runBackgroundMaintenance() {
   await cleanupExpiredTiers();
   try {
-    const todayStr = new Date().toISOString().substring(0, 10);
+    const vnNow = getVietnamNowString();
     await db.query(
-      "UPDATE posts SET status = 'hidden' WHERE deadline IS NOT NULL AND deadline != '' AND deadline != '0000-00-00' AND status = 'approved' AND deadline < ?",
-      [todayStr]
+      "UPDATE posts SET published_at = deadline WHERE deadline IS NOT NULL AND status = 'approved' AND deadline <= ? AND (published_at IS NULL OR published_at < deadline)",
+      [vnNow]
     );
   } catch (e) {
     // Silent in background
@@ -1086,9 +1107,9 @@ async function runBackgroundMaintenance() {
   }
 }
 
-// Khởi chạy ngay khi khởi động và lập lịch định kỳ mỗi 30 phút
+// Khởi chạy ngay khi khởi động và lập lịch định kỳ mỗi 1 phút để kích hoạt các bài đặt lịch đúng giờ
 runBackgroundMaintenance();
-setInterval(runBackgroundMaintenance, 30 * 60 * 1000);
+setInterval(runBackgroundMaintenance, 60 * 1000);
 
 // Giới hạn phân hạng Tier
 const TIER_LIMITS = {
@@ -2476,15 +2497,27 @@ app.get('/api/posts', async (req, res) => {
                WHERE 1=1`;
     const params = [];
 
-    // Bộ lọc trạng thái bài viết
+    // Bộ lọc trạng thái bài viết và kiểm tra thời gian đặt lịch đăng bài
+    const isAdminManagement = includeBody && isAuthenticated;
+    const vnNow = getVietnamNowString();
+
     if (status && status === 'all') {
-      // Lấy tất cả trạng thái (dành cho trang chủ hiển thị chuyên đề AI hoặc admin)
+      if (!isAdminManagement && !member_id) {
+        sql += " AND (p.status = 'approved' OR p.status = 'pending')";
+      }
     } else if (status) {
       sql += ' AND p.status = ?';
       params.push(status);
-    } else if (!isAuthenticated) {
+    } else if (!isAuthenticated || !isAdminManagement) {
       // Mặc định công khai: lấy bài đã duyệt
       sql += " AND (p.status = 'approved' OR p.status = 'pending')";
+    }
+
+    // Nếu không phải màn hình quản trị Admin hoặc trang quản lý cá nhân hội viên:
+    // chỉ hiển thị các bài không hẹn giờ HOẶC đã đến giờ hẹn đăng công khai (deadline <= vnNow)
+    if (!isAdminManagement && !member_id) {
+      sql += ' AND (p.deadline IS NULL OR p.deadline <= ?)';
+      params.push(vnNow);
     }
 
     if (member_id)    { sql += ' AND p.member_id = ?';    params.push(member_id); }
@@ -2506,8 +2539,8 @@ app.get('/api/posts', async (req, res) => {
       params.push(searchPattern, searchPattern, searchPattern);
     }
     
-    // Sắp xếp: Ưu tiên bài nổi bật trước, sau đó tới bài mới nhất
-    sql += ' ORDER BY p.is_featured DESC, p.created_at DESC';
+    // Sắp xếp: Ưu tiên bài nổi bật trước, sau đó tới thời điểm xuất bản / đặt lịch mới nhất
+    sql += ' ORDER BY p.is_featured DESC, COALESCE(p.deadline, p.published_at, p.created_at) DESC, p.created_at DESC';
 
     const { limit } = req.query;
     if (limit && Number(limit) > 0) {
@@ -2563,19 +2596,19 @@ app.post('/api/posts', memberAuthMiddleware, async (req, res) => {
     const { title, summary, body, type, category, sub_category, source_url, tags, contact_info, deadline, image_url, isDraft, featured_requested } = req.body;
     if (!title) return res.status(400).json({ success: false, error: 'Tiêu đề bài đăng không được trống.' });
     if (!category) return res.status(400).json({ success: false, error: 'Vui lòng chọn Chuyên mục cho bài viết.' });
-    if (!sub_category) return res.status(400).json({ success: false, error: 'Vui lòng chọn Lĩnh vực cho bài viết.' });
 
     // Chỉ hội viên Platinum mới được phép gửi yêu cầu ghim bài nổi bật ngoài trang chủ
     const isPlatinum = req.member.tier === 'Platinum';
     const isFeaturedRequested = isPlatinum ? (featured_requested ? 1 : 0) : 0;
 
     const finalStatus = isDraft ? 'draft' : 'pending';
+    const finalDeadline = deadline ? toSqlDateTime(deadline) : null;
     const slug = await generateUniquePostSlug(title);
 
     const [result] = await db.query(
       `INSERT INTO posts (member_id, title, slug, summary, body, type, category, sub_category, source_url, tags, contact_info, deadline, image_url, status, featured_requested)
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [req.member.id, title, slug, summary, body, type || 'Tin chung', category, sub_category, source_url || null, JSON.stringify(tags || []), contact_info, deadline || null, image_url || null, finalStatus, isFeaturedRequested]
+      [req.member.id, title, slug, summary, body, type || 'Tin chung', category, sub_category || '', source_url || null, JSON.stringify(tags || []), contact_info, finalDeadline, image_url || null, finalStatus, isFeaturedRequested]
     );
     res.json({ success: true, id: result.insertId, slug, message: isDraft ? 'Đã lưu bản nháp.' : 'Bài viết đã gửi để admin duyệt.' });
   } catch (err) {
@@ -2631,7 +2664,6 @@ app.put('/api/posts/:id', memberAuthMiddleware, async (req, res) => {
     const { title, summary, body, type, category, sub_category, source_url, tags, contact_info, deadline, image_url, isDraft, featured_requested } = req.body;
     if (!title) return res.status(400).json({ success: false, error: 'Tiêu đề bài đăng không được trống.' });
     if (!category) return res.status(400).json({ success: false, error: 'Vui lòng chọn Chuyên mục cho bài viết.' });
-    if (!sub_category) return res.status(400).json({ success: false, error: 'Vui lòng chọn Lĩnh vực cho bài viết.' });
 
     // Chỉ hội viên Platinum mới được phép gửi yêu cầu ghim bài nổi bật ngoài trang chủ
     const isPlatinum = req.member.tier === 'Platinum';
@@ -2639,6 +2671,7 @@ app.put('/api/posts/:id', memberAuthMiddleware, async (req, res) => {
 
     // Trạng thái sau chỉnh sửa: lưu nháp -> 'draft', đăng tin -> 'pending' (yêu cầu duyệt lại)
     const finalStatus = isDraft ? 'draft' : 'pending';
+    const finalDeadline = deadline ? toSqlDateTime(deadline) : null;
     const slug = await generateUniquePostSlug(title, postId);
 
     await db.query(
@@ -2649,7 +2682,7 @@ app.put('/api/posts/:id', memberAuthMiddleware, async (req, res) => {
        WHERE id = ?`,
       [
         title, slug, summary || '', body || '', type || 'Tin chung', category || '', sub_category || '', source_url || null,
-        JSON.stringify(tags || []), contact_info || '', deadline || null, image_url || null, 
+        JSON.stringify(tags || []), contact_info || '', finalDeadline, image_url || null, 
         finalStatus, isFeaturedRequested, postId
       ]
     );
@@ -2843,7 +2876,6 @@ app.post('/api/creator/posts', creatorAuthMiddleware, async (req, res) => {
     const { title, summary, body, type, category, sub_category, source_url, tags, contact_info, deadline, image_url, isDraft } = req.body;
     if (!title) return res.status(400).json({ success: false, error: 'Tiêu đề bài đăng không được trống.' });
     if (!category) return res.status(400).json({ success: false, error: 'Vui lòng chọn Chuyên mục cho bài viết.' });
-    if (!sub_category) return res.status(400).json({ success: false, error: 'Vui lòng chọn Lĩnh vực cho bài viết.' });
 
     let finalStatus = 'pending';
     if (isDraft) {
@@ -2852,17 +2884,22 @@ app.post('/api/creator/posts', creatorAuthMiddleware, async (req, res) => {
       finalStatus = 'approved';
     }
 
+    const finalDeadline = deadline ? toSqlDateTime(deadline) : null;
+    const publishedAt = finalStatus === 'approved' ? (finalDeadline || getVietnamNowString()) : null;
     const slug = await generateUniquePostSlug(title);
 
     const [result] = await db.query(
-      `INSERT INTO posts (creator_id, member_id, title, slug, summary, body, type, category, sub_category, source_url, tags, contact_info, deadline, image_url, status, featured_requested)
-       VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [req.creator.id, title, slug, summary || '', body || '', type || 'Tin chung', category, sub_category, source_url || null, JSON.stringify(tags || []), contact_info || req.creator.name, deadline || null, image_url || null, finalStatus, 0]
+      `INSERT INTO posts (creator_id, member_id, title, slug, summary, body, type, category, sub_category, source_url, tags, contact_info, deadline, image_url, status, featured_requested, published_at)
+       VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [req.creator.id, title, slug, summary || '', body || '', type || 'Tin chung', category, sub_category || '', source_url || null, JSON.stringify(tags || []), contact_info || req.creator.name, finalDeadline, image_url || null, finalStatus, 0, publishedAt]
     );
 
+    const isScheduledFuture = finalDeadline && finalDeadline > getVietnamNowString();
     const successMsg = isDraft 
       ? 'Đã lưu bản nháp.' 
-      : (finalStatus === 'approved' ? 'Bài viết đã xuất bản thành công!' : 'Bài viết đã gửi để admin duyệt.');
+      : (finalStatus === 'approved'
+          ? (isScheduledFuture ? `Đã đặt lịch đăng bài thành công! Bài viết sẽ tự động xuất bản lúc ${formatVietnamDateTime(finalDeadline)}.` : 'Bài viết đã xuất bản thành công!')
+          : 'Bài viết đã gửi để admin duyệt.');
 
     res.json({ success: true, id: result.insertId, slug, status: finalStatus, message: successMsg });
   } catch (err) {
@@ -2875,7 +2912,7 @@ app.put('/api/creator/posts/:id', creatorAuthMiddleware, async (req, res) => {
     const postId = req.params.id;
     const creatorId = req.creator.id;
 
-    const [existing] = await db.query('SELECT creator_id, status FROM posts WHERE id = ?', [postId]);
+    const [existing] = await db.query('SELECT creator_id, status, published_at FROM posts WHERE id = ?', [postId]);
     if (!existing.length) {
       return res.status(404).json({ success: false, error: 'Không tìm thấy bài viết.' });
     }
@@ -2893,21 +2930,31 @@ app.put('/api/creator/posts/:id', creatorAuthMiddleware, async (req, res) => {
       finalStatus = 'approved';
     }
 
+    const finalDeadline = deadline ? toSqlDateTime(deadline) : null;
+    const publishedAt = finalStatus === 'approved' ? (finalDeadline || existing[0].published_at || getVietnamNowString()) : existing[0].published_at;
     const slug = await generateUniquePostSlug(title, postId);
 
     await db.query(
       `UPDATE posts SET 
         title = ?, slug = ?, summary = ?, body = ?, type = ?, category = ?, sub_category = ?, source_url = ?,
-        tags = ?, contact_info = ?, deadline = ?, image_url = ?, status = ?
+        tags = ?, contact_info = ?, deadline = ?, image_url = ?, status = ?, published_at = ?
        WHERE id = ?`,
       [
         title, slug, summary || '', body || '', type || 'Tin chung', category || '', sub_category || '', source_url || null,
-        JSON.stringify(tags || []), contact_info || req.creator.name, deadline || null, image_url || null, 
-        finalStatus, postId
+        JSON.stringify(tags || []), contact_info || req.creator.name, finalDeadline, image_url || null, 
+        finalStatus, publishedAt, postId
       ]
     );
 
-    res.json({ success: true, slug, status: finalStatus, message: 'Cập nhật bài viết thành công.' });
+    const isScheduledFuture = finalDeadline && finalDeadline > getVietnamNowString();
+    res.json({
+      success: true,
+      slug,
+      status: finalStatus,
+      message: isScheduledFuture
+        ? `Cập nhật và đặt lịch xuất bản lúc ${formatVietnamDateTime(finalDeadline)} thành công!`
+        : 'Cập nhật bài viết thành công.'
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -3046,10 +3093,12 @@ app.delete('/api/admin/organizers/:id', authMiddleware, async (req, res) => {
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const baseUrl = process.env.SITE_URL || 'https://daklak.today';
-    const staticPages = ['', '/posts', '/members', '/events', '/guide', '/register'];
+    const staticPages = ['', '/posts', '/gia-ca-phe', '/members', '/events', '/guide', '/register'];
 
+    const vnNow = getVietnamNowString();
     const [approvedPosts] = await db.query(
-      "SELECT id, slug, updated_at, created_at FROM posts WHERE status = 'approved' ORDER BY updated_at DESC"
+      "SELECT id, slug, updated_at, created_at FROM posts WHERE status = 'approved' AND (deadline IS NULL OR deadline <= ?) ORDER BY updated_at DESC",
+      [vnNow]
     );
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
@@ -3145,7 +3194,7 @@ app.post('/api/upload', anyAuthMiddleware, async (req, res) => {
 // Duyệt bài viết
 app.patch('/api/posts/:id/approve', authMiddleware, async (req, res) => {
   try {
-    await db.query("UPDATE posts SET status='approved', published_at=NOW() WHERE id=?", [req.params.id]);
+    await db.query("UPDATE posts SET status='approved', published_at=COALESCE(deadline, NOW()) WHERE id=?", [req.params.id]);
     res.json({ success: true, message: 'Đã xuất bản bài viết.' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -3217,8 +3266,9 @@ app.post('/api/admin/posts', authMiddleware, async (req, res) => {
     const finalStatus = status || 'approved';
     const finalFeatured = is_featured ? 1 : 0;
     const finalAuthor = author_name || 'Ban Quản trị DakLak.today';
+    const finalDeadline = deadline ? toSqlDateTime(deadline) : null;
     const slug = await generateUniquePostSlug(title);
-    const publishedAt = finalStatus === 'approved' ? new Date() : null;
+    const publishedAt = finalStatus === 'approved' ? (finalDeadline || getVietnamNowString()) : null;
 
     const [result] = await db.query(
       `INSERT INTO posts (
@@ -3230,17 +3280,20 @@ app.post('/api/admin/posts', authMiddleware, async (req, res) => {
         title.trim(), slug, summary || '', body, type || 'Tin tức',
         category, sub_category || '', source_url || null,
         JSON.stringify(Array.isArray(tags) ? tags : []),
-        contact_info || '', finalAuthor, deadline || null,
+        contact_info || '', finalAuthor, finalDeadline,
         image_url || null, finalStatus, finalFeatured, publishedAt
       ]
     );
 
+    const isScheduledFuture = finalDeadline && finalDeadline > getVietnamNowString();
     res.json({
       success: true,
       id: result.insertId,
       slug,
       status: finalStatus,
-      message: 'Admin đã tạo và xuất bản bài viết thành công!'
+      message: isScheduledFuture
+        ? `Admin đã đặt lịch đăng bài thành công! Bài viết sẽ tự động hiển thị công khai lúc ${formatVietnamDateTime(finalDeadline)}.`
+        : 'Admin đã tạo và xuất bản bài viết thành công!'
     });
   } catch (err) {
     console.error("Lỗi admin tạo bài viết:", err);
@@ -3277,12 +3330,13 @@ app.put('/api/admin/posts/:id', authMiddleware, async (req, res) => {
     const finalStatus = status || currentPost.status || 'approved';
     const finalFeatured = is_featured !== undefined ? (is_featured ? 1 : 0) : currentPost.is_featured;
     const finalAuthor = author_name !== undefined ? author_name : currentPost.author_name;
+    const finalDeadline = deadline ? toSqlDateTime(deadline) : null;
     const slug = await generateUniquePostSlug(title, postId);
     
-    // Nếu chuyển sang approved mà trước đó chưa có published_at
-    let publishedAt = currentPost.published_at;
+    // Nếu có đặt lịch mới hoặc chuyển sang approved mà trước đó chưa có published_at
+    let publishedAt = finalDeadline || currentPost.published_at;
     if (finalStatus === 'approved' && !publishedAt) {
-      publishedAt = new Date();
+      publishedAt = getVietnamNowString();
     }
 
     await db.query(
@@ -3298,16 +3352,19 @@ app.put('/api/admin/posts/:id', authMiddleware, async (req, res) => {
         category, sub_category || '', source_url || null,
         JSON.stringify(Array.isArray(tags) ? tags : []),
         contact_info !== undefined ? contact_info : (currentPost.contact_info || ''),
-        finalAuthor, deadline || null, image_url || null,
+        finalAuthor, finalDeadline, image_url || null,
         finalStatus, finalFeatured, publishedAt, postId
       ]
     );
 
+    const isScheduledFuture = finalDeadline && finalDeadline > getVietnamNowString();
     res.json({
       success: true,
       slug,
       status: finalStatus,
-      message: 'Admin đã cập nhật nội dung bài viết thành công!'
+      message: isScheduledFuture
+        ? `Admin đã cập nhật và đặt lịch xuất bản lúc ${formatVietnamDateTime(finalDeadline)} thành công!`
+        : 'Admin đã cập nhật nội dung bài viết thành công!'
     });
   } catch (err) {
     console.error("Lỗi admin cập nhật bài viết:", err);
@@ -5440,6 +5497,11 @@ app.get('*', async (req, res) => {
       }
     }
     // 4. Các trang danh mục chung
+    else if (rawPath === '/gia-ca-phe') {
+      meta.title = 'Giá cà phê hôm nay — Cập nhật giá cà phê trong nước & thế giới | DakLak.today';
+      meta.description = 'Cập nhật diễn biến giá cà phê hôm nay tại Đắk Lắk, Lâm Đồng, Gia Lai, Đắk Nông và sàn giao dịch Robusta London, Arabica New York mới nhất.';
+      meta.image = `${baseUrl}/images/bang-gia-ca-phe-1.jpg`;
+    }
     else if (rawPath === '/posts') {
       meta.title = 'Cơ hội giao thương & Tin tức — DakLak.today';
       meta.description = 'Cập nhật tin tức, cơ hội giao thương, danh mục kêu gọi đầu tư và tiềm năng phát triển tỉnh Đắk Lắk.';

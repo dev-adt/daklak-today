@@ -14,6 +14,7 @@ import Posts from './pages/Posts';
 import PostDetail from './pages/PostDetail';
 import Events from './pages/Events';
 import Members from './pages/Members';
+import CoffeePrice from './pages/CoffeePrice';
 import NotFound from './pages/NotFound';
 
 // Code-split Pages (Lazy loaded on demand to reduce initial JS payload by >60%)
@@ -93,6 +94,7 @@ function App() {
             <Route path="/members/:id" element={<Members />} />
             <Route path="/posts" element={<Posts />} />
             <Route path="/posts/:id" element={<PostDetail />} />
+            <Route path="/gia-ca-phe" element={<CoffeePrice />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<Events />} />
             <Route path="/su-kien" element={<Events />} />

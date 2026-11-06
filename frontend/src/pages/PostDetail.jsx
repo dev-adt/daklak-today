@@ -467,7 +467,11 @@ export const PostDetail = () => {
           <div className="post-detail-breadcrumbs">
             <Link to="/">{currentLang === 'en' ? 'Home' : 'Trang chủ'}</Link>
             <i className="ti ti-chevron-right" style={{ fontSize: '10px' }}></i>
-            <Link to="/posts">{currentLang === 'en' ? 'Business Opportunities' : 'Bảng tin cơ hội'}</Link>
+            {post.category === 'Giá cà phê' ? (
+              <Link to="/gia-ca-phe">{currentLang === 'en' ? 'Coffee Prices' : 'Giá cà phê'}</Link>
+            ) : (
+              <Link to="/posts">{currentLang === 'en' ? 'Business Opportunities' : 'Bảng tin cơ hội'}</Link>
+            )}
             <i className="ti ti-chevron-right" style={{ fontSize: '10px' }}></i>
             <span>{post.title}</span>
           </div>
@@ -488,8 +492,8 @@ export const PostDetail = () => {
               />
             </div>
 
-            {/* Title & Meta Info */}
-            <div className="glass-card post-detail-title-card">
+            {/* Merged Title, Summary & Main Content Body in 1 Single Card */}
+            <div className="glass-card post-detail-body-card" style={{ position: 'relative' }}>
               {post.is_featured === 1 && (
                 <span style={{ position: 'absolute', top: '24px', right: '24px', fontSize: '10.5px', background: 'rgba(245, 158, 11, 0.15)', color: 'var(--amber)', border: '1px solid rgba(245,158,11,0.3)', padding: '4px 10px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 700 }}>
                   {t('badge_featured')} <i className="ti ti-star-filled"></i>
@@ -501,7 +505,7 @@ export const PostDetail = () => {
                   {post.type === 'offer' ? t('type_offer') : post.type === 'demand' ? t('type_demand') : post.type === 'cooperate' ? t('type_cooperate') : (post.type || t('type_general_news'))}
                 </span>
                 <Link 
-                  to={`/posts?category=${encodeURIComponent(post.category || '')}`}
+                  to={post.category === 'Giá cà phê' ? '/gia-ca-phe' : `/posts?category=${encodeURIComponent(post.category || '')}`}
                   className="post-detail-category-link"
                   title={currentLang === 'en' ? 'One Click to explore this category' : 'Một nhấp để khám phá chuyên mục này'}
                 >
@@ -510,79 +514,26 @@ export const PostDetail = () => {
               </div>
 
               <h1 className="post-detail-title">
-                {isTranslated ? translatedTitle : post.title}
+                {post.title}
               </h1>
               
-              <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px', paddingBottom: '18px', borderBottom: '1px solid rgba(122, 62, 29, 0.1)' }}>
                 {t('date_posted_label')}: <strong style={{ color: 'var(--text-primary)' }}>{dateStr}</strong>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '18px', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('translate_select_lang')}:</span>
-                  <select
-                    value={translateTargetLang}
-                    onChange={(e) => setTranslateTargetLang(e.target.value)}
-                    style={{
-                      background: 'var(--surface-2)',
-                      border: '1px solid var(--border-strong)',
-                      borderRadius: '6px',
-                      color: 'var(--text-primary)',
-                      fontSize: '12px',
-                      padding: '5px 10px',
-                      outline: 'none',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <option value="en">🇬🇧 Tiếng Anh (English)</option>
-                    <option value="vi">🇻🇳 Tiếng Việt (Vietnamese)</option>
-                    <option value="ja">🇯🇵 Tiếng Nhật (Japanese)</option>
-                    <option value="zh">🇨🇳 Tiếng Trung (Chinese)</option>
-                  </select>
-                </div>
-
-                <button
-                  onClick={handleTranslatePost}
-                  disabled={loadingTranslate}
-                  style={{
-                    background: isTranslated ? 'rgba(16, 185, 129, 0.1)' : 'rgba(30, 136, 229, 0.1)',
-                    border: `1px solid ${isTranslated ? 'rgba(16, 185, 129, 0.3)' : 'rgba(30, 136, 229, 0.3)'}`,
-                    color: isTranslated ? 'var(--emerald)' : 'var(--primary-light)',
-                    padding: '6px 14px',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontWeight: 600,
-                    outline: 'none',
-                    transition: 'var(--transition)'
-                  }}
-                >
-                  <i className={loadingTranslate ? "ti ti-loader animate-spin" : "ti ti-language"}></i>
-                  {loadingTranslate ? '...' : isTranslated ? t('translate_view_original') : t('translate_button')}
-                </button>
-              </div>
-            </div>
-
-            {/* Summary / Lead Paragraph */}
-            {post.summary && (
-              <div className="glass-card post-detail-lead-card">
-                <p className="post-detail-lead-text">
-                  {isTranslated ? translatedSummary : post.summary}
+              {/* Summary / Lead Paragraph (Bold & Italic, with 1 blank line before body) */}
+              {post.summary && (
+                <p className="post-detail-lead-merged">
+                  <strong><em>{post.summary}</em></strong>
                 </p>
-              </div>
-            )}
+              )}
 
-            {/* Main Content Body */}
-            <div className="glass-card post-detail-body-card">
               {/* Nội dung chi tiết bài viết: mở công khai cho tất cả người đọc */}
               <div 
                 className="post-html-body"
                 dangerouslySetInnerHTML={{ 
                   __html: (() => {
-                    let raw = isTranslated ? translatedBody : post.body;
+                    let raw = post.body;
                     if (!raw) return '';
                     if (raw.includes('&lt;iframe') || raw.includes('&lt;div')) {
                       const txt = document.createElement('textarea');

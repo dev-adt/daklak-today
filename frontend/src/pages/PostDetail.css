@@ -116,6 +116,15 @@
   line-height: 1.75;
 }
 
+.post-detail-lead-merged {
+  font-size: 16.5px;
+  font-weight: 700;
+  font-style: italic;
+  color: #2C221E;
+  margin: 0 0 1.85em 0;
+  line-height: 1.85;
+}
+
 /* Main Content Body Card */
 .post-detail-body-card {
   padding: 46px 54px;

@@ -66,7 +66,11 @@ export const CreatorDashboard = () => {
         if (res.ok) {
           const data = await res.json();
           if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-            setCategoriesList(data.data);
+            const hasCoffee = data.data.some(c => c.name === 'Giá cà phê' || c.slug === 'gia-ca-phe');
+            const list = hasCoffee
+              ? data.data
+              : [...data.data, { id: 'gia-ca-phe', name: 'Giá cà phê', name_en: 'Coffee Prices', slug: 'gia-ca-phe', subcategories: [] }];
+            setCategoriesList(list);
           }
         }
       } catch (err) {
@@ -107,6 +111,25 @@ export const CreatorDashboard = () => {
     setModalOpen(true);
   };
 
+  const toDateTimeLocalInput = (val) => {
+    if (!val) return '';
+    const s = String(val).trim();
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) return s.slice(0, 16);
+    if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s)) return s.replace(/\s+/, 'T').slice(0, 16);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return `${s}T08:00`;
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const formatScheduleTime = (val) => {
+    if (!val) return '';
+    const d = new Date(String(val).replace(' ', 'T'));
+    if (isNaN(d.getTime())) return String(val);
+    return d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
   const handleOpenEditModal = (post) => {
     setEditingPostId(post.id);
 
@@ -130,7 +153,7 @@ export const CreatorDashboard = () => {
       source_url: post.source_url || '',
       tags: tagStr,
       contact_info: post.contact_info || '',
-      deadline: post.deadline ? post.deadline.split('T')[0] : '',
+      deadline: toDateTimeLocalInput(post.deadline),
       image_url: post.image_url || ''
     });
     setModalOpen(true);
@@ -194,10 +217,6 @@ export const CreatorDashboard = () => {
     }
     if (!newPostData.category) {
       alert('Vui lòng chọn Chuyên mục cho bài viết');
-      return;
-    }
-    if (!newPostData.sub_category) {
-      alert('Vui lòng chọn Lĩnh vực cho bài viết');
       return;
     }
     if (!newPostData.body.trim()) {
@@ -361,15 +380,14 @@ export const CreatorDashboard = () => {
                   </div>
 
                   <div className="fg">
-                    <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Lĩnh vực <span style={{ color: '#ef4444' }}>*</span></label>
+                    <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Lĩnh vực (Không bắt buộc)</label>
                     <select 
                       id="sub_category" 
                       value={newPostData.sub_category} 
                       onChange={handleNewPostChange}
                       style={{ fontSize: '14px', padding: '11px 14px', borderRadius: '8px' }}
-                      required
                     >
-                      <option value="">-- Chọn Lĩnh vực --</option>
+                      <option value="">-- Không có lĩnh vực con / Không bắt buộc --</option>
                       {((categoriesList.find(c => c.name === newPostData.category)?.subcategories || []).map(s => typeof s === 'string' ? s : s.name)).map(sub => (
                         <option key={sub} value={sub}>{getCategoryLabel(sub, currentLang)}</option>
                       ))}
@@ -416,11 +434,11 @@ export const CreatorDashboard = () => {
                   />
                 </div>
 
-                {/* Hạn đăng bài */}
+                {/* Đặt lịch đăng bài */}
                 <div className="fg">
-                  <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>Hạn đăng bài (Tự động ẩn khi đến ngày cài đặt, để trống nếu hiển thị vĩnh viễn)</label>
+                  <label style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E293B', marginBottom: '6px', display: 'block' }}>⏰ Đặt lịch đăng bài (Để trống nếu muốn đăng ngay, hoặc chọn ngày giờ để đến giờ đó bài mới xuất bản công khai lên trang chủ)</label>
                   <input 
-                    type="date" 
+                    type="datetime-local" 
                     id="deadline" 
                     value={newPostData.deadline || ''} 
                     onChange={handleNewPostChange} 
@@ -582,19 +600,33 @@ export const CreatorDashboard = () => {
                     >
                       <div style={{ flex: 1, minWidth: '260px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
-                          <span style={{ 
-                            fontSize: '11px', 
-                            padding: '2px 8px', 
-                            borderRadius: '4px', 
-                            fontWeight: 700, 
-                            textTransform: 'uppercase',
-                            background: (post.status === 'hidden' || (post.deadline && new Date(post.deadline) < new Date())) ? 'rgba(239,68,68,0.15)' : post.status === 'approved' ? 'rgba(16,185,129,0.1)' : post.status === 'pending' ? 'rgba(245,158,11,0.1)' : 'rgba(148,163,184,0.1)',
-                            color: (post.status === 'hidden' || (post.deadline && new Date(post.deadline) < new Date())) ? '#ef4444' : post.status === 'approved' ? '#10b981' : post.status === 'pending' ? 'var(--amber)' : 'var(--text-muted)'
-                          }}>
-                            {(post.status === 'hidden' || (post.deadline && new Date(post.deadline) < new Date())) ? '❌ Đã bị ẩn (Hết hạn)' : post.status === 'approved' ? 'Đã duyệt' : post.status === 'pending' ? 'Chờ duyệt' : 'Bản nháp'}
-                          </span>
+                          {(() => {
+                            const isScheduledFuture = post.deadline && new Date(String(post.deadline).replace(' ', 'T')) > new Date();
+                            const isHidden = post.status === 'hidden';
+                            return (
+                              <span style={{ 
+                                fontSize: '11px', 
+                                padding: '2px 8px', 
+                                borderRadius: '4px', 
+                                fontWeight: 700, 
+                                textTransform: 'uppercase',
+                                background: isHidden ? 'rgba(239,68,68,0.15)' : isScheduledFuture ? 'rgba(245,158,11,0.15)' : post.status === 'approved' ? 'rgba(16,185,129,0.1)' : post.status === 'pending' ? 'rgba(245,158,11,0.1)' : 'rgba(148,163,184,0.1)',
+                                color: isHidden ? '#ef4444' : isScheduledFuture ? '#d97706' : post.status === 'approved' ? '#10b981' : post.status === 'pending' ? 'var(--amber)' : 'var(--text-muted)'
+                              }}>
+                                {isHidden
+                                  ? '❌ Đã ẩn'
+                                  : isScheduledFuture
+                                  ? `⏰ Hẹn giờ: ${formatScheduleTime(post.deadline)}`
+                                  : post.status === 'approved'
+                                  ? 'Đã duyệt'
+                                  : post.status === 'pending'
+                                  ? 'Chờ duyệt'
+                                  : 'Bản nháp'}
+                              </span>
+                            );
+                          })()}
                           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                            {post.category} • {post.sub_category}
+                            {post.category}{post.sub_category ? ` • ${post.sub_category}` : ''}
                           </span>
                         </div>
                         <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0, lineHeight: 1.4 }}>
