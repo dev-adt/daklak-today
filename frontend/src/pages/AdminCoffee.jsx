@@ -123,8 +123,16 @@ export const AdminCoffee = () => {
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
-          setImages(data.images || []);
+          const imgs = data.images || [];
+          setImages(imgs);
           setVideos(data.videos || []);
+          const primary = imgs.find(i => i.is_selected) || imgs[0];
+          if (primary && primary.image_url) {
+            try {
+              localStorage.setItem('daklak_coffee_board_img', primary.image_url);
+              window.dispatchEvent(new CustomEvent('coffee_image_updated', { detail: primary.image_url }));
+            } catch (e) {}
+          }
         }
       }
     } catch (err) {
