@@ -1031,18 +1031,28 @@ db.query(`
           thumbnail_url VARCHAR(1000) DEFAULT NULL,
           source VARCHAR(255) DEFAULT NULL,
           is_active TINYINT(1) DEFAULT 1,
+          order_index INT DEFAULT 0,
+          aspect_ratio VARCHAR(20) DEFAULT 'auto',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB COMMENT='Quản lý video chuyên mục Giá cà phê'
       `);
 
+      // Migration: Đảm bảo bảng coffee_videos có thêm các cột order_index và aspect_ratio
+      try {
+        await db.query(`ALTER TABLE coffee_videos ADD COLUMN order_index INT DEFAULT 0`);
+      } catch (_) {}
+      try {
+        await db.query(`ALTER TABLE coffee_videos ADD COLUMN aspect_ratio VARCHAR(20) DEFAULT 'auto'`);
+      } catch (_) {}
+
       const [existingCoffeeVids] = await db.query('SELECT COUNT(*) as count FROM coffee_videos');
       if (existingCoffeeVids[0].count === 0) {
         await db.query(
-          `INSERT INTO coffee_videos (title, video_url, summary, thumbnail_url, source, is_active) VALUES
-           ('Toàn cảnh thị trường cà phê Đắk Lắk: Cơ hội bứt phá và chu kỳ giá Robusta', 'https://www.youtube.com/watch?v=ScMzIvxBSi4', 'Nhận định chi tiết về diễn biến giá cà phê Robusta nội địa Tây Nguyên và sàn London.', 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80', 'Bản tin Nông sản Đắk Lắk', 1),
-           ('Nâng tầm giá trị Cà phê Buôn Ma Thuột: Từ nông trường bazan đến sàn quốc tế', 'https://www.youtube.com/watch?v=ScMzIvxBSi4', 'Phóng sự về công nghệ chế biến sâu và hành trình định vị cà phê đặc sản Đắk Lắk toàn cầu.', 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=600&q=80', 'VTV Nông nghiệp', 1),
-           ('Dự báo xu hướng giá cà phê và định hướng canh tác hữu cơ bền vững', 'https://www.youtube.com/watch?v=ScMzIvxBSi4', 'Phân tích chuyên gia về tiêu chuẩn xuất khẩu EUDR và bài toán ổn định thu nhập cho nông dân.', 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=600&q=80', 'Hiệp hội Cà phê VICOFA', 1)`
+          `INSERT INTO coffee_videos (title, video_url, summary, thumbnail_url, source, is_active, order_index, aspect_ratio) VALUES
+           ('Toàn cảnh thị trường cà phê Đắk Lắk: Cơ hội bứt phá và chu kỳ giá Robusta', 'https://www.youtube.com/watch?v=ScMzIvxBSi4', 'Nhận định chi tiết về diễn biến giá cà phê Robusta nội địa Tây Nguyên và sàn London.', 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80', 'Bản tin Nông sản Đắk Lắk', 1, 1, '16:9'),
+           ('Nâng tầm giá trị Cà phê Buôn Ma Thuột: Từ nông trường bazan đến sàn quốc tế', 'https://www.youtube.com/watch?v=ScMzIvxBSi4', 'Phóng sự về công nghệ chế biến sâu và hành trình định vị cà phê đặc sản Đắk Lắk toàn cầu.', 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=600&q=80', 'VTV Nông nghiệp', 1, 2, '16:9'),
+           ('Dự báo xu hướng giá cà phê và định hướng canh tác hữu cơ bền vững', 'https://www.youtube.com/watch?v=ScMzIvxBSi4', 'Phân tích chuyên gia về tiêu chuẩn xuất khẩu EUDR và bài toán ổn định thu nhập cho nông dân.', 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=600&q=80', 'Hiệp hội Cà phê VICOFA', 1, 3, '16:9')`
         );
         console.log('✅ Đã khởi tạo 3 video thị trường cà phê mặc định trong coffee_videos');
       }
@@ -5433,7 +5443,7 @@ app.get('/api/coffee-page-data', async (req, res) => {
       'SELECT * FROM coffee_price_images WHERE is_selected = 1 ORDER BY order_index ASC, id DESC'
     );
     const [videos] = await db.query(
-      'SELECT * FROM coffee_videos WHERE is_active = 1 ORDER BY created_at DESC, id DESC'
+      'SELECT * FROM coffee_videos WHERE is_active = 1 ORDER BY order_index ASC, created_at DESC, id DESC'
     );
     // Tự động gán fallback thumbnail nếu record trong database bị thiếu thumbnail_url
     const mappedVideos = (videos || []).map(v => {
@@ -5466,7 +5476,7 @@ app.get('/api/admin/coffee-management', authMiddleware, async (req, res) => {
       'SELECT * FROM coffee_price_images ORDER BY is_selected DESC, order_index ASC, id DESC'
     );
     const [videos] = await db.query(
-      'SELECT * FROM coffee_videos ORDER BY created_at DESC, id DESC'
+      'SELECT * FROM coffee_videos ORDER BY order_index ASC, created_at DESC, id DESC'
     );
     const mappedVideos = (videos || []).map(v => {
       let thumb = v.thumbnail_url;
@@ -5486,6 +5496,42 @@ app.get('/api/admin/coffee-management', authMiddleware, async (req, res) => {
       images: images || [],
       videos: mappedVideos
     });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Sắp xếp lại thứ tự nhiều ảnh bảng giá cà phê cùng lúc
+app.put('/api/admin/coffee-images/reorder', authMiddleware, async (req, res) => {
+  const { items } = req.body;
+  if (!Array.isArray(items)) {
+    return res.status(400).json({ success: false, error: 'Dữ liệu items không hợp lệ.' });
+  }
+  try {
+    for (const item of items) {
+      if (item && item.id) {
+        await db.query('UPDATE coffee_price_images SET order_index = ? WHERE id = ?', [Number(item.order_index) || 0, item.id]);
+      }
+    }
+    res.json({ success: true, message: 'Đã cập nhật thứ tự hiển thị ảnh thành công!' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Sắp xếp lại thứ tự nhiều video thị trường cà phê cùng lúc
+app.put('/api/admin/coffee-videos/reorder', authMiddleware, async (req, res) => {
+  const { items } = req.body;
+  if (!Array.isArray(items)) {
+    return res.status(400).json({ success: false, error: 'Dữ liệu items không hợp lệ.' });
+  }
+  try {
+    for (const item of items) {
+      if (item && item.id) {
+        await db.query('UPDATE coffee_videos SET order_index = ? WHERE id = ?', [Number(item.order_index) || 0, item.id]);
+      }
+    }
+    res.json({ success: true, message: 'Đã cập nhật thứ tự hiển thị video thành công!' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -5552,7 +5598,7 @@ app.delete('/api/admin/coffee-images/:id', authMiddleware, async (req, res) => {
 
 // Admin API: Thêm video thị trường cà phê mới (tự động phân tích và lưu thumbnail mặc định của video)
 app.post('/api/admin/coffee-videos', authMiddleware, async (req, res) => {
-  const { title, video_url, summary, thumbnail_url, source } = req.body;
+  const { title, video_url, summary, thumbnail_url, source, order_index, aspect_ratio } = req.body;
   if (!title || !String(title).trim()) {
     return res.status(400).json({ success: false, error: 'Vui lòng nhập Tiêu đề video.' });
   }
@@ -5564,15 +5610,19 @@ app.post('/api/admin/coffee-videos', authMiddleware, async (req, res) => {
     if (!finalThumbnail) {
       finalThumbnail = await resolveVideoThumbnailFromUrl(String(video_url).trim());
     }
+    const orderVal = Number.isFinite(Number(order_index)) ? Number(order_index) : 0;
+    const aspectVal = aspect_ratio && String(aspect_ratio).trim() ? String(aspect_ratio).trim() : 'auto';
 
     const [result] = await db.query(
-      'INSERT INTO coffee_videos (title, video_url, summary, thumbnail_url, source, is_active) VALUES (?, ?, ?, ?, ?, 1)',
+      'INSERT INTO coffee_videos (title, video_url, summary, thumbnail_url, source, is_active, order_index, aspect_ratio) VALUES (?, ?, ?, ?, ?, 1, ?, ?)',
       [
         String(title).trim(),
         String(video_url).trim(),
         summary && String(summary).trim() ? String(summary).trim() : null,
         finalThumbnail,
-        source && String(source).trim() ? String(source).trim() : null
+        source && String(source).trim() ? String(source).trim() : null,
+        orderVal,
+        aspectVal
       ]
     );
     res.status(201).json({
@@ -5589,7 +5639,7 @@ app.post('/api/admin/coffee-videos', authMiddleware, async (req, res) => {
 // Admin API: Sửa thông tin video thị trường cà phê
 app.put('/api/admin/coffee-videos/:id', authMiddleware, async (req, res) => {
   const { id } = req.params;
-  const { title, video_url, summary, thumbnail_url, source, is_active } = req.body;
+  const { title, video_url, summary, thumbnail_url, source, is_active, order_index, aspect_ratio } = req.body;
   if (!title || !String(title).trim() || !video_url || !String(video_url).trim()) {
     return res.status(400).json({ success: false, error: 'Tiêu đề video và Link URL video là bắt buộc.' });
   }
@@ -5599,8 +5649,13 @@ app.put('/api/admin/coffee-videos/:id', authMiddleware, async (req, res) => {
       finalThumbnail = await resolveVideoThumbnailFromUrl(String(video_url).trim());
     }
 
+    const [existing] = await db.query('SELECT * FROM coffee_videos WHERE id = ?', [id]);
+    const cur = (existing && existing[0]) || {};
+    const orderVal = order_index !== undefined ? Number(order_index) : (cur.order_index || 0);
+    const aspectVal = aspect_ratio !== undefined ? String(aspect_ratio).trim() : (cur.aspect_ratio || 'auto');
+
     await db.query(
-      'UPDATE coffee_videos SET title = ?, video_url = ?, summary = ?, thumbnail_url = ?, source = ?, is_active = ? WHERE id = ?',
+      'UPDATE coffee_videos SET title = ?, video_url = ?, summary = ?, thumbnail_url = ?, source = ?, is_active = ?, order_index = ?, aspect_ratio = ? WHERE id = ?',
       [
         String(title).trim(),
         String(video_url).trim(),
@@ -5608,6 +5663,8 @@ app.put('/api/admin/coffee-videos/:id', authMiddleware, async (req, res) => {
         finalThumbnail,
         source && String(source).trim() ? String(source).trim() : null,
         is_active === undefined ? 1 : (is_active ? 1 : 0),
+        orderVal,
+        aspectVal,
         id
       ]
     );

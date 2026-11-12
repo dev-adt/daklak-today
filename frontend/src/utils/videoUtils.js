@@ -57,9 +57,9 @@ export const getVideoDisplayThumbnail = (video) => {
   return '';
 };
 
-// Chuyển đổi bất kỳ link video hợp lệ nào sang thông tin nhúng và định dạng khung hình (ngang 16:9, dọc 9:16, vuông 1:1)
-// để hiển thị co giãn vừa vặn, không bị lệch hoặc cắt xén
-export const resolveVideoEmbed = (rawInput) => {
+// Chuyển đổi bất kỳ link video hợp lệ nào sang thông tin nhúng và định dạng khung hình (ngang 16:9, dọc 9:16, vuông 1:1, 4:5)
+// để hiển thị co giãn vừa vặn, không bị thừa khoảng đen hoặc cắt xén
+export const resolveVideoEmbed = (rawInput, explicitAspectRatio = 'auto') => {
   if (!rawInput || typeof rawInput !== 'string') {
     return {
       type: 'unknown',
@@ -74,23 +74,96 @@ export const resolveVideoEmbed = (rawInput) => {
   const lower = clean.toLowerCase();
   const rawLower = String(rawInput).toLowerCase();
 
-  // Xác định định dạng khung hình của video:
-  // - Dọc (vertical: 9/16): Facebook Reels (/reel/), YouTube Shorts (/shorts/), TikTok
-  // - Vuông (square: 1/1): Video vuông (chứa width=476&height=476 hoặc 1:1)
-  // - Chuẩn ngang (widescreen: 16/9): YouTube thông thường, Vimeo, v.v.
-  let isVertical = lower.includes('/reel/') || lower.includes('/reels/') || lower.includes('/shorts/') || lower.includes('tiktok.com');
-  let isSquare = !isVertical && (rawLower.includes('height=476') && rawLower.includes('width=476'));
+  // 1. Kiểm tra nếu có thiết lập thủ công tỷ lệ khung hình từ Admin
+  let forcedFormat = null;
+  let forcedRatio = null;
+  let forcedMaxWidth = null;
+
+  const exp = String(explicitAspectRatio || 'auto').toLowerCase().trim();
+  if (exp === '1:1' || exp === '1/1' || exp === 'square') {
+    forcedFormat = 'square';
+    forcedRatio = '1 / 1';
+    forcedMaxWidth = '520px';
+  } else if (exp === '9:16' || exp === '9/16' || exp === 'vertical') {
+    forcedFormat = 'vertical';
+    forcedRatio = '9 / 16';
+    forcedMaxWidth = '430px';
+  } else if (exp === '4:5' || exp === '4/5') {
+    forcedFormat = 'vertical';
+    forcedRatio = '4 / 5';
+    forcedMaxWidth = '460px';
+  } else if (exp === '16:9' || exp === '16/9' || exp === 'widescreen') {
+    forcedFormat = 'widescreen';
+    forcedRatio = '16 / 9';
+    forcedMaxWidth = '860px';
+  }
+
+  // 2. Nếu là 'auto', tự động bóc tách width/height từ mã nhúng hoặc query param
+  let autoFormat = 'widescreen';
+  let autoRatio = '16 / 9';
+  let autoMaxWidth = '860px';
+
+  const widthMatch = rawLower.match(/(?:width=["']?|width=)(\d+)/i);
+  const heightMatch = rawLower.match(/(?:height=["']?|height=)(\d+)/i);
+  if (widthMatch && heightMatch) {
+    const w = parseInt(widthMatch[1], 10);
+    const h = parseInt(heightMatch[1], 10);
+    if (w > 0 && h > 0) {
+      const r = w / h;
+      if (Math.abs(r - 1) <= 0.15) {
+        autoFormat = 'square';
+        autoRatio = '1 / 1';
+        autoMaxWidth = '520px';
+      } else if (r < 0.72) {
+        autoFormat = 'vertical';
+        autoRatio = '9 / 16';
+        autoMaxWidth = '430px';
+      } else if (r < 0.95) {
+        autoFormat = 'vertical';
+        autoRatio = '4 / 5';
+        autoMaxWidth = '460px';
+      } else {
+        autoFormat = 'widescreen';
+        autoRatio = '16 / 9';
+        autoMaxWidth = '860px';
+      }
+    }
+  } else {
+    // Nếu không có kích thước cụ thể trong chuỗi nhúng:
+    const isShorts = lower.includes('/shorts/');
+    const isTikTok = lower.includes('tiktok.com');
+    const isFbReel = lower.includes('/reel/') || lower.includes('/reels/');
+
+    if (isShorts || isTikTok) {
+      autoFormat = 'vertical';
+      autoRatio = '9 / 16';
+      autoMaxWidth = '430px';
+    } else if (isFbReel) {
+      // Facebook Reels thường là vuông 1:1 hoặc 4:5 hoặc dọc 9:16.
+      // Mặc định vuông 1:1 vừa vặn khung hình nhất, hạn chế tối đa khoảng đen
+      autoFormat = 'square';
+      autoRatio = '1 / 1';
+      autoMaxWidth = '520px';
+    } else {
+      autoFormat = 'widescreen';
+      autoRatio = '16 / 9';
+      autoMaxWidth = '860px';
+    }
+  }
+
+  const finalFormat = forcedFormat || autoFormat;
+  const finalRatio = forcedRatio || autoRatio;
+  const finalMaxWidth = forcedMaxWidth || autoMaxWidth;
 
   // 1. YouTube
   const ytId = extractYouTubeId(clean);
   if (ytId) {
-    const isShorts = lower.includes('/shorts/');
     return {
       type: 'iframe',
       src: `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`,
-      format: isShorts ? 'vertical' : 'widescreen',
-      aspectRatio: isShorts ? '9 / 16' : '16 / 9',
-      modalMaxWidth: isShorts ? '440px' : '860px'
+      format: finalFormat,
+      aspectRatio: finalRatio,
+      modalMaxWidth: finalMaxWidth
     };
   }
 
@@ -98,10 +171,10 @@ export const resolveVideoEmbed = (rawInput) => {
   if (clean.includes('facebook.com/') || clean.includes('fb.watch/')) {
     return {
       type: 'iframe',
-      src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(clean)}&show_text=false&autoplay=true`,
-      format: isVertical ? 'vertical' : isSquare ? 'square' : 'widescreen',
-      aspectRatio: isVertical ? '9 / 16' : isSquare ? '1 / 1' : '16 / 9',
-      modalMaxWidth: isVertical ? '440px' : isSquare ? '540px' : '860px'
+      src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(clean)}&show_text=false&autoplay=true&adapt_container_width=true`,
+      format: finalFormat,
+      aspectRatio: finalRatio,
+      modalMaxWidth: finalMaxWidth
     };
   }
 
@@ -111,9 +184,9 @@ export const resolveVideoEmbed = (rawInput) => {
     return {
       type: 'iframe',
       src: `https://drive.google.com/file/d/${driveMatch[1]}/preview`,
-      format: 'widescreen',
-      aspectRatio: '16 / 9',
-      modalMaxWidth: '860px'
+      format: finalFormat,
+      aspectRatio: finalRatio,
+      modalMaxWidth: finalMaxWidth
     };
   }
 
@@ -123,9 +196,9 @@ export const resolveVideoEmbed = (rawInput) => {
     return {
       type: 'iframe',
       src: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`,
-      format: 'widescreen',
-      aspectRatio: '16 / 9',
-      modalMaxWidth: '860px'
+      format: finalFormat,
+      aspectRatio: finalRatio,
+      modalMaxWidth: finalMaxWidth
     };
   }
 
@@ -136,7 +209,7 @@ export const resolveVideoEmbed = (rawInput) => {
       src: clean,
       format: 'direct',
       aspectRatio: 'auto',
-      modalMaxWidth: isVertical ? '460px' : '860px'
+      modalMaxWidth: finalMaxWidth
     };
   }
 
@@ -144,8 +217,8 @@ export const resolveVideoEmbed = (rawInput) => {
   return {
     type: 'iframe',
     src: clean,
-    format: isVertical ? 'vertical' : isSquare ? 'square' : 'widescreen',
-    aspectRatio: isVertical ? '9 / 16' : isSquare ? '1 / 1' : '16 / 9',
-    modalMaxWidth: isVertical ? '440px' : isSquare ? '540px' : '860px'
+    format: finalFormat,
+    aspectRatio: finalRatio,
+    modalMaxWidth: finalMaxWidth
   };
 };

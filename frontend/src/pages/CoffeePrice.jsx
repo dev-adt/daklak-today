@@ -52,9 +52,47 @@ export default function CoffeePrice() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [lightboxImg, setLightboxImg] = useState(null);
   const [activeVideoModal, setActiveVideoModal] = useState(null);
+  const [modalDetectedRatio, setModalDetectedRatio] = useState(null);
+  const [currentPageVid, setCurrentPageVid] = useState(1);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState('');
   const [submittingLead, setSubmittingLead] = useState(false);
+
+  // Tự động nhận diện tỷ lệ khung hình video để co giãn vừa khít, không để lại khoảng đen
+  useEffect(() => {
+    if (!activeVideoModal) {
+      setModalDetectedRatio(null);
+      return;
+    }
+    if (activeVideoModal.aspect_ratio && activeVideoModal.aspect_ratio !== 'auto') {
+      const exp = String(activeVideoModal.aspect_ratio).trim();
+      if (exp === '1:1') setModalDetectedRatio('1 / 1');
+      else if (exp === '9:16') setModalDetectedRatio('9 / 16');
+      else if (exp === '4:5') setModalDetectedRatio('4 / 5');
+      else if (exp === '16:9') setModalDetectedRatio('16 / 9');
+      return;
+    }
+
+    const thumb = getVideoDisplayThumbnail(activeVideoModal);
+    if (thumb) {
+      const probe = new Image();
+      probe.src = thumb;
+      probe.onload = () => {
+        if (probe.naturalWidth > 0 && probe.naturalHeight > 0) {
+          const r = probe.naturalWidth / probe.naturalHeight;
+          if (Math.abs(r - 1) <= 0.15) {
+            setModalDetectedRatio('1 / 1');
+          } else if (r < 0.72) {
+            setModalDetectedRatio('9 / 16');
+          } else if (r < 0.95) {
+            setModalDetectedRatio('4 / 5');
+          } else {
+            setModalDetectedRatio('16 / 9');
+          }
+        }
+      };
+    }
+  }, [activeVideoModal]);
 
   useEffect(() => {
     let isMounted = true;
@@ -454,55 +492,138 @@ export default function CoffeePrice() {
               >
                 {currentLang === 'en' ? 'No videos yet' : 'Chưa có video'}
               </div>
-            ) : (
-              <div className="cp-video-grid">
-                {coffeeVideos.map((vid) => {
-                  const thumb = getVideoDisplayThumbnail(vid);
-                  return (
-                    <div
-                      key={vid.id}
-                      className="cp-video-card"
-                      onClick={() => setActiveVideoModal(vid)}
-                    >
-                      <div className="cp-video-thumb">
-                        {thumb ? (
-                          <img
-                            src={thumb}
-                            alt={vid.title}
-                            loading="lazy"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                        ) : null}
-                        <div className="cp-video-play">
-                          <i className="ti ti-player-play-filled"></i>
-                        </div>
-                      </div>
-                      <div className="cp-video-body">
-                        <h3 className="cp-video-title">{vid.title}</h3>
-                        {vid.summary && (
-                          <p className="cp-news-desc" style={{ marginBottom: '8px' }}>
-                            {vid.summary}
-                          </p>
-                        )}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <div className="cp-meta-date" style={{ marginBottom: 0 }}>
-                            <i className="ti ti-calendar-event"></i>
-                            <span>{formatVNDate(vid)}</span>
+            ) : (() => {
+              const VIDEOS_PER_PAGE = 3;
+              const totalPagesVid = Math.ceil(coffeeVideos.length / VIDEOS_PER_PAGE) || 1;
+              const safePageVid = Math.min(Math.max(currentPageVid, 1), totalPagesVid);
+              const displayedVideos = coffeeVideos.slice((safePageVid - 1) * VIDEOS_PER_PAGE, safePageVid * VIDEOS_PER_PAGE);
+
+              return (
+                <div>
+                  <div className="cp-video-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+                    {displayedVideos.map((vid) => {
+                      const thumb = getVideoDisplayThumbnail(vid);
+                      return (
+                        <div
+                          key={vid.id}
+                          className="cp-video-card"
+                          onClick={() => setActiveVideoModal(vid)}
+                        >
+                          <div className="cp-video-thumb">
+                            {thumb ? (
+                              <img
+                                src={thumb}
+                                alt={vid.title}
+                                loading="lazy"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            ) : null}
+                            <div className="cp-video-play">
+                              <i className="ti ti-player-play-filled"></i>
+                            </div>
                           </div>
-                          {vid.source && (
-                            <span style={{ fontSize: '12px', color: '#78350F', fontWeight: 600 }}>
-                              Nguồn: {vid.source}
-                            </span>
-                          )}
+                          <div className="cp-video-body">
+                            <h3 className="cp-video-title">{vid.title}</h3>
+                            {vid.summary && (
+                              <p className="cp-news-desc" style={{ marginBottom: '8px' }}>
+                                {vid.summary}
+                              </p>
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <div className="cp-meta-date" style={{ marginBottom: 0 }}>
+                                <i className="ti ti-calendar-event"></i>
+                                <span>{formatVNDate(vid)}</span>
+                              </div>
+                              {vid.source && (
+                                <span style={{ fontSize: '12px', color: '#78350F', fontWeight: 600 }}>
+                                  Nguồn: {vid.source}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Thanh phân trang hiển thị 1 hàng Video cho chuyên mục Giá cà phê */}
+                  {totalPagesVid > 1 && (
+                    <div style={{
+                      marginTop: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}>
+                      <button
+                        type="button"
+                        disabled={safePageVid <= 1}
+                        onClick={() => setCurrentPageVid(prev => Math.max(prev - 1, 1))}
+                        style={{
+                          padding: '7px 14px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(139, 90, 43, 0.25)',
+                          background: safePageVid <= 1 ? '#F5F5F0' : '#FFFFFF',
+                          color: safePageVid <= 1 ? '#A89F91' : '#3B2314',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          cursor: safePageVid <= 1 ? 'not-allowed' : 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px'
+                        }}
+                      >
+                        <i className="ti ti-chevron-left"></i> {currentLang === 'en' ? 'Previous' : 'Trang trước'}
+                      </button>
+
+                      {Array.from({ length: totalPagesVid }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          onClick={() => setCurrentPageVid(pageNum)}
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '8px',
+                            border: pageNum === safePageVid ? 'none' : '1px solid rgba(139, 90, 43, 0.25)',
+                            background: pageNum === safePageVid ? '#8B5A2B' : '#FFFFFF',
+                            color: pageNum === safePageVid ? '#FFFFFF' : '#3B2314',
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+
+                      <button
+                        type="button"
+                        disabled={safePageVid >= totalPagesVid}
+                        onClick={() => setCurrentPageVid(prev => Math.min(prev + 1, totalPagesVid))}
+                        style={{
+                          padding: '7px 14px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(139, 90, 43, 0.25)',
+                          background: safePageVid >= totalPagesVid ? '#F5F5F0' : '#FFFFFF',
+                          color: safePageVid >= totalPagesVid ? '#A89F91' : '#3B2314',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          cursor: safePageVid >= totalPagesVid ? 'not-allowed' : 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px'
+                        }}
+                      >
+                        {currentLang === 'en' ? 'Next' : 'Trang sau'} <i className="ti ti-chevron-right"></i>
+                      </button>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                  )}
+                </div>
+              );
+            })()}
           </section>
         </div>
       </main>
@@ -524,13 +645,13 @@ export default function CoffeePrice() {
         </div>
       )}
 
-      {/* Modal phát Video nhúng trực tiếp co giãn vừa khung hình (ngang 16:9, dọc 9:16, vuông 1:1) */}
+      {/* Modal phát Video nhúng trực tiếp co giãn vừa khung hình (ngang 16:9, dọc 9:16, vuông 1:1, 4:5) */}
       {activeVideoModal && (() => {
-        const embed = resolveVideoEmbed(activeVideoModal.video_url);
-        const isVertical = embed.format === 'vertical';
-        const isSquare = embed.format === 'square';
-        const modalMaxWidth = isVertical ? '440px' : isSquare ? '540px' : '860px';
-        const playerAspectRatio = isVertical ? '9 / 16' : isSquare ? '1 / 1' : '16 / 9';
+        const embed = resolveVideoEmbed(activeVideoModal.video_url, activeVideoModal.aspect_ratio);
+        const finalRatio = modalDetectedRatio || embed.aspectRatio || '16 / 9';
+        const isSquare = finalRatio === '1 / 1';
+        const isVertical = finalRatio === '9 / 16' || finalRatio === '4 / 5';
+        const modalMaxWidth = isSquare ? '520px' : isVertical ? '430px' : '860px';
 
         return (
           <div className="cp-lightbox" onClick={() => setActiveVideoModal(null)}>
@@ -597,12 +718,12 @@ export default function CoffeePrice() {
                 </button>
               </div>
 
-              {/* Video Player Box - Co giãn vừa vặn, không bị lệch hoặc cắt xén */}
+              {/* Video Player Box - Co giãn vừa vặn, không bị thừa khoảng đen */}
               <div style={{
                 position: 'relative',
                 width: '100%',
-                maxHeight: 'min(70vh, 580px)',
-                aspectRatio: embed.type === 'video' ? 'auto' : playerAspectRatio,
+                maxHeight: '75vh',
+                aspectRatio: embed.type === 'video' ? 'auto' : finalRatio,
                 background: '#000000',
                 display: 'flex',
                 alignItems: 'center',
@@ -617,7 +738,7 @@ export default function CoffeePrice() {
                     autoPlay
                     style={{
                       maxWidth: '100%',
-                      maxHeight: 'min(70vh, 580px)',
+                      maxHeight: '75vh',
                       width: 'auto',
                       height: 'auto',
                       objectFit: 'contain',

@@ -932,6 +932,43 @@ export const Home = () => {
 
   // Modal xem video cà phê ngay tại trang chủ
   const [activeCoffeeVideoModal, setActiveCoffeeVideoModal] = useState(null);
+  const [homeDetectedVideoRatio, setHomeDetectedVideoRatio] = useState(null);
+
+  // Tự động nhận diện tỷ lệ khung hình video để co giãn vừa vặn, không để lại khoảng đen
+  useEffect(() => {
+    if (!activeCoffeeVideoModal) {
+      setHomeDetectedVideoRatio(null);
+      return;
+    }
+    if (activeCoffeeVideoModal.aspect_ratio && activeCoffeeVideoModal.aspect_ratio !== 'auto') {
+      const exp = String(activeCoffeeVideoModal.aspect_ratio).trim();
+      if (exp === '1:1') setHomeDetectedVideoRatio('1 / 1');
+      else if (exp === '9:16') setHomeDetectedVideoRatio('9 / 16');
+      else if (exp === '4:5') setHomeDetectedVideoRatio('4 / 5');
+      else if (exp === '16:9') setHomeDetectedVideoRatio('16 / 9');
+      return;
+    }
+
+    const thumb = getVideoDisplayThumbnail(activeCoffeeVideoModal);
+    if (thumb) {
+      const probe = new Image();
+      probe.src = thumb;
+      probe.onload = () => {
+        if (probe.naturalWidth > 0 && probe.naturalHeight > 0) {
+          const r = probe.naturalWidth / probe.naturalHeight;
+          if (Math.abs(r - 1) <= 0.15) {
+            setHomeDetectedVideoRatio('1 / 1');
+          } else if (r < 0.72) {
+            setHomeDetectedVideoRatio('9 / 16');
+          } else if (r < 0.95) {
+            setHomeDetectedVideoRatio('4 / 5');
+          } else {
+            setHomeDetectedVideoRatio('16 / 9');
+          }
+        }
+      };
+    }
+  }, [activeCoffeeVideoModal]);
 
   // Lắng nghe sự kiện cập nhật ảnh & video bảng giá cà phê tức thì từ Admin
   useEffect(() => {
@@ -4296,13 +4333,13 @@ export const Home = () => {
         </div>
       )}
 
-      {/* Modal phát Video Thị trường Cà phê trực tiếp trên Trang chủ */}
+      {/* Modal phát Video Thị trường Cà phê trực tiếp trên Trang chủ co giãn không thừa khoảng đen */}
       {activeCoffeeVideoModal && (() => {
-        const embed = resolveVideoEmbed(activeCoffeeVideoModal.video_url);
-        const isVertical = embed.format === 'vertical';
-        const isSquare = embed.format === 'square';
-        const modalMaxWidth = isVertical ? '440px' : isSquare ? '540px' : '860px';
-        const playerAspectRatio = isVertical ? '9 / 16' : isSquare ? '1 / 1' : '16 / 9';
+        const embed = resolveVideoEmbed(activeCoffeeVideoModal.video_url, activeCoffeeVideoModal.aspect_ratio);
+        const finalRatio = homeDetectedVideoRatio || embed.aspectRatio || '16 / 9';
+        const isSquare = finalRatio === '1 / 1';
+        const isVertical = finalRatio === '9 / 16' || finalRatio === '4 / 5';
+        const modalMaxWidth = isSquare ? '520px' : isVertical ? '430px' : '860px';
 
         return (
           <div className="cp-lightbox" onClick={() => setActiveCoffeeVideoModal(null)}>
@@ -4369,12 +4406,12 @@ export const Home = () => {
                 </button>
               </div>
 
-              {/* Video Player Box - Co giãn vừa vặn, không bị lệch hoặc cắt xén */}
+              {/* Video Player Box - Co giãn vừa vặn, không bị thừa khoảng đen */}
               <div style={{
                 position: 'relative',
                 width: '100%',
-                maxHeight: 'min(70vh, 580px)',
-                aspectRatio: embed.type === 'video' ? 'auto' : playerAspectRatio,
+                maxHeight: '75vh',
+                aspectRatio: embed.type === 'video' ? 'auto' : finalRatio,
                 background: '#000000',
                 display: 'flex',
                 alignItems: 'center',
@@ -4389,7 +4426,7 @@ export const Home = () => {
                     autoPlay
                     style={{
                       maxWidth: '100%',
-                      maxHeight: 'min(70vh, 580px)',
+                      maxHeight: '75vh',
                       width: 'auto',
                       height: 'auto',
                       objectFit: 'contain',

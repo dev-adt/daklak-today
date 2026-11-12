@@ -26,11 +26,57 @@ export const AdminCoffee = () => {
     summary: '',
     thumbnail_url: '',
     source: '',
+    aspect_ratio: 'auto',
+    order_index: 0,
     is_active: 1
   });
   const [uploadingThumb, setUploadingThumb] = useState(false);
   const [savingVideo, setSavingVideo] = useState(false);
   const [previewVideo, setPreviewVideo] = useState(null);
+  const [previewDetectedRatio, setPreviewDetectedRatio] = useState(null);
+
+  // Phân trang 1 hàng cho Ảnh (4 ảnh/hàng) & Video (3 video/hàng)
+  const ITEMS_PER_ROW_IMG = 4;
+  const [currentPageImg, setCurrentPageImg] = useState(1);
+
+  const ITEMS_PER_ROW_VID = 3;
+  const [currentPageVid, setCurrentPageVid] = useState(1);
+
+  // Tự động đo tỷ lệ khung hình thực tế khi mở Modal Xem thử để khử khoảng đen
+  useEffect(() => {
+    if (!previewVideo) {
+      setPreviewDetectedRatio(null);
+      return;
+    }
+    if (previewVideo.aspect_ratio && previewVideo.aspect_ratio !== 'auto') {
+      const exp = String(previewVideo.aspect_ratio).trim();
+      if (exp === '1:1') setPreviewDetectedRatio('1 / 1');
+      else if (exp === '9:16') setPreviewDetectedRatio('9 / 16');
+      else if (exp === '4:5') setPreviewDetectedRatio('4 / 5');
+      else if (exp === '16:9') setPreviewDetectedRatio('16 / 9');
+      return;
+    }
+
+    const thumb = getVideoDisplayThumbnail(previewVideo);
+    if (thumb) {
+      const probe = new Image();
+      probe.src = thumb;
+      probe.onload = () => {
+        if (probe.naturalWidth > 0 && probe.naturalHeight > 0) {
+          const r = probe.naturalWidth / probe.naturalHeight;
+          if (Math.abs(r - 1) <= 0.15) {
+            setPreviewDetectedRatio('1 / 1');
+          } else if (r < 0.72) {
+            setPreviewDetectedRatio('9 / 16');
+          } else if (r < 0.95) {
+            setPreviewDetectedRatio('4 / 5');
+          } else {
+            setPreviewDetectedRatio('16 / 9');
+          }
+        }
+      };
+    }
+  }, [previewVideo]);
 
   const loadData = async () => {
     setLoading(true);
@@ -188,6 +234,54 @@ export const AdminCoffee = () => {
     }
   };
 
+  // Thay đổi thứ tự ảnh (Lên / Xuống trong danh sách)
+  const handleMoveImage = async (currentIndex, direction) => {
+    const targetIndex = currentIndex + direction;
+    if (targetIndex < 0 || targetIndex >= images.length) return;
+
+    const newImages = [...images];
+    const [moved] = newImages.splice(currentIndex, 1);
+    newImages.splice(targetIndex, 0, moved);
+
+    // Gán lại order_index tuần tự: 1, 2, 3...
+    const items = newImages.map((img, idx) => ({ id: img.id, order_index: idx + 1 }));
+    setImages(newImages);
+
+    try {
+      await fetch('/api/admin/coffee-images/reorder', {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ items })
+      });
+      loadData();
+    } catch (err) {
+      console.error('Lỗi sắp xếp ảnh:', err);
+      loadData();
+    }
+  };
+
+  // Cập nhật số thứ tự trực tiếp của ảnh
+  const handleUpdateImageOrder = async (imgId, orderVal) => {
+    const parsed = parseInt(orderVal, 10);
+    if (isNaN(parsed)) return;
+    try {
+      await fetch(`/api/admin/coffee-images/${imgId}`, {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ order_index: parsed })
+      });
+      loadData();
+    } catch (err) {
+      alert('Lỗi cập nhật số thứ tự: ' + err.message);
+    }
+  };
+
   const handleDeleteImage = async (img) => {
     if (!window.confirm(`Bạn có chắc chắn muốn xóa ảnh "${img.title}" khỏi thư viện?`)) return;
     try {
@@ -200,6 +294,54 @@ export const AdminCoffee = () => {
       }
     } catch (err) {
       alert('Lỗi xóa ảnh: ' + err.message);
+    }
+  };
+
+  // Thay đổi thứ tự video (Lên / Xuống trong danh sách)
+  const handleMoveVideo = async (currentIndex, direction) => {
+    const targetIndex = currentIndex + direction;
+    if (targetIndex < 0 || targetIndex >= videos.length) return;
+
+    const newVideos = [...videos];
+    const [moved] = newVideos.splice(currentIndex, 1);
+    newVideos.splice(targetIndex, 0, moved);
+
+    // Gán lại order_index tuần tự: 1, 2, 3...
+    const items = newVideos.map((vid, idx) => ({ id: vid.id, order_index: idx + 1 }));
+    setVideos(newVideos);
+
+    try {
+      await fetch('/api/admin/coffee-videos/reorder', {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ items })
+      });
+      loadData();
+    } catch (err) {
+      console.error('Lỗi sắp xếp video:', err);
+      loadData();
+    }
+  };
+
+  // Cập nhật số thứ tự trực tiếp của video
+  const handleUpdateVideoOrder = async (vidId, orderVal) => {
+    const parsed = parseInt(orderVal, 10);
+    if (isNaN(parsed)) return;
+    try {
+      await fetch(`/api/admin/coffee-videos/${vidId}`, {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ order_index: parsed })
+      });
+      loadData();
+    } catch (err) {
+      alert('Lỗi cập nhật số thứ tự video: ' + err.message);
     }
   };
 
@@ -238,6 +380,8 @@ export const AdminCoffee = () => {
           summary: '',
           thumbnail_url: '',
           source: '',
+          aspect_ratio: 'auto',
+          order_index: 0,
           is_active: 1
         });
         loadData();
@@ -259,6 +403,8 @@ export const AdminCoffee = () => {
       summary: vid.summary || '',
       thumbnail_url: vid.thumbnail_url || '',
       source: vid.source || '',
+      aspect_ratio: vid.aspect_ratio || 'auto',
+      order_index: vid.order_index ?? 0,
       is_active: vid.is_active !== undefined ? vid.is_active : 1
     });
     const formEl = document.getElementById('coffee-video-form-section');
@@ -275,7 +421,7 @@ export const AdminCoffee = () => {
       if (res.ok) {
         if (editingVideoId === vid.id) {
           setEditingVideoId(null);
-          setVideoForm({ title: '', video_url: '', summary: '', thumbnail_url: '', source: '', is_active: 1 });
+          setVideoForm({ title: '', video_url: '', summary: '', thumbnail_url: '', source: '', aspect_ratio: 'auto', order_index: 0, is_active: 1 });
         }
         loadData();
       }
@@ -442,119 +588,302 @@ export const AdminCoffee = () => {
           )}
         </form>
 
-        {/* Danh sách các ảnh để chọn / bỏ chọn hiển thị */}
+        {/* Danh sách các ảnh để chọn / bỏ chọn hiển thị & sắp xếp thứ tự (1 Hàng + Phân trang) */}
         {loading ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#64748B' }}>Đang tải danh sách ảnh...</div>
         ) : images.length === 0 ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#64748B', background: '#F8FAFC', borderRadius: '10px' }}>
             Chưa có ảnh bảng giá cà phê nào. Hãy tải ảnh lên ở khung bên trên.
           </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '16px' }}>
-            {images.map((img, idx) => {
-              const isSelected = img.is_selected === 1;
-              const isPrimary = isSelected && idx === 0;
-              return (
-                <div
-                  key={img.id}
-                  style={{
-                    border: isSelected ? '2px solid #10B981' : '1px solid #CBD5E1',
-                    borderRadius: '12px',
-                    background: isSelected ? '#F0FDF4' : '#FFFFFF',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
-                    position: 'relative'
-                  }}
-                >
-                  {isPrimary && (
-                    <div style={{ position: 'absolute', top: '8px', left: '8px', background: '#D97706', color: '#fff', fontSize: '10.5px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', zIndex: 2, boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
-                      ★ Ảnh chính (Trang chủ)
-                    </div>
-                  )}
-                  <div style={{ position: 'relative', background: '#1E293B', height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                    <img
-                      src={img.image_url}
-                      alt={img.title}
-                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', opacity: isSelected ? 1 : 0.6 }}
-                    />
-                  </div>
-                  <div style={{ padding: '12px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '8px', lineHeight: 1.35 }}>
-                      {img.title || 'Bảng giá cà phê'}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <button
-                        type="button"
-                        onClick={() => handleToggleSelectImage(img)}
-                        style={{
-                          width: '100%',
-                          padding: '7px 10px',
-                          borderRadius: '6px',
-                          border: isSelected ? '1px solid #059669' : '1px solid #94A3B8',
-                          background: isSelected ? '#10B981' : '#F1F5F9',
-                          color: isSelected ? '#FFFFFF' : '#334155',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '5px'
-                        }}
-                      >
-                        <i className={`ti ${isSelected ? 'ti-checkbox' : 'ti-square'}`}></i>
-                        {isSelected ? 'Đang chọn hiển thị' : 'Bấm để chọn hiển thị'}
-                      </button>
+        ) : (() => {
+          const totalPagesImg = Math.ceil(images.length / ITEMS_PER_ROW_IMG) || 1;
+          const safePageImg = Math.min(Math.max(currentPageImg, 1), totalPagesImg);
+          const displayedImages = images.slice((safePageImg - 1) * ITEMS_PER_ROW_IMG, safePageImg * ITEMS_PER_ROW_IMG);
 
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        {!isPrimary && (
+          return (
+            <div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '16px' }}>
+                {displayedImages.map((img, pageIdx) => {
+                  const globalIdx = (safePageImg - 1) * ITEMS_PER_ROW_IMG + pageIdx;
+                  const isSelected = img.is_selected === 1;
+                  const isPrimary = isSelected && globalIdx === 0;
+
+                  return (
+                    <div
+                      key={img.id}
+                      style={{
+                        border: isSelected ? '2px solid #10B981' : '1px solid #CBD5E1',
+                        borderRadius: '12px',
+                        background: isSelected ? '#F0FDF4' : '#FFFFFF',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+                        position: 'relative'
+                      }}
+                    >
+                      {/* Thanh công cụ sắp xếp thứ tự ở đầu card */}
+                      <div style={{
+                        padding: '6px 10px',
+                        background: '#F1F5F9',
+                        borderBottom: '1px solid #E2E8F0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '6px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{
+                            background: '#0F172A',
+                            color: '#FFFFFF',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            padding: '2px 6px',
+                            borderRadius: '4px'
+                          }}>
+                            #{globalIdx + 1}
+                          </span>
+                          <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Thứ tự:</span>
+                          <input
+                            type="number"
+                            defaultValue={img.order_index ?? (globalIdx + 1)}
+                            onBlur={(e) => handleUpdateImageOrder(img.id, e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleUpdateImageOrder(img.id, e.target.value);
+                                e.target.blur();
+                              }
+                            }}
+                            title="Nhập số thứ tự hiển thị và nhấn Enter hoặc bấm ra ngoài để lưu"
+                            style={{
+                              width: '42px',
+                              padding: '2px 4px',
+                              fontSize: '11.5px',
+                              textAlign: 'center',
+                              borderRadius: '4px',
+                              border: '1px solid #CBD5E1',
+                              fontWeight: 700,
+                              color: '#0F172A'
+                            }}
+                          />
+                        </div>
+
+                        {/* Nút di chuyển vị trí nhanh: Lên trước / Xuống sau */}
+                        <div style={{ display: 'flex', gap: '3px' }}>
                           <button
                             type="button"
-                            onClick={() => handleMakePrimaryImage(img)}
+                            onClick={() => handleMoveImage(globalIdx, -1)}
+                            disabled={globalIdx === 0}
+                            title="Dời ảnh sang trước (lên trên)"
                             style={{
-                              flex: 1,
-                              padding: '6px 8px',
-                              borderRadius: '6px',
-                              border: '1px solid #F59E0B',
-                              background: '#FFFBEB',
-                              color: '#B45309',
-                              fontSize: '11.5px',
-                              fontWeight: 600,
-                              cursor: 'pointer'
+                              padding: '3px 7px',
+                              borderRadius: '4px',
+                              border: '1px solid #CBD5E1',
+                              background: globalIdx === 0 ? '#E2E8F0' : '#FFFFFF',
+                              color: globalIdx === 0 ? '#94A3B8' : '#1E293B',
+                              cursor: globalIdx === 0 ? 'not-allowed' : 'pointer',
+                              fontSize: '11px',
+                              fontWeight: 700
                             }}
-                            title="Đặt ảnh này lên đầu tiên và hiển thị ở Trang chủ"
                           >
-                            <i className="ti ti-star"></i> Đặt lên đầu
+                            <i className="ti ti-chevron-left"></i>
                           </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteImage(img)}
-                          style={{
-                            padding: '6px 10px',
-                            borderRadius: '6px',
-                            border: '1px solid #FCA5A5',
-                            background: '#FEF2F2',
-                            color: '#DC2626',
-                            fontSize: '11.5px',
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                          }}
-                          title="Xóa ảnh này"
-                        >
-                          <i className="ti ti-trash"></i> Xóa
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMoveImage(globalIdx, 1)}
+                            disabled={globalIdx === images.length - 1}
+                            title="Dời ảnh sang sau (xuống dưới)"
+                            style={{
+                              padding: '3px 7px',
+                              borderRadius: '4px',
+                              border: '1px solid #CBD5E1',
+                              background: globalIdx === images.length - 1 ? '#E2E8F0' : '#FFFFFF',
+                              color: globalIdx === images.length - 1 ? '#94A3B8' : '#1E293B',
+                              cursor: globalIdx === images.length - 1 ? 'not-allowed' : 'pointer',
+                              fontSize: '11px',
+                              fontWeight: 700
+                            }}
+                          >
+                            <i className="ti ti-chevron-right"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      {isPrimary && (
+                        <div style={{ position: 'absolute', top: '38px', left: '8px', background: '#D97706', color: '#fff', fontSize: '10.5px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', zIndex: 2, boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
+                          ★ Ảnh chính (Trang chủ)
+                        </div>
+                      )}
+
+                      <div style={{ position: 'relative', background: '#1E293B', height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        <img
+                          src={img.image_url}
+                          alt={img.title}
+                          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', opacity: isSelected ? 1 : 0.6 }}
+                        />
+                      </div>
+
+                      <div style={{ padding: '10px 12px' }}>
+                        <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#1E293B', marginBottom: '8px', lineHeight: 1.35, minHeight: '34px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {img.title || 'Bảng giá cà phê'}
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleSelectImage(img)}
+                            style={{
+                              width: '100%',
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              border: isSelected ? '1px solid #059669' : '1px solid #94A3B8',
+                              background: isSelected ? '#10B981' : '#F1F5F9',
+                              color: isSelected ? '#FFFFFF' : '#334155',
+                              fontSize: '11.5px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '5px'
+                            }}
+                          >
+                            <i className={`ti ${isSelected ? 'ti-checkbox' : 'ti-square'}`}></i>
+                            {isSelected ? 'Đang chọn hiển thị' : 'Bấm để chọn hiển thị'}
+                          </button>
+
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            {!isPrimary && (
+                              <button
+                                type="button"
+                                onClick={() => handleMakePrimaryImage(img)}
+                                style={{
+                                  flex: 1,
+                                  padding: '5px 8px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #F59E0B',
+                                  background: '#FFFBEB',
+                                  color: '#B45309',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer'
+                                }}
+                                title="Đặt ảnh này lên đầu tiên và hiển thị ở Trang chủ"
+                              >
+                                <i className="ti ti-star"></i> Đặt lên đầu
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteImage(img)}
+                              style={{
+                                padding: '5px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid #FCA5A5',
+                                background: '#FEF2F2',
+                                color: '#DC2626',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                              title="Xóa ảnh này"
+                            >
+                              <i className="ti ti-trash"></i> Xóa
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
+
+              {/* Thanh phân trang hiển thị 1 hàng ảnh */}
+              {totalPagesImg > 1 && (
+                <div style={{
+                  marginTop: '18px',
+                  paddingTop: '14px',
+                  borderTop: '1px solid #E2E8F0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '12px'
+                }}>
+                  <div style={{ fontSize: '13px', color: '#64748B', fontWeight: 600 }}>
+                    Hiển thị <strong>{(safePageImg - 1) * ITEMS_PER_ROW_IMG + 1} - {Math.min(safePageImg * ITEMS_PER_ROW_IMG, images.length)}</strong> trên tổng số <strong>{images.length}</strong> ảnh
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button
+                      type="button"
+                      disabled={safePageImg <= 1}
+                      onClick={() => setCurrentPageImg(prev => Math.max(prev - 1, 1))}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #CBD5E1',
+                        background: safePageImg <= 1 ? '#F1F5F9' : '#FFFFFF',
+                        color: safePageImg <= 1 ? '#94A3B8' : '#334155',
+                        fontSize: '12.5px',
+                        fontWeight: 600,
+                        cursor: safePageImg <= 1 ? 'not-allowed' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <i className="ti ti-chevron-left"></i> Trang trước
+                    </button>
+
+                    {Array.from({ length: totalPagesImg }, (_, i) => i + 1).map((pageNum) => (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        onClick={() => setCurrentPageImg(pageNum)}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '6px',
+                          border: pageNum === safePageImg ? '1px solid #059669' : '1px solid #CBD5E1',
+                          background: pageNum === safePageImg ? '#10B981' : '#FFFFFF',
+                          color: pageNum === safePageImg ? '#FFFFFF' : '#334155',
+                          fontSize: '12.5px',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {pageNum}
+                      </button>
+                    ))}
+
+                    <button
+                      type="button"
+                      disabled={safePageImg >= totalPagesImg}
+                      onClick={() => setCurrentPageImg(prev => Math.min(prev + 1, totalPagesImg))}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #CBD5E1',
+                        background: safePageImg >= totalPagesImg ? '#F1F5F9' : '#FFFFFF',
+                        color: safePageImg >= totalPagesImg ? '#94A3B8' : '#334155',
+                        fontSize: '12.5px',
+                        fontWeight: 600,
+                        cursor: safePageImg >= totalPagesImg ? 'not-allowed' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      Trang sau <i className="ti ti-chevron-right"></i>
+                    </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* ====================================================================
@@ -690,6 +1019,40 @@ export const AdminCoffee = () => {
             </div>
           </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginBottom: '14px' }}>
+            {/* 6. Tỷ lệ khung hình (Khắc phục triệt để khoảng đen) */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '5px' }}>
+                Tỷ lệ khung hình (Khắc phục khoảng đen thừa)
+              </label>
+              <select
+                value={videoForm.aspect_ratio || 'auto'}
+                onChange={(e) => setVideoForm(prev => ({ ...prev, aspect_ratio: e.target.value }))}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', background: '#FFFFFF', boxSizing: 'border-box' }}
+              >
+                <option value="auto">✨ Tự động co giãn theo video / thumbnail (Khuyên dùng)</option>
+                <option value="16:9">Chuẩn ngang 16:9 (YouTube, Bản tin VTV, Phóng sự)</option>
+                <option value="1:1">Vuông 1:1 (Facebook Video, FB Reels vuông)</option>
+                <option value="9:16">Dọc 9:16 (TikTok, YouTube Shorts, FB Reels dọc cao)</option>
+                <option value="4:5">Dọc 4:5 (Facebook Portrait)</option>
+              </select>
+            </div>
+
+            {/* 7. Thứ tự hiển thị */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '5px' }}>
+                Thứ tự hiển thị (STT)
+              </label>
+              <input
+                type="number"
+                value={videoForm.order_index ?? 0}
+                onChange={(e) => setVideoForm(prev => ({ ...prev, order_index: e.target.value }))}
+                placeholder="0: Mặc định mới nhất lên đầu, hoặc 1, 2, 3..."
+                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', boxSizing: 'border-box' }}
+              />
+            </div>
+          </div>
+
           {/* 3. Tóm tắt video (nếu có) */}
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: '#1E293B', marginBottom: '5px' }}>
@@ -728,7 +1091,7 @@ export const AdminCoffee = () => {
           </div>
         </form>
 
-        {/* Danh sách các video đã thêm */}
+        {/* Danh sách các video đã thêm & sắp xếp thứ tự (1 Hàng + Phân trang) */}
         {loading ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#64748B' }}>Đang tải danh sách video...</div>
         ) : videos.length === 0 ? (
@@ -736,104 +1099,294 @@ export const AdminCoffee = () => {
             <i className="ti ti-video-off" style={{ fontSize: '28px', display: 'block', marginBottom: '6px', color: '#94A3B8' }}></i>
             Chưa có video nào. Trên trang <strong>/gia-ca-phe</strong> hiện đang hiển thị dòng chữ <em>"Chưa có video"</em>.
           </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-            {videos.map((vid) => {
-              const thumb = getVideoDisplayThumbnail(vid);
-              return (
-                <div
-                  key={vid.id}
-                  style={{
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '12px',
-                    background: '#FFFFFF',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.04)'
-                  }}
-                >
-                  <div>
-                    <div
-                      onClick={() => setPreviewVideo(vid)}
-                      style={{ position: 'relative', aspectRatio: '16 / 9', background: '#0F172A', cursor: 'pointer', overflow: 'hidden' }}
-                      title="Nhấn để xem thử video"
-                    >
-                      {thumb ? (
-                        <img
-                          src={thumb}
-                          alt={vid.title}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      ) : null}
-                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.28)' }}>
-                        <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#E11D48', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                          <i className="ti ti-player-play-filled"></i>
-                        </div>
-                      </div>
-                    </div>
+        ) : (() => {
+          const totalPagesVid = Math.ceil(videos.length / ITEMS_PER_ROW_VID) || 1;
+          const safePageVid = Math.min(Math.max(currentPageVid, 1), totalPagesVid);
+          const displayedVideos = videos.slice((safePageVid - 1) * ITEMS_PER_ROW_VID, safePageVid * ITEMS_PER_ROW_VID);
 
-                    <div style={{ padding: '12px 14px' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A', marginBottom: '4px', lineHeight: 1.4 }}>
-                        {vid.title}
+          return (
+            <div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px' }}>
+                {displayedVideos.map((vid, pageIdx) => {
+                  const globalIdx = (safePageVid - 1) * ITEMS_PER_ROW_VID + pageIdx;
+                  const thumb = getVideoDisplayThumbnail(vid);
+
+                  return (
+                    <div
+                      key={vid.id}
+                      style={{
+                        border: '1px solid #E2E8F0',
+                        borderRadius: '12px',
+                        background: '#FFFFFF',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.04)'
+                      }}
+                    >
+                      {/* Thanh công cụ sắp xếp thứ tự ở đầu video card */}
+                      <div style={{
+                        padding: '6px 12px',
+                        background: '#F1F5F9',
+                        borderBottom: '1px solid #E2E8F0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '6px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <span style={{
+                            background: '#E11D48',
+                            color: '#FFFFFF',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            padding: '2px 6px',
+                            borderRadius: '4px'
+                          }}>
+                            #{globalIdx + 1}
+                          </span>
+                          <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Thứ tự:</span>
+                          <input
+                            type="number"
+                            defaultValue={vid.order_index ?? (globalIdx + 1)}
+                            onBlur={(e) => handleUpdateVideoOrder(vid.id, e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleUpdateVideoOrder(vid.id, e.target.value);
+                                e.target.blur();
+                              }
+                            }}
+                            title="Nhập số thứ tự hiển thị và nhấn Enter hoặc bấm ra ngoài để lưu"
+                            style={{
+                              width: '42px',
+                              padding: '2px 4px',
+                              fontSize: '11.5px',
+                              textAlign: 'center',
+                              borderRadius: '4px',
+                              border: '1px solid #CBD5E1',
+                              fontWeight: 700,
+                              color: '#0F172A'
+                            }}
+                          />
+                        </div>
+
+                        {/* Tỷ lệ khung hình badge & nút di chuyển nhanh */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{
+                            fontSize: '10.5px',
+                            fontWeight: 600,
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: '#E0E7FF',
+                            color: '#3730A3'
+                          }}>
+                            {vid.aspect_ratio && vid.aspect_ratio !== 'auto' ? vid.aspect_ratio : 'Tự động'}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => handleMoveVideo(globalIdx, -1)}
+                            disabled={globalIdx === 0}
+                            title="Dời video sang trước (lên trên)"
+                            style={{
+                              padding: '3px 7px',
+                              borderRadius: '4px',
+                              border: '1px solid #CBD5E1',
+                              background: globalIdx === 0 ? '#E2E8F0' : '#FFFFFF',
+                              color: globalIdx === 0 ? '#94A3B8' : '#1E293B',
+                              cursor: globalIdx === 0 ? 'not-allowed' : 'pointer',
+                              fontSize: '11px',
+                              fontWeight: 700
+                            }}
+                          >
+                            <i className="ti ti-chevron-left"></i>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMoveVideo(globalIdx, 1)}
+                            disabled={globalIdx === videos.length - 1}
+                            title="Dời video sang sau (xuống dưới)"
+                            style={{
+                              padding: '3px 7px',
+                              borderRadius: '4px',
+                              border: '1px solid #CBD5E1',
+                              background: globalIdx === videos.length - 1 ? '#E2E8F0' : '#FFFFFF',
+                              color: globalIdx === images.length - 1 ? '#94A3B8' : '#1E293B',
+                              cursor: globalIdx === videos.length - 1 ? 'not-allowed' : 'pointer',
+                              fontSize: '11px',
+                              fontWeight: 700
+                            }}
+                          >
+                            <i className="ti ti-chevron-right"></i>
+                          </button>
+                        </div>
                       </div>
-                      {vid.source && (
-                        <div style={{ fontSize: '11.5px', color: '#B45309', fontWeight: 600, marginBottom: '4px' }}>
-                          Nguồn: {vid.source}
+
+                      <div>
+                        <div
+                          onClick={() => setPreviewVideo(vid)}
+                          style={{ position: 'relative', aspectRatio: '16 / 9', background: '#0F172A', cursor: 'pointer', overflow: 'hidden' }}
+                          title="Nhấn để xem thử video"
+                        >
+                          {thumb ? (
+                            <img
+                              src={thumb}
+                              alt={vid.title}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                          ) : null}
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.28)' }}>
+                            <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#E11D48', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                              <i className="ti ti-player-play-filled"></i>
+                            </div>
+                          </div>
                         </div>
-                      )}
-                      {vid.summary && (
-                        <div style={{ fontSize: '12px', color: '#64748B', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {vid.summary}
+
+                        <div style={{ padding: '12px 14px' }}>
+                          <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A', marginBottom: '4px', lineHeight: 1.4, minHeight: '38px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {vid.title}
+                          </div>
+                          {vid.source && (
+                            <div style={{ fontSize: '11.5px', color: '#B45309', fontWeight: 600, marginBottom: '4px' }}>
+                              Nguồn: {vid.source}
+                            </div>
+                          )}
+                          {vid.summary && (
+                            <div style={{ fontSize: '12px', color: '#64748B', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              {vid.summary}
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
+
+                      <div style={{ padding: '10px 14px', borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', background: '#F8FAFC' }}>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewVideo(vid)}
+                          style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#334155', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          <i className="ti ti-player-play"></i> Xem thử
+                        </button>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditVideo(vid)}
+                            style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid #93C5FD', background: '#EFF6FF', color: '#1D4ED8', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                          >
+                            <i className="ti ti-edit"></i> Sửa
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteVideo(vid)}
+                            style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid #FCA5A5', background: '#FEF2F2', color: '#DC2626', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                          >
+                            <i className="ti ti-trash"></i> Xóa
+                          </button>
+                        </div>
+                      </div>
                     </div>
+                  );
+                })}
+              </div>
+
+              {/* Thanh phân trang hiển thị 1 hàng video */}
+              {totalPagesVid > 1 && (
+                <div style={{
+                  marginTop: '18px',
+                  paddingTop: '14px',
+                  borderTop: '1px solid #E2E8F0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '12px'
+                }}>
+                  <div style={{ fontSize: '13px', color: '#64748B', fontWeight: 600 }}>
+                    Hiển thị <strong>{(safePageVid - 1) * ITEMS_PER_ROW_VID + 1} - {Math.min(safePageVid * ITEMS_PER_ROW_VID, videos.length)}</strong> trên tổng số <strong>{videos.length}</strong> video
                   </div>
 
-                  <div style={{ padding: '10px 14px', borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', background: '#F8FAFC' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <button
                       type="button"
-                      onClick={() => setPreviewVideo(vid)}
-                      style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#334155', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                      disabled={safePageVid <= 1}
+                      onClick={() => setCurrentPageVid(prev => Math.max(prev - 1, 1))}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #CBD5E1',
+                        background: safePageVid <= 1 ? '#F1F5F9' : '#FFFFFF',
+                        color: safePageVid <= 1 ? '#94A3B8' : '#334155',
+                        fontSize: '12.5px',
+                        fontWeight: 600,
+                        cursor: safePageVid <= 1 ? 'not-allowed' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
                     >
-                      <i className="ti ti-player-play"></i> Xem thử
+                      <i className="ti ti-chevron-left"></i> Trang trước
                     </button>
-                    <div style={{ display: 'flex', gap: '6px' }}>
+
+                    {Array.from({ length: totalPagesVid }, (_, i) => i + 1).map((pageNum) => (
                       <button
+                        key={pageNum}
                         type="button"
-                        onClick={() => handleStartEditVideo(vid)}
-                        style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid #93C5FD', background: '#EFF6FF', color: '#1D4ED8', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                        onClick={() => setCurrentPageVid(pageNum)}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '6px',
+                          border: pageNum === safePageVid ? '1px solid #E11D48' : '1px solid #CBD5E1',
+                          background: pageNum === safePageVid ? '#E11D48' : '#FFFFFF',
+                          color: pageNum === safePageVid ? '#FFFFFF' : '#334155',
+                          fontSize: '12.5px',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
                       >
-                        <i className="ti ti-edit"></i> Sửa
+                        {pageNum}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteVideo(vid)}
-                        style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid #FCA5A5', background: '#FEF2F2', color: '#DC2626', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
-                      >
-                        <i className="ti ti-trash"></i> Xóa
-                      </button>
-                    </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      disabled={safePageVid >= totalPagesVid}
+                      onClick={() => setCurrentPageVid(prev => Math.min(prev + 1, totalPagesVid))}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #CBD5E1',
+                        background: safePageVid >= totalPagesVid ? '#F1F5F9' : '#FFFFFF',
+                        color: safePageVid >= totalPagesVid ? '#94A3B8' : '#334155',
+                        fontSize: '12.5px',
+                        fontWeight: 600,
+                        cursor: safePageVid >= totalPagesVid ? 'not-allowed' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      Trang sau <i className="ti ti-chevron-right"></i>
+                    </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              )}
+            </div>
+          );
+        })()}
       </div>
 
-      {/* Modal Xem thử Video */}
-      {/* Modal xem thử video co giãn vừa khung hình (ngang 16:9, dọc 9:16, vuông 1:1) */}
+      {/* Modal Xem thử Video co giãn vừa khớp không thừa khoảng đen */}
       {previewVideo && (() => {
-        const embed = resolveVideoEmbed(previewVideo.video_url);
-        const isVertical = embed.format === 'vertical';
-        const isSquare = embed.format === 'square';
-        const modalMaxWidth = isVertical ? '440px' : isSquare ? '540px' : '820px';
-        const playerAspectRatio = isVertical ? '9 / 16' : isSquare ? '1 / 1' : '16 / 9';
+        const embed = resolveVideoEmbed(previewVideo.video_url, previewVideo.aspect_ratio);
+        const finalRatio = previewDetectedRatio || embed.aspectRatio || '16 / 9';
+        const isSquare = finalRatio === '1 / 1';
+        const isVertical = finalRatio === '9 / 16' || finalRatio === '4 / 5';
+        const modalMaxWidth = isSquare ? '520px' : isVertical ? '430px' : '860px';
 
         return (
           <div
@@ -909,12 +1462,12 @@ export const AdminCoffee = () => {
                 </button>
               </div>
 
-              {/* Video Player Box - Co giãn vừa vặn, không bị lệch hoặc cắt xén */}
+              {/* Video Player Box - Co giãn vừa vặn, không bị thừa khoảng đen */}
               <div style={{
                 position: 'relative',
                 width: '100%',
-                maxHeight: 'min(70vh, 580px)',
-                aspectRatio: embed.type === 'video' ? 'auto' : playerAspectRatio,
+                maxHeight: '75vh',
+                aspectRatio: embed.type === 'video' ? 'auto' : finalRatio,
                 background: '#000000',
                 display: 'flex',
                 alignItems: 'center',
@@ -929,7 +1482,7 @@ export const AdminCoffee = () => {
                     autoPlay
                     style={{
                       maxWidth: '100%',
-                      maxHeight: 'min(70vh, 580px)',
+                      maxHeight: '75vh',
                       width: 'auto',
                       height: 'auto',
                       objectFit: 'contain',
