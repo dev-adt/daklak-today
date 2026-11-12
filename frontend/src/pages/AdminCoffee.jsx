@@ -2,91 +2,9 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { compressImageFileToBase64 } from '../utils/compressImageForUpload';
+import { extractYouTubeId, resolveVideoEmbed, getVideoDisplayThumbnail } from '../utils/videoUtils';
 
-// Trích xuất YouTube ID nếu là link YouTube để tự động lấy ảnh bìa khi người dùng không nhập Thumbnail
-export const extractYouTubeId = (inputUrl) => {
-  if (!inputUrl || typeof inputUrl !== 'string') return null;
-  let str = inputUrl.trim();
-  const iframeSrcMatch = str.match(/src=["']([^"']+)["']/i);
-  if (iframeSrcMatch && iframeSrcMatch[1]) {
-    str = iframeSrcMatch[1];
-  }
-  const regExp = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/i;
-  const match = str.match(regExp);
-  return match && match[1] ? match[1] : null;
-};
-
-// Chuyển đổi bất kỳ link video hợp lệ nào (YouTube, Google Drive, Facebook, iframe, MP4...) sang thông tin nhúng
-export const resolveVideoEmbed = (rawInput) => {
-  if (!rawInput || typeof rawInput !== 'string') return { type: 'unknown', src: '' };
-  let url = rawInput.trim();
-
-  // Nếu người dùng dán nguyên thẻ <iframe ...>
-  const iframeMatch = url.match(/<iframe[^>]+src=["']([^"']+)["']/i);
-  if (iframeMatch && iframeMatch[1]) {
-    url = iframeMatch[1].trim();
-  }
-
-  // 1. YouTube
-  const ytId = extractYouTubeId(url);
-  if (ytId) {
-    return {
-      type: 'iframe',
-      src: `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`
-    };
-  }
-
-  // 2. Google Drive (ví dụ: https://drive.google.com/file/d/FILE_ID/view...)
-  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/i) || url.match(/drive\.google\.com\/open\?id=([^&]+)/i);
-  if (driveMatch && driveMatch[1]) {
-    return {
-      type: 'iframe',
-      src: `https://drive.google.com/file/d/${driveMatch[1]}/preview`
-    };
-  }
-
-  // 3. Vimeo
-  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
-  if (vimeoMatch && vimeoMatch[1]) {
-    return {
-      type: 'iframe',
-      src: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`
-    };
-  }
-
-  // 4. Facebook Video
-  if (url.includes('facebook.com/') && (url.includes('/videos/') || url.includes('/watch') || url.includes('/reel/'))) {
-    return {
-      type: 'iframe',
-      src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&autoplay=true`
-    };
-  }
-
-  // 5. File video trực tiếp (.mp4, .webm, .ogg, .mov)
-  if (/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)) {
-    return {
-      type: 'video',
-      src: url
-    };
-  }
-
-  // 6. Bất kỳ link nhúng hợp lệ nào khác
-  return {
-    type: 'iframe',
-    src: url
-  };
-};
-
-export const getVideoDisplayThumbnail = (video) => {
-  if (video?.thumbnail_url && String(video.thumbnail_url).trim()) {
-    return String(video.thumbnail_url).trim();
-  }
-  const ytId = extractYouTubeId(video?.video_url || '');
-  if (ytId) {
-    return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-  }
-  return '/images/daklak/daklak_doi_ca_phe.jpg';
-};
+export { extractYouTubeId, resolveVideoEmbed, getVideoDisplayThumbnail };
 
 export const AdminCoffee = () => {
   const { getAuthHeaders } = useAuth();
@@ -125,7 +43,12 @@ export const AdminCoffee = () => {
         if (data.success) {
           const imgs = data.images || [];
           setImages(imgs);
-          setVideos(data.videos || []);
+          const vids = data.videos || [];
+          setVideos(vids);
+          try {
+            localStorage.setItem('daklak_coffee_videos', JSON.stringify(vids));
+            window.dispatchEvent(new CustomEvent('coffee_video_updated', { detail: vids }));
+          } catch (e) {}
           const primary = imgs.find(i => i.is_selected) || imgs[0];
           if (primary && primary.image_url) {
             try {
@@ -837,15 +760,16 @@ export const AdminCoffee = () => {
                       style={{ position: 'relative', aspectRatio: '16 / 9', background: '#0F172A', cursor: 'pointer', overflow: 'hidden' }}
                       title="Nhấn để xem thử video"
                     >
-                      <img
-                        src={thumb}
-                        alt={vid.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = '/images/daklak/daklak_doi_ca_phe.jpg';
-                        }}
-                      />
+                      {thumb ? (
+                        <img
+                          src={thumb}
+                          alt={vid.title}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      ) : null}
                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.28)' }}>
                         <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#E11D48', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
                           <i className="ti ti-player-play-filled"></i>
@@ -903,80 +827,156 @@ export const AdminCoffee = () => {
       </div>
 
       {/* Modal Xem thử Video */}
-      {previewVideo && (
-        <div
-          onClick={() => setPreviewVideo(null)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.82)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px'
-          }}
-        >
+      {/* Modal xem thử video co giãn vừa khung hình (ngang 16:9, dọc 9:16, vuông 1:1) */}
+      {previewVideo && (() => {
+        const embed = resolveVideoEmbed(previewVideo.video_url);
+        const isVertical = embed.format === 'vertical';
+        const isSquare = embed.format === 'square';
+        const modalMaxWidth = isVertical ? '440px' : isSquare ? '540px' : '820px';
+        const playerAspectRatio = isVertical ? '9 / 16' : isSquare ? '1 / 1' : '16 / 9';
+
+        return (
           <div
-            onClick={(e) => e.stopPropagation()}
+            onClick={() => setPreviewVideo(null)}
             style={{
-              background: '#FFFFFF',
-              borderRadius: '16px',
-              maxWidth: '820px',
-              width: '100%',
-              overflow: 'hidden',
-              boxShadow: '0 24px 60px rgba(0,0,0,0.45)'
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(15, 23, 42, 0.82)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
             }}
           >
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>{previewVideo.title}</h3>
-              <button
-                type="button"
-                onClick={() => setPreviewVideo(null)}
-                style={{ border: 'none', background: '#F1F5F9', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '16px' }}
-              >
-                <i className="ti ti-x"></i>
-              </button>
-            </div>
-            <div style={{ position: 'relative', aspectRatio: '16 / 9', background: '#000' }}>
-              {(() => {
-                const embed = resolveVideoEmbed(previewVideo.video_url);
-                if (embed.type === 'video') {
-                  return (
-                    <video
-                      src={embed.src}
-                      controls
-                      autoPlay
-                      style={{ width: '100%', height: '100%', display: 'block' }}
-                    />
-                  );
-                }
-                return (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                maxWidth: modalMaxWidth,
+                width: '100%',
+                maxHeight: '92vh',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                boxShadow: '0 24px 60px rgba(0,0,0,0.45)',
+                margin: 'auto',
+                transition: 'max-width 0.25s ease'
+              }}
+            >
+              <div style={{
+                padding: '14px 20px',
+                borderBottom: '1px solid #E2E8F0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '12px',
+                flexShrink: 0
+              }}>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  color: '#0F172A',
+                  lineHeight: 1.35,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden'
+                }}>
+                  {previewVideo.title}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setPreviewVideo(null)}
+                  style={{
+                    border: 'none',
+                    background: '#F1F5F9',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    flexShrink: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  aria-label="Đóng"
+                >
+                  <i className="ti ti-x"></i>
+                </button>
+              </div>
+
+              {/* Video Player Box - Co giãn vừa vặn, không bị lệch hoặc cắt xén */}
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                maxHeight: 'min(70vh, 580px)',
+                aspectRatio: embed.type === 'video' ? 'auto' : playerAspectRatio,
+                background: '#000000',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                margin: '0 auto'
+              }}>
+                {embed.type === 'video' ? (
+                  <video
+                    src={embed.src}
+                    controls
+                    autoPlay
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: 'min(70vh, 580px)',
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain',
+                      display: 'block'
+                    }}
+                  />
+                ) : (
                   <iframe
                     src={embed.src}
                     title={previewVideo.title}
-                    style={{ width: '100%', height: '100%', border: 'none' }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      display: 'block'
+                    }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                     allowFullScreen
                   />
-                );
-              })()}
-            </div>
-            {(previewVideo.summary || previewVideo.source) && (
-              <div style={{ padding: '14px 20px', background: '#F8FAFC' }}>
-                {previewVideo.source && (
-                  <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#B45309', marginBottom: '4px' }}>
-                    Nguồn: {previewVideo.source}
-                  </div>
-                )}
-                {previewVideo.summary && (
-                  <p style={{ margin: 0, fontSize: '13.5px', color: '#334155', lineHeight: 1.6 }}>{previewVideo.summary}</p>
                 )}
               </div>
-            )}
+
+              {(previewVideo.summary || previewVideo.source) && (
+                <div style={{
+                  padding: '12px 18px',
+                  background: '#F8FAFC',
+                  maxHeight: '110px',
+                  overflowY: 'auto',
+                  borderTop: '1px solid #E2E8F0',
+                  flexShrink: 0
+                }}>
+                  {previewVideo.source && (
+                    <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#B45309', marginBottom: previewVideo.summary ? '4px' : 0 }}>
+                      Nguồn: {previewVideo.source}
+                    </div>
+                  )}
+                  {previewVideo.summary && (
+                    <p style={{ margin: 0, fontSize: '13px', color: '#334155', lineHeight: 1.55 }}>
+                      {previewVideo.summary}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </AdminLayout>
   );
 };

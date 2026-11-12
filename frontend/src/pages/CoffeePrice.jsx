@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import SEOHead from '../components/SEOHead';
 import { useTranslation } from '../contexts/LanguageContext';
-import { resolveVideoEmbed, getVideoDisplayThumbnail } from './AdminCoffee';
+import { resolveVideoEmbed, getVideoDisplayThumbnail } from '../utils/videoUtils';
 import './CoffeePrice.css';
 
 const DEFAULT_PRICE_BOARDS = [
@@ -465,14 +465,16 @@ export default function CoffeePrice() {
                       onClick={() => setActiveVideoModal(vid)}
                     >
                       <div className="cp-video-thumb">
-                        <img
-                          src={thumb}
-                          alt={vid.title}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = '/images/daklak/daklak_doi_ca_phe.jpg';
-                          }}
-                        />
+                        {thumb ? (
+                          <img
+                            src={thumb}
+                            alt={vid.title}
+                            loading="lazy"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : null}
                         <div className="cp-video-play">
                           <i className="ti ti-player-play-filled"></i>
                         </div>
@@ -522,86 +524,147 @@ export default function CoffeePrice() {
         </div>
       )}
 
-      {/* Modal phát Video nhúng trực tiếp */}
-      {activeVideoModal && (
-        <div className="cp-lightbox" onClick={() => setActiveVideoModal(null)}>
-          <div
-            style={{
-              background: '#FFFFFF',
-              borderRadius: '18px',
-              maxWidth: '860px',
-              width: '100%',
-              overflow: 'hidden',
-              position: 'relative',
-              boxShadow: '0 24px 60px rgba(0,0,0,0.5)'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ padding: '16px 22px', borderBottom: '1px solid rgba(139, 90, 43, 0.14)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-              <h3 style={{ margin: 0, fontFamily: 'var(--font-title)', fontSize: '19px', fontWeight: 800, color: '#2C1810' }}>
-                {activeVideoModal.title}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setActiveVideoModal(null)}
-                style={{
-                  width: '34px',
-                  height: '34px',
-                  borderRadius: '50%',
-                  border: 'none',
-                  background: '#F3E5D0',
-                  color: '#3B2314',
-                  cursor: 'pointer',
-                  fontSize: '18px',
-                  flexShrink: 0
-                }}
-              >
-                <i className="ti ti-x"></i>
-              </button>
-            </div>
+      {/* Modal phát Video nhúng trực tiếp co giãn vừa khung hình (ngang 16:9, dọc 9:16, vuông 1:1) */}
+      {activeVideoModal && (() => {
+        const embed = resolveVideoEmbed(activeVideoModal.video_url);
+        const isVertical = embed.format === 'vertical';
+        const isSquare = embed.format === 'square';
+        const modalMaxWidth = isVertical ? '440px' : isSquare ? '540px' : '860px';
+        const playerAspectRatio = isVertical ? '9 / 16' : isSquare ? '1 / 1' : '16 / 9';
 
-            <div style={{ position: 'relative', aspectRatio: '16 / 9', background: '#000000' }}>
-              {(() => {
-                const embed = resolveVideoEmbed(activeVideoModal.video_url);
-                if (embed.type === 'video') {
-                  return (
-                    <video
-                      src={embed.src}
-                      controls
-                      autoPlay
-                      style={{ width: '100%', height: '100%', display: 'block' }}
-                    />
-                  );
-                }
-                return (
+        return (
+          <div className="cp-lightbox" onClick={() => setActiveVideoModal(null)}>
+            <div
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '18px',
+                maxWidth: modalMaxWidth,
+                width: '100%',
+                maxHeight: '92vh',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                position: 'relative',
+                boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
+                margin: 'auto',
+                transition: 'max-width 0.25s ease'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{
+                padding: '14px 20px',
+                borderBottom: '1px solid rgba(139, 90, 43, 0.14)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '12px',
+                flexShrink: 0
+              }}>
+                <h3 style={{
+                  margin: 0,
+                  fontFamily: 'var(--font-title, serif)',
+                  fontSize: '17px',
+                  fontWeight: 800,
+                  color: '#2C1810',
+                  lineHeight: 1.35,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden'
+                }}>
+                  {activeVideoModal.title}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setActiveVideoModal(null)}
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: '#F3E5D0',
+                    color: '#3B2314',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    flexShrink: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  aria-label="Đóng"
+                >
+                  <i className="ti ti-x"></i>
+                </button>
+              </div>
+
+              {/* Video Player Box - Co giãn vừa vặn, không bị lệch hoặc cắt xén */}
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                maxHeight: 'min(70vh, 580px)',
+                aspectRatio: embed.type === 'video' ? 'auto' : playerAspectRatio,
+                background: '#000000',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                margin: '0 auto'
+              }}>
+                {embed.type === 'video' ? (
+                  <video
+                    src={embed.src}
+                    controls
+                    autoPlay
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: 'min(70vh, 580px)',
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain',
+                      display: 'block'
+                    }}
+                  />
+                ) : (
                   <iframe
                     src={embed.src}
                     title={activeVideoModal.title}
-                    style={{ width: '100%', height: '100%', border: 'none' }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      display: 'block'
+                    }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                     allowFullScreen
                   />
-                );
-              })()}
-            </div>
-
-            {(activeVideoModal.summary || activeVideoModal.source) && (
-              <div style={{ padding: '16px 22px', background: '#FBF8F3' }}>
-                {activeVideoModal.source && (
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#B45309', marginBottom: activeVideoModal.summary ? '6px' : 0 }}>
-                    Nguồn: {activeVideoModal.source}
-                  </div>
-                )}
-                {activeVideoModal.summary && (
-                  <p style={{ margin: 0, fontSize: '14.5px', color: '#4A3B32', lineHeight: 1.65 }}>
-                    {activeVideoModal.summary}
-                  </p>
                 )}
               </div>
-            )}
+
+              {(activeVideoModal.summary || activeVideoModal.source) && (
+                <div style={{
+                  padding: '12px 18px',
+                  background: '#FBF8F3',
+                  maxHeight: '110px',
+                  overflowY: 'auto',
+                  borderTop: '1px solid rgba(139, 90, 43, 0.08)',
+                  flexShrink: 0
+                }}>
+                  {activeVideoModal.source && (
+                    <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#B45309', marginBottom: activeVideoModal.summary ? '4px' : 0 }}>
+                      Nguồn: {activeVideoModal.source}
+                    </div>
+                  )}
+                  {activeVideoModal.summary && (
+                    <p style={{ margin: 0, fontSize: '13.5px', color: '#4A3B32', lineHeight: 1.55 }}>
+                      {activeVideoModal.summary}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       <Footer />
     </div>

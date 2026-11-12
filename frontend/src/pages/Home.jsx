@@ -9,7 +9,9 @@ import SEOHead from '../components/SEOHead';
 import brandConfig from '../brand.config';
 import { getCategoryLabel } from '../constants/categories';
 import { fetchJsonWithTimeout, FALLBACK_POSTS, FALLBACK_EVENTS, FALLBACK_MEMBERS } from '../utils/api';
+import { resolveVideoEmbed, getVideoDisplayThumbnail } from '../utils/videoUtils';
 import './HomeDakLak.css';
+import './CoffeePrice.css';
 
 // Helper format ngày giờ cho sự kiện (Ví dụ: 13:30 Thứ Năm, 22/10/2026)
 const formatEventDateTime = (dateVal) => {
@@ -579,6 +581,37 @@ const TOP_INDUSTRIAL_PARKS = {
   ]
 };
 
+// Video thị trường cà phê mặc định khi cơ sở dữ liệu chưa có video
+const FALLBACK_COFFEE_VIDEOS = [
+  {
+    id: 'fb-vid-1',
+    title: 'Toàn cảnh thị trường cà phê Đắk Lắk: Cơ hội bứt phá và chu kỳ giá Robusta',
+    video_url: 'https://www.youtube.com/watch?v=ScMzIvxBSi4',
+    summary: 'Nhận định chi tiết về diễn biến giá cà phê Robusta nội địa Tây Nguyên và sàn London.',
+    thumbnail_url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80',
+    source: 'Bản tin Nông sản Đắk Lắk',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fb-vid-2',
+    title: 'Nâng tầm giá trị Cà phê Buôn Ma Thuột: Từ nông trường bazan đến sàn quốc tế',
+    video_url: 'https://www.youtube.com/watch?v=ScMzIvxBSi4',
+    summary: 'Phóng sự về công nghệ chế biến sâu và hành trình định vị cà phê đặc sản Đắk Lắk toàn cầu.',
+    thumbnail_url: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=600&q=80',
+    source: 'Văn hóa & Đời sống',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fb-vid-3',
+    title: 'Dự báo xu hướng giá cà phê và định hướng canh tác hữu cơ bền vững',
+    video_url: 'https://www.youtube.com/watch?v=ScMzIvxBSi4',
+    summary: 'Phân tích chuyên gia về tiêu chuẩn xuất khẩu EUDR và bài toán ổn định thu nhập cho nông dân.',
+    thumbnail_url: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=600&q=80',
+    source: 'Hiệp hội Cà phê VICOFA',
+    created_at: new Date().toISOString()
+  }
+];
+
 export const Home = () => {
   const { role, user, token } = useAuth();
   let storedMemberUser = null;
@@ -887,7 +920,20 @@ export const Home = () => {
   // Danh sách bài viết chuyên mục Giá cà phê / nông sản cà phê cho block Giá cà phê
   const [coffeeNewsPosts, setCoffeeNewsPosts] = useState([]);
 
-  // Lắng nghe sự kiện cập nhật ảnh bảng giá cà phê tức thì từ Admin
+  // Danh sách video thị trường cà phê (đồng bộ từ Quản lý giá cafe)
+  const [coffeeVideos, setCoffeeVideos] = useState(() => {
+    try {
+      const cached = localStorage.getItem('daklak_coffee_videos');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // Modal xem video cà phê ngay tại trang chủ
+  const [activeCoffeeVideoModal, setActiveCoffeeVideoModal] = useState(null);
+
+  // Lắng nghe sự kiện cập nhật ảnh & video bảng giá cà phê tức thì từ Admin
   useEffect(() => {
     const handleCoffeeImgUpdate = (e) => {
       const newImg = e?.detail || (e?.key === 'daklak_coffee_board_img' ? e.newValue : null);
@@ -895,11 +941,26 @@ export const Home = () => {
         setHomeCoffeeBoardImg(newImg);
       }
     };
+    const handleCoffeeVideoUpdate = (e) => {
+      let newVids = e?.detail;
+      if (!newVids && e?.key === 'daklak_coffee_videos' && e.newValue) {
+        try {
+          newVids = JSON.parse(e.newValue);
+        } catch (_) {}
+      }
+      if (Array.isArray(newVids)) {
+        setCoffeeVideos(newVids);
+      }
+    };
     window.addEventListener('coffee_image_updated', handleCoffeeImgUpdate);
+    window.addEventListener('coffee_video_updated', handleCoffeeVideoUpdate);
     window.addEventListener('storage', handleCoffeeImgUpdate);
+    window.addEventListener('storage', handleCoffeeVideoUpdate);
     return () => {
       window.removeEventListener('coffee_image_updated', handleCoffeeImgUpdate);
+      window.removeEventListener('coffee_video_updated', handleCoffeeVideoUpdate);
       window.removeEventListener('storage', handleCoffeeImgUpdate);
+      window.removeEventListener('storage', handleCoffeeVideoUpdate);
     };
   }, []);
 
@@ -917,12 +978,20 @@ export const Home = () => {
         ]);
 
         if (isMounted) {
-          if (coffeeRes.status === 'fulfilled' && coffeeRes.value?.success && Array.isArray(coffeeRes.value.images) && coffeeRes.value.images.length > 0) {
-            const serverImg = coffeeRes.value.images[0].image_url || '/images/bang-gia-ca-phe-1.jpg';
-            setHomeCoffeeBoardImg(serverImg);
-            try {
-              localStorage.setItem('daklak_coffee_board_img', serverImg);
-            } catch (e) {}
+          if (coffeeRes.status === 'fulfilled' && coffeeRes.value?.success) {
+            if (Array.isArray(coffeeRes.value.images) && coffeeRes.value.images.length > 0) {
+              const serverImg = coffeeRes.value.images[0].image_url || '/images/bang-gia-ca-phe-1.jpg';
+              setHomeCoffeeBoardImg(serverImg);
+              try {
+                localStorage.setItem('daklak_coffee_board_img', serverImg);
+              } catch (e) {}
+            }
+            if (Array.isArray(coffeeRes.value.videos) && coffeeRes.value.videos.length > 0) {
+              setCoffeeVideos(coffeeRes.value.videos);
+              try {
+                localStorage.setItem('daklak_coffee_videos', JSON.stringify(coffeeRes.value.videos));
+              } catch (e) {}
+            }
           }
           if (coffeePostsRes.status === 'fulfilled' && coffeePostsRes.value?.success && Array.isArray(coffeePostsRes.value.data) && coffeePostsRes.value.data.length > 0) {
             setCoffeeNewsPosts(coffeePostsRes.value.data);
@@ -1865,74 +1934,148 @@ export const Home = () => {
                 })
               ];
               const displayCoffeeNews = (coffeeNews.length > 0 ? coffeeNews : latestPosts).slice(0, 3);
+              const displayVideos = (coffeeVideos && coffeeVideos.length > 0) ? coffeeVideos.slice(0, 3) : FALLBACK_COFFEE_VIDEOS;
 
               return (
-                <div className="spotlight-coffee-news-grid">
-                  {/* CỘT TRÁI: ẢNH BẢNG GIÁ CÀ PHÊ HÔM NAY (ĐỒNG BỘ TỪ ADMIN HOẶC BÀI ĐĂNG) */}
-                  <div
-                    className="spotlight-coffee-board-card scroll-reveal scroll-reveal-left"
-                    onClick={() => navigate('/gia-ca-phe')}
-                    title="Xem chi tiết chuyên mục Giá cà phê hôm nay"
-                  >
-                    <img
-                      src={coffeeBoardImg}
-                      alt="Bảng giá cà phê Đắk Lắk hôm nay"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/images/bang-gia-ca-phe-1.jpg';
-                      }}
-                    />
+                <>
+                  <div className="spotlight-coffee-news-grid">
+                    {/* CỘT TRÁI: ẢNH BẢNG GIÁ CÀ PHÊ HÔM NAY (ĐỒNG BỘ TỪ ADMIN HOẶC BÀI ĐĂNG) */}
+                    <div
+                      className="spotlight-coffee-board-card scroll-reveal scroll-reveal-left"
+                      onClick={() => navigate('/gia-ca-phe')}
+                      title="Xem chi tiết chuyên mục Giá cà phê hôm nay"
+                    >
+                      <img
+                        src={coffeeBoardImg}
+                        alt="Bảng giá cà phê Đắk Lắk hôm nay"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/images/bang-gia-ca-phe-1.jpg';
+                        }}
+                      />
+                    </div>
+
+                    {/* CỘT PHẢI: DANH SÁCH 3 BÀI TIN TỨC CÀ PHÊ + LINK XEM TẤT CẢ BẢN TIN GIÁ CÀ PHÊ */}
+                    <div className="spotlight-right-news-col scroll-reveal scroll-reveal-right">
+                      <div className="spotlight-right-news-list">
+                        {displayCoffeeNews.map((post, idx) => {
+                          const rawDate = post.deadline || post.published_at || post.created_at;
+                          const formattedDate = rawDate
+                            ? new Date(rawDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                            : 'Hôm nay';
+                          const rawSummary = post.summary || post.short_desc || (post.body ? String(post.body).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '');
+
+                          return (
+                            <div
+                              key={post.id || post.slug || idx}
+                              className="spotlight-right-news-card"
+                              onClick={() => navigate(`/posts/${post.slug || post.id}`)}
+                            >
+                              <div className="spotlight-right-news-thumb">
+                                <img
+                                  src={getPostThumb(post, idx)}
+                                  alt={post.title}
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = FALLBACK_POST_IMAGES[idx % FALLBACK_POST_IMAGES.length];
+                                  }}
+                                />
+                              </div>
+                              <div className="spotlight-right-news-body">
+                                <div className="spotlight-right-news-date">
+                                  <i className="ti ti-calendar-event" />
+                                  <span>{formattedDate}</span>
+                                </div>
+                                <h3 className="spotlight-right-news-title">{post.title}</h3>
+                                <p className="spotlight-right-news-desc">
+                                  {rawSummary || 'Bấm để đọc toàn bộ bài viết, phân tích sâu và nhận định chi tiết...'}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="spotlight-bottom-more-row">
+                        <Link to="/gia-ca-phe" className="spotlight-bottom-more-link">
+                          <span>{currentLang === 'en' ? 'View all coffee bulletins' : 'Xem tất cả bản tin giá cà phê'}</span>
+                          <i className="ti ti-arrow-right" />
+                        </Link>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* CỘT PHẢI: DANH SÁCH 3 BÀI TIN TỨC CÀ PHÊ + LINK XEM TẤT CẢ BẢN TIN GIÁ CÀ PHÊ */}
-                  <div className="spotlight-right-news-col scroll-reveal scroll-reveal-right">
-                    <div className="spotlight-right-news-list">
-                      {displayCoffeeNews.map((post, idx) => {
-                        const rawDate = post.deadline || post.published_at || post.created_at;
+                  {/* ── HÀNG DƯỚI: VIDEO THỊ TRƯỜNG CÀ PHÊ ───────────────────────────── */}
+                  <div className="home-coffee-video-row scroll-reveal scroll-reveal-up" style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1px solid rgba(139, 90, 43, 0.15)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                      <div className="cp-sec-header" style={{ marginBottom: 0 }}>
+                        <span className="cp-sec-icon">
+                          <i className="ti ti-player-play-filled"></i>
+                        </span>
+                        <h3 className="cp-sec-title" style={{ fontSize: '18px', fontWeight: 800 }}>
+                          {currentLang === 'en' ? 'COFFEE MARKET VIDEOS' : 'VIDEO THỊ TRƯỜNG CÀ PHÊ'}
+                        </h3>
+                      </div>
+                      <Link to="/gia-ca-phe" className="spotlight-bottom-more-link" style={{ fontSize: '0.9rem' }}>
+                        <span>{currentLang === 'en' ? 'View all market videos' : 'Xem tất cả video thị trường'}</span>
+                        <i className="ti ti-arrow-right" />
+                      </Link>
+                    </div>
+
+                    <div className="cp-video-grid">
+                      {displayVideos.map((vid) => {
+                        const thumb = getVideoDisplayThumbnail(vid);
+                        const rawDate = vid.date_display || vid.deadline || vid.published_at || vid.created_at;
                         const formattedDate = rawDate
                           ? new Date(rawDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                          : 'Hôm nay';
-                        const rawSummary = post.summary || post.short_desc || (post.body ? String(post.body).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '');
+                          : 'Mới nhất';
 
                         return (
                           <div
-                            key={post.id || post.slug || idx}
-                            className="spotlight-right-news-card"
-                            onClick={() => navigate(`/posts/${post.slug || post.id}`)}
+                            key={vid.id}
+                            className="cp-video-card"
+                            onClick={() => setActiveCoffeeVideoModal(vid)}
                           >
-                            <div className="spotlight-right-news-thumb">
-                              <img
-                                src={getPostThumb(post, idx)}
-                                alt={post.title}
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = FALLBACK_POST_IMAGES[idx % FALLBACK_POST_IMAGES.length];
-                                }}
-                              />
-                            </div>
-                            <div className="spotlight-right-news-body">
-                              <div className="spotlight-right-news-date">
-                                <i className="ti ti-calendar-event" />
-                                <span>{formattedDate}</span>
+                            <div className="cp-video-thumb">
+                              {thumb ? (
+                                <img
+                                  src={thumb}
+                                  alt={vid.title}
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                  }}
+                                />
+                              ) : null}
+                              <div className="cp-video-play">
+                                <i className="ti ti-player-play-filled"></i>
                               </div>
-                              <h3 className="spotlight-right-news-title">{post.title}</h3>
-                              <p className="spotlight-right-news-desc">
-                                {rawSummary || 'Bấm để đọc toàn bộ bài viết, phân tích sâu và nhận định chi tiết...'}
-                              </p>
+                            </div>
+                            <div className="cp-video-body">
+                              <h4 className="cp-video-title">{vid.title}</h4>
+                              {vid.summary && (
+                                <p className="cp-news-desc" style={{ marginBottom: '8px', fontSize: '0.88rem', color: '#5C4738', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                  {vid.summary}
+                                </p>
+                              )}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <div className="cp-meta-date" style={{ marginBottom: 0, fontSize: '12px' }}>
+                                  <i className="ti ti-calendar-event"></i>
+                                  <span>{formattedDate}</span>
+                                </div>
+                                {vid.source && (
+                                  <span style={{ fontSize: '11.5px', color: '#78350F', fontWeight: 600 }}>
+                                    Nguồn: {vid.source}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         );
                       })}
                     </div>
-
-                    <div className="spotlight-bottom-more-row">
-                      <Link to="/gia-ca-phe" className="spotlight-bottom-more-link">
-                        <span>{currentLang === 'en' ? 'View all coffee bulletins' : 'Xem tất cả bản tin giá cà phê'}</span>
-                        <i className="ti ti-arrow-right" />
-                      </Link>
-                    </div>
                   </div>
-                </div>
+                </>
               );
             })()}
           </div>
@@ -4152,6 +4295,142 @@ export const Home = () => {
           </div>
         </div>
       )}
+
+      {/* Modal phát Video Thị trường Cà phê trực tiếp trên Trang chủ */}
+      {activeCoffeeVideoModal && (() => {
+        const embed = resolveVideoEmbed(activeCoffeeVideoModal.video_url);
+        const isVertical = embed.format === 'vertical';
+        const isSquare = embed.format === 'square';
+        const modalMaxWidth = isVertical ? '440px' : isSquare ? '540px' : '860px';
+        const playerAspectRatio = isVertical ? '9 / 16' : isSquare ? '1 / 1' : '16 / 9';
+
+        return (
+          <div className="cp-lightbox" onClick={() => setActiveCoffeeVideoModal(null)}>
+            <div
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '18px',
+                maxWidth: modalMaxWidth,
+                width: '100%',
+                maxHeight: '92vh',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                position: 'relative',
+                boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
+                margin: 'auto',
+                transition: 'max-width 0.25s ease'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{
+                padding: '14px 20px',
+                borderBottom: '1px solid rgba(139, 90, 43, 0.14)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '12px',
+                flexShrink: 0
+              }}>
+                <h3 style={{
+                  margin: 0,
+                  fontFamily: 'var(--font-title, serif)',
+                  fontSize: '17px',
+                  fontWeight: 800,
+                  color: '#2C1810',
+                  lineHeight: 1.35,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden'
+                }}>
+                  {activeCoffeeVideoModal.title}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setActiveCoffeeVideoModal(null)}
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: '#F3E5D0',
+                    color: '#3B2314',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    flexShrink: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  aria-label="Đóng"
+                >
+                  <i className="ti ti-x"></i>
+                </button>
+              </div>
+
+              {/* Video Player Box - Co giãn vừa vặn, không bị lệch hoặc cắt xén */}
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                maxHeight: 'min(70vh, 580px)',
+                aspectRatio: embed.type === 'video' ? 'auto' : playerAspectRatio,
+                background: '#000000',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                margin: '0 auto'
+              }}>
+                {embed.type === 'video' ? (
+                  <video
+                    src={embed.src}
+                    controls
+                    autoPlay
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: 'min(70vh, 580px)',
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain',
+                      display: 'block'
+                    }}
+                  />
+                ) : (
+                  <iframe
+                    src={embed.src}
+                    title={activeCoffeeVideoModal.title}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      display: 'block'
+                    }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                    allowFullScreen
+                  />
+                )}
+              </div>
+
+              {activeCoffeeVideoModal.summary && (
+                <div style={{
+                  padding: '12px 18px',
+                  background: '#FAF6F0',
+                  color: '#5C3A21',
+                  fontSize: '13px',
+                  lineHeight: 1.5,
+                  maxHeight: '110px',
+                  overflowY: 'auto',
+                  borderTop: '1px solid rgba(139, 90, 43, 0.08)',
+                  flexShrink: 0
+                }}>
+                  {activeCoffeeVideoModal.summary}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       <Footer />
       <FloatingAIBot />

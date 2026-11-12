@@ -1035,6 +1035,36 @@ db.query(`
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB COMMENT='Quản lý video chuyên mục Giá cà phê'
       `);
+
+      const [existingCoffeeVids] = await db.query('SELECT COUNT(*) as count FROM coffee_videos');
+      if (existingCoffeeVids[0].count === 0) {
+        await db.query(
+          `INSERT INTO coffee_videos (title, video_url, summary, thumbnail_url, source, is_active) VALUES
+           ('Toàn cảnh thị trường cà phê Đắk Lắk: Cơ hội bứt phá và chu kỳ giá Robusta', 'https://www.youtube.com/watch?v=ScMzIvxBSi4', 'Nhận định chi tiết về diễn biến giá cà phê Robusta nội địa Tây Nguyên và sàn London.', 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80', 'Bản tin Nông sản Đắk Lắk', 1),
+           ('Nâng tầm giá trị Cà phê Buôn Ma Thuột: Từ nông trường bazan đến sàn quốc tế', 'https://www.youtube.com/watch?v=ScMzIvxBSi4', 'Phóng sự về công nghệ chế biến sâu và hành trình định vị cà phê đặc sản Đắk Lắk toàn cầu.', 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=600&q=80', 'VTV Nông nghiệp', 1),
+           ('Dự báo xu hướng giá cà phê và định hướng canh tác hữu cơ bền vững', 'https://www.youtube.com/watch?v=ScMzIvxBSi4', 'Phân tích chuyên gia về tiêu chuẩn xuất khẩu EUDR và bài toán ổn định thu nhập cho nông dân.', 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=600&q=80', 'Hiệp hội Cà phê VICOFA', 1)`
+        );
+        console.log('✅ Đã khởi tạo 3 video thị trường cà phê mặc định trong coffee_videos');
+      }
+
+      // Tự động quét và cập nhật thumbnail cho các video chưa có ảnh bìa
+      try {
+        const [vidsWithoutThumb] = await db.query(
+          'SELECT id, video_url FROM coffee_videos WHERE thumbnail_url IS NULL OR TRIM(thumbnail_url) = ""'
+        );
+        if (vidsWithoutThumb && vidsWithoutThumb.length > 0) {
+          for (const row of vidsWithoutThumb) {
+            const autoThumb = await resolveVideoThumbnailFromUrl(row.video_url);
+            if (autoThumb) {
+              await db.query('UPDATE coffee_videos SET thumbnail_url = ? WHERE id = ?', [autoThumb, row.id]);
+              console.log(`✅ Đã tự động cập nhật thumbnail cho video #${row.id}: ${autoThumb}`);
+            }
+          }
+        }
+      } catch (errThumb) {
+        console.warn('⚠️ Lỗi tự động cập nhật thumbnail video:', errThumb.message);
+      }
+
       console.log('✅ Bảng coffee_price_images và coffee_videos đã sẵn sàng');
     } catch (e) {
       console.warn('⚠️ Lỗi khởi tạo bảng quản lý giá cà phê:', e.message);
@@ -5299,6 +5329,103 @@ app.get('/api/og-image', async (req, res) => {
 // API QUẢN LÝ CHUYÊN MỤC GIÁ CÀ PHÊ (ẢNH BẢNG GIÁ & VIDEO THỊ TRƯỜNG)
 // ════════════════════════════════════════════
 
+// Hàm helper tự động phân tích và lấy ảnh thumbnail mặc định của video (YouTube, Facebook, Vimeo...)
+async function resolveVideoThumbnailFromUrl(inputUrl) {
+  if (!inputUrl || typeof inputUrl !== 'string') return null;
+  let url = inputUrl.trim();
+  // Nếu người dùng dán cả thẻ <iframe ...>, lấy thuộc tính src
+  const iframeMatch = url.match(/src=["']([^"']+)["']/i);
+  if (iframeMatch && iframeMatch[1]) {
+    url = iframeMatch[1].trim();
+  }
+  // Nếu là link Facebook plugin video.php, bóc tách lấy URL video gốc từ tham số href
+  if (url.includes('facebook.com/plugins/video.php')) {
+    try {
+      const parsed = new URL(url.startsWith('http') ? url : `https:${url}`);
+      const hrefParam = parsed.searchParams.get('href');
+      if (hrefParam) url = decodeURIComponent(hrefParam);
+    } catch (_) {}
+  }
+
+  // 1. YouTube (hỗ trợ watch?v=, youtu.be/, shorts/, embed/, live/)
+  const ytMatch = url.match(/(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/i);
+  if (ytMatch && ytMatch[1]) {
+    return `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+  }
+
+  // 2. Facebook (Reels, Videos, Watch, Posts)
+  if (url.includes('facebook.com') || url.includes('fb.watch')) {
+    try {
+      const fbRes = await fetch(url, {
+        headers: {
+          'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        },
+        signal: AbortSignal.timeout(6000),
+        redirect: 'follow'
+      });
+      if (fbRes.ok) {
+        const html = await fbRes.text();
+        const m = html.match(/property="og:image" content="([^"]+)"/) || html.match(/"og:image" content="([^"]+)"/);
+        if (m && m[1]) {
+          return m[1].replace(/&amp;/g, '&');
+        }
+      }
+    } catch (e) {
+      console.warn('Lỗi lấy thumbnail Facebook:', e.message);
+    }
+  }
+
+  // 3. Vimeo
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+  if (vimeoMatch && vimeoMatch[1]) {
+    try {
+      const vRes = await fetch(`https://vimeo.com/api/v2/video/${vimeoMatch[1]}.json`, { signal: AbortSignal.timeout(4000) });
+      if (vRes.ok) {
+        const json = await vRes.json();
+        if (json[0]?.thumbnail_large) return json[0].thumbnail_large;
+      }
+    } catch (_) {}
+  }
+
+  // 4. Các trang khác có thẻ OpenGraph (TikTok, báo chí, v.v.)
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'facebookexternalhit/1.1' },
+      signal: AbortSignal.timeout(5000),
+      redirect: 'follow'
+    });
+    if (res.ok) {
+      const text = await res.text();
+      const m = text.match(/property="og:image" content="([^"]+)"/) || text.match(/"og:image" content="([^"]+)"/);
+      if (m && m[1]) return m[1].replace(/&amp;/g, '&');
+    }
+  } catch (_) {}
+
+  return null;
+}
+
+// Public API: Lấy thumbnail mặc định của video bất kỳ (YouTube, Facebook Reels, Vimeo...) hoặc redirect trực tiếp
+app.get('/api/video-thumbnail', async (req, res) => {
+  const { url, redirect } = req.query;
+  if (!url || !String(url).trim()) {
+    return res.status(400).json({ success: false, error: 'Thiếu tham số url video' });
+  }
+  try {
+    const thumb = await resolveVideoThumbnailFromUrl(String(url).trim());
+    if (thumb) {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      if (redirect === '1' || redirect === 'true') {
+        return res.redirect(thumb);
+      }
+      return res.json({ success: true, thumbnail_url: thumb });
+    }
+    return res.status(404).json({ success: false, error: 'Không tìm thấy ảnh thumbnail mặc định' });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Public API: Lấy danh sách ảnh giá cà phê đang được chọn hiển thị & danh sách video thị trường cà phê
 app.get('/api/coffee-page-data', async (req, res) => {
   try {
@@ -5308,10 +5435,24 @@ app.get('/api/coffee-page-data', async (req, res) => {
     const [videos] = await db.query(
       'SELECT * FROM coffee_videos WHERE is_active = 1 ORDER BY created_at DESC, id DESC'
     );
+    // Tự động gán fallback thumbnail nếu record trong database bị thiếu thumbnail_url
+    const mappedVideos = (videos || []).map(v => {
+      let thumb = v.thumbnail_url;
+      if (!thumb || !String(thumb).trim()) {
+        const ytMatch = (v.video_url || '').match(/(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/i);
+        if (ytMatch && ytMatch[1]) {
+          thumb = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+        } else {
+          thumb = `/api/video-thumbnail?url=${encodeURIComponent(v.video_url || '')}&redirect=1`;
+        }
+      }
+      return { ...v, thumbnail_url: thumb };
+    });
+
     res.json({
       success: true,
       images: images || [],
-      videos: videos || []
+      videos: mappedVideos
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -5327,10 +5468,23 @@ app.get('/api/admin/coffee-management', authMiddleware, async (req, res) => {
     const [videos] = await db.query(
       'SELECT * FROM coffee_videos ORDER BY created_at DESC, id DESC'
     );
+    const mappedVideos = (videos || []).map(v => {
+      let thumb = v.thumbnail_url;
+      if (!thumb || !String(thumb).trim()) {
+        const ytMatch = (v.video_url || '').match(/(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/i);
+        if (ytMatch && ytMatch[1]) {
+          thumb = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+        } else {
+          thumb = `/api/video-thumbnail?url=${encodeURIComponent(v.video_url || '')}&redirect=1`;
+        }
+      }
+      return { ...v, thumbnail_url: thumb };
+    });
+
     res.json({
       success: true,
       images: images || [],
-      videos: videos || []
+      videos: mappedVideos
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -5396,7 +5550,7 @@ app.delete('/api/admin/coffee-images/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// Admin API: Thêm video thị trường cà phê mới
+// Admin API: Thêm video thị trường cà phê mới (tự động phân tích và lưu thumbnail mặc định của video)
 app.post('/api/admin/coffee-videos', authMiddleware, async (req, res) => {
   const { title, video_url, summary, thumbnail_url, source } = req.body;
   if (!title || !String(title).trim()) {
@@ -5406,19 +5560,25 @@ app.post('/api/admin/coffee-videos', authMiddleware, async (req, res) => {
     return res.status(400).json({ success: false, error: 'Vui lòng nhập Link URL video.' });
   }
   try {
+    let finalThumbnail = thumbnail_url && String(thumbnail_url).trim() ? String(thumbnail_url).trim() : null;
+    if (!finalThumbnail) {
+      finalThumbnail = await resolveVideoThumbnailFromUrl(String(video_url).trim());
+    }
+
     const [result] = await db.query(
       'INSERT INTO coffee_videos (title, video_url, summary, thumbnail_url, source, is_active) VALUES (?, ?, ?, ?, ?, 1)',
       [
         String(title).trim(),
         String(video_url).trim(),
         summary && String(summary).trim() ? String(summary).trim() : null,
-        thumbnail_url && String(thumbnail_url).trim() ? String(thumbnail_url).trim() : null,
+        finalThumbnail,
         source && String(source).trim() ? String(source).trim() : null
       ]
     );
     res.status(201).json({
       success: true,
       id: result.insertId,
+      thumbnail_url: finalThumbnail,
       message: 'Đã thêm video thị trường cà phê thành công!'
     });
   } catch (err) {
@@ -5434,19 +5594,24 @@ app.put('/api/admin/coffee-videos/:id', authMiddleware, async (req, res) => {
     return res.status(400).json({ success: false, error: 'Tiêu đề video và Link URL video là bắt buộc.' });
   }
   try {
+    let finalThumbnail = thumbnail_url && String(thumbnail_url).trim() ? String(thumbnail_url).trim() : null;
+    if (!finalThumbnail) {
+      finalThumbnail = await resolveVideoThumbnailFromUrl(String(video_url).trim());
+    }
+
     await db.query(
       'UPDATE coffee_videos SET title = ?, video_url = ?, summary = ?, thumbnail_url = ?, source = ?, is_active = ? WHERE id = ?',
       [
         String(title).trim(),
         String(video_url).trim(),
         summary && String(summary).trim() ? String(summary).trim() : null,
-        thumbnail_url && String(thumbnail_url).trim() ? String(thumbnail_url).trim() : null,
+        finalThumbnail,
         source && String(source).trim() ? String(source).trim() : null,
         is_active === undefined ? 1 : (is_active ? 1 : 0),
         id
       ]
     );
-    res.json({ success: true, message: 'Đã cập nhật thông tin video thành công!' });
+    res.json({ success: true, thumbnail_url: finalThumbnail, message: 'Đã cập nhật thông tin video thành công!' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
