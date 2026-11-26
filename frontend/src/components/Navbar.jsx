@@ -370,6 +370,48 @@ export const Navbar = () => {
           border-bottom: 2px solid #D5A33F !important;
         }
 
+        /* Nút Sự kiện tách biệt với khung viền & icon lịch */
+        .dnvn-events-nav-sep {
+          display: inline-flex !important;
+          align-items: center !important;
+          margin-left: 8px !important;
+          padding-left: 12px !important;
+          border-left: 1px solid rgba(213, 163, 63, 0.28) !important;
+        }
+
+        .dnvn-events-btn {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 6px !important;
+          padding: 6px 12px !important;
+          border-radius: 999px !important;
+          border: 1px solid rgba(213, 163, 63, 0.55) !important;
+          background: rgba(213, 163, 63, 0.12) !important;
+          color: #F3C562 !important;
+          font-size: 13.5px !important;
+          font-weight: 700 !important;
+          text-decoration: none !important;
+          white-space: nowrap !important;
+          transition: all 0.2s ease !important;
+          line-height: 1.2 !important;
+        }
+
+        .dnvn-events-btn:hover {
+          background: rgba(213, 163, 63, 0.24) !important;
+          border-color: #F3C562 !important;
+          color: #FFFFFF !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 3px 10px rgba(213, 163, 63, 0.25) !important;
+        }
+
+        .dnvn-events-btn.active {
+          background: linear-gradient(135deg, #A84524 0%, #7A3E1D 100%) !important;
+          border-color: #F3C562 !important;
+          color: #FFFFFF !important;
+          box-shadow: 0 3px 12px rgba(168, 69, 36, 0.45) !important;
+        }
+
         .dnvn-nav-text {
           white-space: normal !important;
           word-break: normal !important;
@@ -671,14 +713,15 @@ export const Navbar = () => {
               );
             })}
 
-            {/* Nút Sự kiện trỏ trực tiếp đến /events */}
-            <div className="dnvn-cat-wrapper">
+            {/* Nút Sự kiện tách biệt với khung viền & icon lịch trỏ đến /events */}
+            <div className="dnvn-events-nav-sep">
               <Link
                 to="/events"
-                className={`dnvn-nav-item-btn ${(location.pathname.startsWith('/events') || location.pathname.startsWith('/su-kien')) ? 'active' : ''}`}
+                className={`dnvn-events-btn ${(location.pathname.startsWith('/events') || location.pathname.startsWith('/su-kien')) ? 'active' : ''}`}
                 title={currentLang === 'en' ? 'Events' : 'Sự kiện'}
               >
-                <span className="dnvn-nav-text">{currentLang === 'en' ? 'Events' : 'Sự kiện'}</span>
+                <i className="ti ti-calendar-event" style={{ fontSize: '15px' }} />
+                <span>{currentLang === 'en' ? 'Events' : 'Sự kiện'}</span>
               </Link>
             </div>
           </nav>
@@ -1100,9 +1143,23 @@ export const Navbar = () => {
               <Link
                 to="/events"
                 onClick={() => setMobileMenuOpen(false)}
-                style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '600', fontSize: '13.5px', display: 'block', padding: '6px 0' }}
+                style={{
+                  color: '#F3C562',
+                  textDecoration: 'none',
+                  fontWeight: '700',
+                  fontSize: '13.5px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(213, 163, 63, 0.45)',
+                  background: 'rgba(213, 163, 63, 0.12)',
+                  marginTop: '4px'
+                }}
               >
-                {currentLang === 'en' ? 'Events' : 'Sự kiện'}
+                <i className="ti ti-calendar-event" style={{ fontSize: '15px' }} />
+                <span>{currentLang === 'en' ? 'Events' : 'Sự kiện'}</span>
               </Link>
             </div>
 
