@@ -1804,7 +1804,11 @@ export const Home = () => {
                     <div className="spotlight-meta">
                       <span className="spotlight-meta-item">
                         <i className="ti ti-calendar" />
-                        {latestPosts[0].created_at ? new Date(latestPosts[0].created_at).toLocaleDateString('vi-VN') : 'Hôm nay'}
+                        {(() => {
+                          const rawD = latestPosts[0].deadline || latestPosts[0].published_at || latestPosts[0].created_at;
+                          const normD = typeof rawD === 'string' ? rawD.replace(' ', 'T') : rawD;
+                          return normD ? new Date(normD).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Hôm nay';
+                        })()}
                       </span>
                       {latestPosts[0].author_name && (
                         <span className="spotlight-meta-item">
@@ -1853,7 +1857,11 @@ export const Home = () => {
                         <h5 className="feed-item-title">{post.title}</h5>
                         <span className="feed-item-time">
                           <i className="ti ti-clock" />
-                          {post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : 'Gần đây'}
+                          {(() => {
+                            const rawD = post.deadline || post.published_at || post.created_at;
+                            const normD = typeof rawD === 'string' ? rawD.replace(' ', 'T') : rawD;
+                            return normD ? new Date(normD).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Gần đây';
+                          })()}
                         </span>
                       </div>
                     </div>
@@ -1887,7 +1895,11 @@ export const Home = () => {
                     <div className="sub-card-body">
                       <div className="sub-card-date">
                         <i className="ti ti-calendar" />
-                        <span>{post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : 'Mới'}</span>
+                        <span>{(() => {
+                          const rawD = post.deadline || post.published_at || post.created_at;
+                          const normD = typeof rawD === 'string' ? rawD.replace(' ', 'T') : rawD;
+                          return normD ? new Date(normD).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Mới';
+                        })()}</span>
                       </div>
                       <h4 className="sub-card-title">{post.title}</h4>
                       <p className="sub-card-desc">{post.summary || post.short_desc || ''}</p>

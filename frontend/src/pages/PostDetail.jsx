@@ -454,7 +454,7 @@ export const PostDetail = () => {
         image={imgUrl}
         url={`/posts/${post.slug || post.id}`}
         type="article"
-        publishedAt={post.created_at}
+        publishedAt={post.deadline || post.published_at || post.created_at}
         updatedAt={post.updated_at}
         author={post.company_name}
         schemaData={newsSchema}
@@ -764,7 +764,11 @@ export const PostDetail = () => {
                       <div className="post-related-info">
                         <div className="post-related-date">
                           <i className="ti ti-calendar" />
-                          <span>{item.created_at ? new Date(item.created_at).toLocaleDateString('vi-VN') : 'Mới'}</span>
+                          <span>{(() => {
+                            const rawD = item.deadline || item.published_at || item.created_at;
+                            const normD = typeof rawD === 'string' ? rawD.replace(' ', 'T') : rawD;
+                            return normD ? new Date(normD).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Mới';
+                          })()}</span>
                         </div>
                         <h4 className="post-related-item-title">{item.title}</h4>
                         <p className="post-related-summary">{item.summary || item.short_desc || ''}</p>

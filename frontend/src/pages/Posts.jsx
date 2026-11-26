@@ -192,7 +192,13 @@ export const Posts = () => {
   const sortedPosts = [...filteredPosts].sort((a, b) => {
     if (a.is_featured === 1 && b.is_featured !== 1) return -1;
     if (a.is_featured !== 1 && b.is_featured === 1) return 1;
-    return new Date(b.created_at) - new Date(a.created_at);
+    const getSortTime = (item) => {
+      const raw = item.deadline || item.published_at || item.created_at;
+      const norm = typeof raw === 'string' ? raw.replace(' ', 'T') : raw;
+      const ts = norm ? new Date(norm).getTime() : 0;
+      return isNaN(ts) ? 0 : ts;
+    };
+    return getSortTime(b) - getSortTime(a);
   });
 
   // Reset pagination on filter change
