@@ -262,22 +262,22 @@ export const Navbar = () => {
         .dnvn-brand-link {
           display: flex !important;
           align-items: center !important;
-          gap: 10px !important;
+          gap: 8px !important;
           text-decoration: none !important;
           flex-shrink: 0 !important;
         }
 
         .dnvn-brand-icon {
-          width: 42px !important;
-          height: 42px !important;
-          border-radius: 10px !important;
+          width: 38px !important;
+          height: 38px !important;
+          border-radius: 9px !important;
           background: linear-gradient(135deg, #7A3E1D 0%, #D5A33F 100%) !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
           color: #ffffff !important;
           font-weight: 900 !important;
-          font-size: 16px !important;
+          font-size: 15px !important;
           border: 1.5px solid rgba(213, 163, 63, 0.45) !important;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
           overflow: hidden !important;
@@ -294,23 +294,26 @@ export const Navbar = () => {
           display: flex !important;
           flex-direction: column !important;
           line-height: 1.15 !important;
+          max-width: 138px !important;
         }
 
         .dnvn-brand-title {
           font-family: 'Be Vietnam Pro', 'Outfit', sans-serif !important;
           font-weight: 800 !important;
-          font-size: 19px !important;
+          font-size: 16.5px !important;
           color: #ffffff !important;
           letter-spacing: -0.3px !important;
         }
 
         .dnvn-brand-subtitle {
-          font-size: 8px !important;
+          font-size: 7.5px !important;
           font-weight: 700 !important;
           color: #D5A33F !important;
-          letter-spacing: 0.5px !important;
+          letter-spacing: 0.35px !important;
           text-transform: uppercase !important;
           margin-top: 2px !important;
+          line-height: 1.25 !important;
+          white-space: normal !important;
         }
 
         /* Navigation Categories (Single row in center, allows text wrapping) */
@@ -318,9 +321,9 @@ export const Navbar = () => {
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          gap: 6px !important;
+          gap: 4px !important;
           flex: 1 1 auto !important;
-          margin: 0 6px !important;
+          margin: 0 4px !important;
           overflow: visible !important;
         }
 
@@ -338,8 +341,8 @@ export const Navbar = () => {
           color: #F1ECE6 !important;
           text-decoration: none !important;
           font-weight: 650 !important;
-          font-size: 14.5px !important;
-          padding: 6px 10px !important;
+          font-size: 13.5px !important;
+          padding: 6px 8px !important;
           border-radius: 7px !important;
           transition: all 0.18s ease !important;
           cursor: pointer !important;
@@ -350,9 +353,9 @@ export const Navbar = () => {
           white-space: normal !important;
           word-break: normal !important;
           text-align: center !important;
-          line-height: 1.25 !important;
-          max-width: 145px !important;
-          gap: 4px !important;
+          line-height: 1.22 !important;
+          max-width: 130px !important;
+          gap: 3px !important;
         }
 
         .dnvn-nav-item-btn:hover {
@@ -667,6 +670,17 @@ export const Navbar = () => {
                 </div>
               );
             })}
+
+            {/* Nút Sự kiện trỏ trực tiếp đến /events */}
+            <div className="dnvn-cat-wrapper">
+              <Link
+                to="/events"
+                className={`dnvn-nav-item-btn ${(location.pathname.startsWith('/events') || location.pathname.startsWith('/su-kien')) ? 'active' : ''}`}
+                title={currentLang === 'en' ? 'Events' : 'Sự kiện'}
+              >
+                <span className="dnvn-nav-text">{currentLang === 'en' ? 'Events' : 'Sự kiện'}</span>
+              </Link>
+            </div>
           </nav>
 
           {/* 3. RIGHT CONTROLS: COMPACT LANGUAGE (VI, EN...), SEARCH & AUTH */}
@@ -1080,6 +1094,17 @@ export const Navbar = () => {
                 </div>
               );
             })}
+
+            {/* Mục Sự kiện trên Mobile */}
+            <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px' }}>
+              <Link
+                to="/events"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '600', fontSize: '13.5px', display: 'block', padding: '6px 0' }}
+              >
+                {currentLang === 'en' ? 'Events' : 'Sự kiện'}
+              </Link>
+            </div>
 
             {/* Actions trên mobile */}
             <div style={{ paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
