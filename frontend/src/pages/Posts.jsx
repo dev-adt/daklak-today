@@ -512,7 +512,9 @@ export const Posts = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {currentPosts.map((p, pIdx) => {
               if (!p) return null;
-              const dateStr = p.created_at ? new Date(p.created_at).toLocaleDateString('vi-VN') : '11/06/2026';
+              const rawPostDate = p.deadline || p.published_at || p.created_at;
+              const normalizedPostDate = typeof rawPostDate === 'string' ? rawPostDate.replace(' ', 'T') : rawPostDate;
+              const dateStr = normalizedPostDate ? new Date(normalizedPostDate).toLocaleDateString('vi-VN') : '11/06/2026';
               const hasValidListImg = !isGenericOrPlaceholder(p.image_url);
               const pImg = hasValidListImg ? p.image_url : demoImages[(Math.abs(Number(p.id) || 0) + pIdx) % demoImages.length];
               const isPlat = p.company_tier === 'Platinum';

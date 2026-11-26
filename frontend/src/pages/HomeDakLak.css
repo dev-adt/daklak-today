@@ -3287,14 +3287,14 @@
 }
 
 .daklak-partner-item {
-  height: 84px;
+  height: 128px;
   background: #FFFFFF;
   border: 1.5px solid #EAE3D5;
-  border-radius: 14px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 20px;
+  padding: 14px 20px;
   box-shadow: 0 4px 14px rgba(38, 22, 14, 0.04);
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   cursor: pointer;
@@ -3310,8 +3310,8 @@
 }
 
 .daklak-partner-logo {
-  max-height: 48px;
-  max-width: 100%;
+  max-height: 92px;
+  max-width: 92%;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -4373,8 +4373,23 @@
   transform: translateX(3px);
 }
 
+/* Block Giá Hồ Tiêu ngay bên dưới Giá Cà Phê (Ảnh bên phải, Tin bên trái) */
+.spotlight-pepper-block {
+  margin-top: 52px;
+  padding-top: 44px;
+  border-top: 1px dashed rgba(139, 90, 43, 0.22);
+}
+
+.spotlight-pepper-news-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.32fr) minmax(300px, 0.88fr);
+  gap: 28px;
+  align-items: start;
+}
+
 @media (max-width: 992px) {
-  .spotlight-coffee-news-grid {
+  .spotlight-coffee-news-grid,
+  .spotlight-pepper-news-grid {
     grid-template-columns: 1fr;
   }
   .spotlight-coffee-board-card {

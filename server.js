@@ -1076,6 +1076,45 @@ db.query(`
       }
 
       console.log('✅ Bảng coffee_price_images và coffee_videos đã sẵn sàng');
+
+      // Đảm bảo chuyên mục 'Giá hồ tiêu' luôn tồn tại trong DB
+      const [pepperCat] = await db.query(
+        "SELECT id FROM categories WHERE name = 'Giá hồ tiêu' OR slug = 'gia-ho-tieu' LIMIT 1"
+      );
+      if (pepperCat.length === 0) {
+        await db.query(
+          "INSERT INTO categories (name, name_en, slug, order_index, status) VALUES ('Giá hồ tiêu', 'Pepper Prices', 'gia-ho-tieu', 6, 'active')"
+        );
+        console.log('✅ Đã tự động bổ sung chuyên mục Giá hồ tiêu vào bảng categories');
+      }
+
+      // Khởi tạo bảng pepper_price_images và pepper_videos cho chức năng "Quản lý giá hồ tiêu"
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS pepper_price_images (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          title VARCHAR(255) DEFAULT 'Bảng giá hồ tiêu hôm nay',
+          image_url VARCHAR(1000) NOT NULL,
+          is_selected TINYINT(1) DEFAULT 1,
+          order_index INT DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB COMMENT='Quản lý các ảnh bảng giá hồ tiêu'
+      `);
+
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS pepper_videos (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          title VARCHAR(500) NOT NULL,
+          video_url TEXT NOT NULL,
+          summary TEXT DEFAULT NULL,
+          thumbnail_url VARCHAR(1000) DEFAULT NULL,
+          source VARCHAR(255) DEFAULT NULL,
+          is_active TINYINT(1) DEFAULT 1,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB COMMENT='Quản lý video chuyên mục Giá hồ tiêu'
+      `);
+      console.log('✅ Bảng pepper_price_images và pepper_videos đã sẵn sàng');
     } catch (e) {
       console.warn('⚠️ Lỗi khởi tạo bảng quản lý giá cà phê:', e.message);
     }
@@ -5686,6 +5725,174 @@ app.delete('/api/admin/coffee-videos/:id', authMiddleware, async (req, res) => {
 });
 
 // ════════════════════════════════════════════
+// API QUẢN LÝ CHUYÊN MỤC GIÁ HỒ TIÊU (ẢNH BẢNG GIÁ & VIDEO THỊ TRƯỜNG)
+// ════════════════════════════════════════════
+
+// Public API: Lấy danh sách ảnh giá hồ tiêu đang được chọn hiển thị & danh sách video thị trường hồ tiêu
+app.get('/api/pepper-page-data', async (req, res) => {
+  try {
+    const [images] = await db.query(
+      'SELECT * FROM pepper_price_images WHERE is_selected = 1 ORDER BY order_index ASC, id DESC'
+    );
+    const [videos] = await db.query(
+      'SELECT * FROM pepper_videos WHERE is_active = 1 ORDER BY created_at DESC, id DESC'
+    );
+    res.json({
+      success: true,
+      images: images || [],
+      videos: videos || []
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Lấy toàn bộ ảnh giá hồ tiêu & toàn bộ video để quản trị
+app.get('/api/admin/pepper-management', authMiddleware, async (req, res) => {
+  try {
+    const [images] = await db.query(
+      'SELECT * FROM pepper_price_images ORDER BY is_selected DESC, order_index ASC, id DESC'
+    );
+    const [videos] = await db.query(
+      'SELECT * FROM pepper_videos ORDER BY created_at DESC, id DESC'
+    );
+    res.json({
+      success: true,
+      images: images || [],
+      videos: videos || []
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Tải lên / Thêm ảnh bảng giá hồ tiêu mới
+app.post('/api/admin/pepper-images', authMiddleware, async (req, res) => {
+  const { title, image_url, is_selected, order_index } = req.body;
+  if (!image_url || !String(image_url).trim()) {
+    return res.status(400).json({ success: false, error: 'Vui lòng tải lên hoặc nhập đường dẫn ảnh bảng giá hồ tiêu.' });
+  }
+  try {
+    const selectedVal = is_selected === undefined ? 1 : (is_selected ? 1 : 0);
+    const orderVal = Number.isFinite(Number(order_index)) ? Number(order_index) : 0;
+    const [result] = await db.query(
+      'INSERT INTO pepper_price_images (title, image_url, is_selected, order_index) VALUES (?, ?, ?, ?)',
+      [(title || 'Bảng giá hồ tiêu hôm nay').trim(), String(image_url).trim(), selectedVal, orderVal]
+    );
+    res.status(201).json({
+      success: true,
+      id: result.insertId,
+      message: 'Đã thêm ảnh bảng giá hồ tiêu thành công!'
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Cập nhật trạng thái chọn hiển thị / tiêu đề / thứ tự ảnh giá hồ tiêu
+app.put('/api/admin/pepper-images/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { title, image_url, is_selected, order_index } = req.body;
+  try {
+    const [existing] = await db.query('SELECT * FROM pepper_price_images WHERE id = ?', [id]);
+    if (!existing.length) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy ảnh bảng giá hồ tiêu.' });
+    }
+    const cur = existing[0];
+    const nextTitle = title !== undefined ? String(title).trim() : cur.title;
+    const nextUrl = image_url !== undefined ? String(image_url).trim() : cur.image_url;
+    const nextSelected = is_selected !== undefined ? (is_selected ? 1 : 0) : cur.is_selected;
+    const nextOrder = order_index !== undefined ? Number(order_index) : cur.order_index;
+
+    await db.query(
+      'UPDATE pepper_price_images SET title = ?, image_url = ?, is_selected = ?, order_index = ? WHERE id = ?',
+      [nextTitle, nextUrl, nextSelected, nextOrder, id]
+    );
+    res.json({ success: true, message: 'Đã cập nhật ảnh bảng giá hồ tiêu!' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Xóa ảnh bảng giá hồ tiêu
+app.delete('/api/admin/pepper-images/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query('DELETE FROM pepper_price_images WHERE id = ?', [id]);
+    res.json({ success: true, message: 'Đã xóa ảnh bảng giá hồ tiêu!' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Thêm video thị trường hồ tiêu mới
+app.post('/api/admin/pepper-videos', authMiddleware, async (req, res) => {
+  const { title, video_url, summary, thumbnail_url, source } = req.body;
+  if (!title || !String(title).trim()) {
+    return res.status(400).json({ success: false, error: 'Vui lòng nhập Tiêu đề video.' });
+  }
+  if (!video_url || !String(video_url).trim()) {
+    return res.status(400).json({ success: false, error: 'Vui lòng nhập Link URL video.' });
+  }
+  try {
+    const [result] = await db.query(
+      'INSERT INTO pepper_videos (title, video_url, summary, thumbnail_url, source, is_active) VALUES (?, ?, ?, ?, ?, 1)',
+      [
+        String(title).trim(),
+        String(video_url).trim(),
+        summary && String(summary).trim() ? String(summary).trim() : null,
+        thumbnail_url && String(thumbnail_url).trim() ? String(thumbnail_url).trim() : null,
+        source && String(source).trim() ? String(source).trim() : null
+      ]
+    );
+    res.status(201).json({
+      success: true,
+      id: result.insertId,
+      message: 'Đã thêm video thị trường hồ tiêu thành công!'
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Sửa thông tin video thị trường hồ tiêu
+app.put('/api/admin/pepper-videos/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { title, video_url, summary, thumbnail_url, source, is_active } = req.body;
+  if (!title || !String(title).trim() || !video_url || !String(video_url).trim()) {
+    return res.status(400).json({ success: false, error: 'Tiêu đề video và Link URL video là bắt buộc.' });
+  }
+  try {
+    await db.query(
+      'UPDATE pepper_videos SET title = ?, video_url = ?, summary = ?, thumbnail_url = ?, source = ?, is_active = ? WHERE id = ?',
+      [
+        String(title).trim(),
+        String(video_url).trim(),
+        summary && String(summary).trim() ? String(summary).trim() : null,
+        thumbnail_url && String(thumbnail_url).trim() ? String(thumbnail_url).trim() : null,
+        source && String(source).trim() ? String(source).trim() : null,
+        is_active === undefined ? 1 : (is_active ? 1 : 0),
+        id
+      ]
+    );
+    res.json({ success: true, message: 'Đã cập nhật thông tin video hồ tiêu thành công!' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Admin API: Xóa video thị trường hồ tiêu
+app.delete('/api/admin/pepper-videos/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query('DELETE FROM pepper_videos WHERE id = ?', [id]);
+    res.json({ success: true, message: 'Đã xóa video thị trường hồ tiêu!' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ════════════════════════════════════════════
 // SPA Fallback & Dynamic OpenGraph Meta Tag Engine (SEO / Social Preview)
 // ════════════════════════════════════════════
 
@@ -5933,6 +6140,11 @@ app.get('*', async (req, res) => {
       meta.title = 'Giá cà phê hôm nay — Cập nhật giá cà phê trong nước & thế giới | DakLak.today';
       meta.description = 'Cập nhật diễn biến giá cà phê hôm nay tại Đắk Lắk, Lâm Đồng, Gia Lai, Đắk Nông và sàn giao dịch Robusta London, Arabica New York mới nhất.';
       meta.image = `${baseUrl}/images/bang-gia-ca-phe-1.jpg`;
+    }
+    else if (rawPath === '/gia-ho-tieu') {
+      meta.title = 'Giá hồ tiêu hôm nay — Cập nhật giá hồ tiêu trong nước & thế giới | DakLak.today';
+      meta.description = 'Cập nhật diễn biến giá hồ tiêu hôm nay tại Đắk Lắk, Đắk Nông, Gia Lai, Bà Rịa - Vũng Tàu, Bình Phước và thị trường xuất khẩu thế giới mới nhất.';
+      meta.image = `${baseUrl}/og-image.png?v=4`;
     }
     else if (rawPath === '/posts') {
       meta.title = 'Cơ hội giao thương & Tin tức — DakLak.today';

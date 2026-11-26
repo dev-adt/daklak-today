@@ -47,8 +47,15 @@ export const Navbar = () => {
     return n === 'giá cà phê' || s === 'gia-ca-phe';
   };
 
+  const isPepperPriceCat = (cat) => {
+    const n = (cat?.name || '').trim().toLowerCase();
+    const s = (cat?.slug || '').trim().toLowerCase();
+    return n === 'giá hồ tiêu' || s === 'gia-ho-tieu';
+  };
+
   const getCatHref = (cat) => {
     if (isCoffeePriceCat(cat)) return '/gia-ca-phe';
+    if (isPepperPriceCat(cat)) return '/gia-ho-tieu';
     return `/posts?category=${encodeURIComponent(cat.name)}`;
   };
 
@@ -590,6 +597,8 @@ export const Navbar = () => {
               const isOpen = activeDropdownId === (cat.id || cat.name);
               const isCatActive = isCoffeePriceCat(cat)
                 ? location.pathname === '/gia-ca-phe'
+                : isPepperPriceCat(cat)
+                ? location.pathname === '/gia-ho-tieu'
                 : (location.pathname === '/posts' && location.search.includes(encodeURIComponent(cat.name)));
               const catDisplayName = getCategoryName(cat);
 

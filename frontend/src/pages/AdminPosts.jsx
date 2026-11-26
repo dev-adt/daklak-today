@@ -571,7 +571,11 @@ export const AdminPosts = () => {
                         </td>
                         <td style={{ padding: '12px 16px', color: '#475569' }}><i className="ti ti-eye"></i> {p.views || 0}</td>
                         <td style={{ padding: '12px 16px', color: '#64748B' }}>
-                          {new Date(p.created_at).toLocaleDateString('vi-VN')}
+                          {(() => {
+                            const rawD = p.deadline || p.published_at || p.created_at;
+                            const normD = typeof rawD === 'string' ? rawD.replace(' ', 'T') : rawD;
+                            return normD ? new Date(normD).toLocaleDateString('vi-VN') : '—';
+                          })()}
                         </td>
                         <td style={{ padding: '12px 16px' }}>
                           <span className={`badge ${isHidden ? 'rejected' : isScheduledFuture ? 'pending' : p.status === 'approved' ? 'approved' : p.status === 'rejected' ? 'rejected' : 'pending'}`}>

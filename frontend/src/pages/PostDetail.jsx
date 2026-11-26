@@ -398,7 +398,9 @@ export const PostDetail = () => {
     );
   }
 
-  const dateStr = post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : '11/06/2026';
+  const rawDisplayDate = post.deadline || post.published_at || post.created_at;
+  const normalizedDisplayDate = typeof rawDisplayDate === 'string' ? rawDisplayDate.replace(' ', 'T') : rawDisplayDate;
+  const dateStr = normalizedDisplayDate ? new Date(normalizedDisplayDate).toLocaleDateString('vi-VN') : '11/06/2026';
   const hasValidImg = post.image_url && post.image_url !== 'null' && post.image_url !== 'undefined' && post.image_url.trim() !== '';
   const imgUrl = hasValidImg ? post.image_url : demoImages[post.id % demoImages.length];
   const isPlatinum = post.company_tier === 'Platinum';
@@ -426,7 +428,7 @@ export const PostDetail = () => {
     "@type": "NewsArticle",
     "headline": isTranslated ? translatedTitle : post.title,
     "image": [imgUrl],
-    "datePublished": post.created_at || post.published_at,
+    "datePublished": post.deadline || post.published_at || post.created_at,
     "dateModified": post.updated_at || post.created_at,
     "author": [{
       "@type": "Organization",
@@ -469,6 +471,8 @@ export const PostDetail = () => {
             <i className="ti ti-chevron-right" style={{ fontSize: '10px' }}></i>
             {post.category === 'Giá cà phê' ? (
               <Link to="/gia-ca-phe">{currentLang === 'en' ? 'Coffee Prices' : 'Giá cà phê'}</Link>
+            ) : post.category === 'Giá hồ tiêu' ? (
+              <Link to="/gia-ho-tieu">{currentLang === 'en' ? 'Pepper Prices' : 'Giá hồ tiêu'}</Link>
             ) : (
               <Link to="/posts">{currentLang === 'en' ? 'Business Opportunities' : 'Bảng tin cơ hội'}</Link>
             )}
@@ -505,7 +509,7 @@ export const PostDetail = () => {
                   {post.type === 'offer' ? t('type_offer') : post.type === 'demand' ? t('type_demand') : post.type === 'cooperate' ? t('type_cooperate') : (post.type || t('type_general_news'))}
                 </span>
                 <Link 
-                  to={post.category === 'Giá cà phê' ? '/gia-ca-phe' : `/posts?category=${encodeURIComponent(post.category || '')}`}
+                  to={post.category === 'Giá cà phê' ? '/gia-ca-phe' : post.category === 'Giá hồ tiêu' ? '/gia-ho-tieu' : `/posts?category=${encodeURIComponent(post.category || '')}`}
                   className="post-detail-category-link"
                   title={currentLang === 'en' ? 'One Click to explore this category' : 'Một nhấp để khám phá chuyên mục này'}
                 >

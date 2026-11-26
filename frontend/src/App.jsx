@@ -15,6 +15,7 @@ import PostDetail from './pages/PostDetail';
 import Events from './pages/Events';
 import Members from './pages/Members';
 import CoffeePrice from './pages/CoffeePrice';
+import PepperPrice from './pages/PepperPrice';
 import NotFound from './pages/NotFound';
 
 // Code-split Pages (Lazy loaded on demand to reduce initial JS payload by >60%)
@@ -32,6 +33,7 @@ const AdminConfig = React.lazy(() => import('./pages/AdminConfig'));
 const AdminEvents = React.lazy(() => import('./pages/AdminEvents'));
 const AdminCategories = React.lazy(() => import('./pages/AdminCategories'));
 const AdminCoffee = React.lazy(() => import('./pages/AdminCoffee'));
+const AdminPepper = React.lazy(() => import('./pages/AdminPepper'));
 const AdminCreators = React.lazy(() => import('./pages/AdminCreators'));
 const AdminOrganizers = React.lazy(() => import('./pages/AdminOrganizers'));
 const AdminLeads = React.lazy(() => import('./pages/AdminLeads'));
@@ -96,6 +98,7 @@ function App() {
             <Route path="/posts" element={<Posts />} />
             <Route path="/posts/:id" element={<PostDetail />} />
             <Route path="/gia-ca-phe" element={<CoffeePrice />} />
+            <Route path="/gia-ho-tieu" element={<PepperPrice />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<Events />} />
             <Route path="/su-kien" element={<Events />} />
@@ -206,6 +209,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminCoffee />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin-pepper" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminPepper />
                 </ProtectedRoute>
               } 
             />

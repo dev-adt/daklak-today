@@ -9,7 +9,8 @@ import SEOHead from '../components/SEOHead';
 import brandConfig from '../brand.config';
 import { getCategoryLabel } from '../constants/categories';
 import { fetchJsonWithTimeout, FALLBACK_POSTS, FALLBACK_EVENTS, FALLBACK_MEMBERS } from '../utils/api';
-import { resolveVideoEmbed, getVideoDisplayThumbnail } from '../utils/videoUtils';
+import { getVideoDisplayThumbnail } from '../utils/videoUtils';
+import VideoPlayerModal from '../components/VideoPlayerModal';
 import './HomeDakLak.css';
 import './CoffeePrice.css';
 
@@ -917,6 +918,10 @@ export const Home = () => {
     }
   });
 
+  // Ảnh bảng giá hồ tiêu & bài viết chuyên mục Giá hồ tiêu
+  const [homePepperBoardImg, setHomePepperBoardImg] = useState('');
+  const [homePepperPosts, setHomePepperPosts] = useState([]);
+
   // Danh sách bài viết chuyên mục Giá cà phê / nông sản cà phê cho block Giá cà phê
   const [coffeeNewsPosts, setCoffeeNewsPosts] = useState([]);
 
@@ -932,43 +937,6 @@ export const Home = () => {
 
   // Modal xem video cà phê ngay tại trang chủ
   const [activeCoffeeVideoModal, setActiveCoffeeVideoModal] = useState(null);
-  const [homeDetectedVideoRatio, setHomeDetectedVideoRatio] = useState(null);
-
-  // Tự động nhận diện tỷ lệ khung hình video để co giãn vừa vặn, không để lại khoảng đen
-  useEffect(() => {
-    if (!activeCoffeeVideoModal) {
-      setHomeDetectedVideoRatio(null);
-      return;
-    }
-    if (activeCoffeeVideoModal.aspect_ratio && activeCoffeeVideoModal.aspect_ratio !== 'auto') {
-      const exp = String(activeCoffeeVideoModal.aspect_ratio).trim();
-      if (exp === '1:1') setHomeDetectedVideoRatio('1 / 1');
-      else if (exp === '9:16') setHomeDetectedVideoRatio('9 / 16');
-      else if (exp === '4:5') setHomeDetectedVideoRatio('4 / 5');
-      else if (exp === '16:9') setHomeDetectedVideoRatio('16 / 9');
-      return;
-    }
-
-    const thumb = getVideoDisplayThumbnail(activeCoffeeVideoModal);
-    if (thumb) {
-      const probe = new Image();
-      probe.src = thumb;
-      probe.onload = () => {
-        if (probe.naturalWidth > 0 && probe.naturalHeight > 0) {
-          const r = probe.naturalWidth / probe.naturalHeight;
-          if (Math.abs(r - 1) <= 0.15) {
-            setHomeDetectedVideoRatio('1 / 1');
-          } else if (r < 0.72) {
-            setHomeDetectedVideoRatio('9 / 16');
-          } else if (r < 0.95) {
-            setHomeDetectedVideoRatio('4 / 5');
-          } else {
-            setHomeDetectedVideoRatio('16 / 9');
-          }
-        }
-      };
-    }
-  }, [activeCoffeeVideoModal]);
 
   // Lắng nghe sự kiện cập nhật ảnh & video bảng giá cà phê tức thì từ Admin
   useEffect(() => {
@@ -1006,12 +974,14 @@ export const Home = () => {
     let isMounted = true;
     const fetchHomeData = async () => {
       try {
-        const [postsRes, eventsRes, membersRes, coffeeRes, coffeePostsRes] = await Promise.allSettled([
+        const [postsRes, eventsRes, membersRes, coffeeRes, coffeePostsRes, pepperRes, pepperPostsRes] = await Promise.allSettled([
           fetchJsonWithTimeout('/api/posts?limit=12', {}, 8000),
           fetchJsonWithTimeout('/api/events?limit=4', {}, 8000),
           fetchJsonWithTimeout('/api/members?limit=3', {}, 8000),
           fetchJsonWithTimeout('/api/coffee-page-data?t=' + Date.now(), {}, 8000),
-          fetchJsonWithTimeout('/api/posts?category=' + encodeURIComponent('Giá cà phê') + '&limit=6', {}, 8000)
+          fetchJsonWithTimeout('/api/posts?category=' + encodeURIComponent('Giá cà phê') + '&limit=6', {}, 8000),
+          fetchJsonWithTimeout('/api/pepper-page-data?t=' + Date.now(), {}, 8000),
+          fetchJsonWithTimeout('/api/posts?category=' + encodeURIComponent('Giá hồ tiêu') + '&limit=6', {}, 8000)
         ]);
 
         if (isMounted) {
@@ -1032,6 +1002,12 @@ export const Home = () => {
           }
           if (coffeePostsRes.status === 'fulfilled' && coffeePostsRes.value?.success && Array.isArray(coffeePostsRes.value.data) && coffeePostsRes.value.data.length > 0) {
             setCoffeeNewsPosts(coffeePostsRes.value.data);
+          }
+          if (pepperRes.status === 'fulfilled' && pepperRes.value?.success && Array.isArray(pepperRes.value.images) && pepperRes.value.images.length > 0) {
+            setHomePepperBoardImg(pepperRes.value.images[0].image_url || '');
+          }
+          if (pepperPostsRes.status === 'fulfilled' && pepperPostsRes.value?.success && Array.isArray(pepperPostsRes.value.data)) {
+            setHomePepperPosts(pepperPostsRes.value.data);
           }
           if (postsRes.status === 'fulfilled' && postsRes.value?.success && Array.isArray(postsRes.value.data) && postsRes.value.data.length > 0) {
             setLatestPosts(postsRes.value.data);
@@ -2063,8 +2039,9 @@ export const Home = () => {
                       {displayVideos.map((vid) => {
                         const thumb = getVideoDisplayThumbnail(vid);
                         const rawDate = vid.date_display || vid.deadline || vid.published_at || vid.created_at;
-                        const formattedDate = rawDate
-                          ? new Date(rawDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                        const normDate = typeof rawDate === 'string' ? rawDate.replace(' ', 'T') : rawDate;
+                        const formattedDate = normDate
+                          ? new Date(normDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
                           : 'Mới nhất';
 
                         return (
@@ -2113,6 +2090,130 @@ export const Home = () => {
                     </div>
                   </div>
                 </>
+              );
+            })()}
+
+            {/* BLOCK GIÁ HỒ TIÊU HÔM NAY (NGAY BÊN DƯỚI GIÁ CÀ PHÊ — ẢNH BÊN PHẢI, TIN BÊN TRÁI) */}
+            {(() => {
+              const combinedPepperNews = [...homePepperPosts];
+              if (combinedPepperNews.length < 3) {
+                const extra = latestPosts.filter(
+                  p => !combinedPepperNews.some(ep => ep.id === p.id) && !latestPosts.slice(0, 3).some(tp => tp.id === p.id)
+                );
+                combinedPepperNews.push(...extra);
+              }
+              if (combinedPepperNews.length < 3) {
+                const extra2 = latestPosts.filter(p => !combinedPepperNews.some(ep => ep.id === p.id));
+                combinedPepperNews.push(...extra2);
+              }
+              const displayPepperNews = combinedPepperNews.slice(0, 3);
+
+              return (
+                <div className="spotlight-pepper-block" id="gia-ho-tieu-tieu-diem">
+                  <div className="spotlight-header scroll-reveal scroll-reveal-down" style={{ marginBottom: '22px' }}>
+                    <div>
+                      <span className="daklak-section-badge" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#047857', borderColor: 'rgba(16, 185, 129, 0.28)' }}>
+                        <i className="ti ti-seeding" style={{ marginRight: '6px' }} />
+                        {currentLang === 'en' ? 'Pepper Market Updates' : 'Thị Trường & Giá Hồ Tiêu Hôm Nay'}
+                      </span>
+                      <h2 className="spotlight-title">
+                        {currentLang === 'en' ? 'Dak Lak Pepper Prices & Market News' : 'Giá Hồ Tiêu & Diễn Biến Thị Trường Nông Sản'}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="spotlight-pepper-news-grid">
+                    {/* CỘT TRÁI: DANH SÁCH 3 BÀI TIN HỒ TIÊU / NÔNG SẢN */}
+                    <div className="spotlight-right-news-col scroll-reveal scroll-reveal-left">
+                      <div className="spotlight-right-news-list">
+                        {displayPepperNews.map((post, idx) => {
+                          const rawDate = post.deadline || post.published_at || post.created_at;
+                          const normDate = typeof rawDate === 'string' ? rawDate.replace(' ', 'T') : rawDate;
+                          const formattedDate = normDate
+                            ? new Date(normDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                            : 'Hôm nay';
+                          const rawSummary = post.summary || post.short_desc || (post.body ? String(post.body).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '');
+
+                          return (
+                            <div
+                              key={post.id || post.slug || idx}
+                              className="spotlight-right-news-card"
+                              onClick={() => navigate(`/posts/${post.slug || post.id}`)}
+                            >
+                              <div className="spotlight-right-news-thumb">
+                                <img
+                                  src={getPostThumb(post, idx + 3)}
+                                  alt={post.title}
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = FALLBACK_POST_IMAGES[(idx + 3) % FALLBACK_POST_IMAGES.length];
+                                  }}
+                                />
+                              </div>
+                              <div className="spotlight-right-news-body">
+                                <div className="spotlight-right-news-date">
+                                  <i className="ti ti-calendar-event" />
+                                  <span>{formattedDate}</span>
+                                </div>
+                                <h3 className="spotlight-right-news-title">{post.title}</h3>
+                                <p className="spotlight-right-news-desc">
+                                  {rawSummary || 'Bấm để đọc toàn bộ bài viết, phân tích sâu và nhận định chi tiết...'}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="spotlight-bottom-more-row">
+                        <Link to="/gia-ho-tieu" className="spotlight-bottom-more-link">
+                          <span>{currentLang === 'en' ? 'View all pepper news' : 'Xem tất cả tin giá hồ tiêu'}</span>
+                          <i className="ti ti-arrow-right" />
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* CỘT PHẢI: ẢNH BẢNG GIÁ HỒ TIÊU HÔM NAY */}
+                    <div
+                      className="spotlight-coffee-board-card scroll-reveal scroll-reveal-right"
+                      onClick={() => navigate('/gia-ho-tieu')}
+                      title="Xem chi tiết chuyên mục Giá hồ tiêu hôm nay"
+                    >
+                      {homePepperBoardImg ? (
+                        <img
+                          src={homePepperBoardImg}
+                          alt="Bảng giá hồ tiêu Đắk Lắk hôm nay"
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            minHeight: '380px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            textAlign: 'center',
+                            padding: '32px 24px',
+                            borderRadius: '12px',
+                            background: 'linear-gradient(145deg, #F0FDF4 0%, #DCFCE7 100%)',
+                            color: '#065F46'
+                          }}
+                        >
+                          <div style={{ width: '60px', height: '60px', borderRadius: '16px', background: '#059669', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', marginBottom: '14px' }}>
+                            <i className="ti ti-seeding" />
+                          </div>
+                          <h3 style={{ margin: '0 0 8px 0', fontSize: '20px', fontWeight: 800 }}>Giá Hồ Tiêu Hôm Nay</h3>
+                          <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#047857', lineHeight: 1.5 }}>
+                            Cập nhật diễn biến giá hồ tiêu Đắk Lắk, Tây Nguyên và thị trường thế giới.
+                          </p>
+                          <span style={{ padding: '8px 18px', borderRadius: '999px', background: '#059669', color: '#FFFFFF', fontSize: '13.5px', fontWeight: 700 }}>
+                            Xem bảng giá hồ tiêu →
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               );
             })()}
           </div>
@@ -4333,141 +4434,11 @@ export const Home = () => {
         </div>
       )}
 
-      {/* Modal phát Video Thị trường Cà phê trực tiếp trên Trang chủ co giãn không thừa khoảng đen */}
-      {activeCoffeeVideoModal && (() => {
-        const embed = resolveVideoEmbed(activeCoffeeVideoModal.video_url, activeCoffeeVideoModal.aspect_ratio);
-        const finalRatio = homeDetectedVideoRatio || embed.aspectRatio || '16 / 9';
-        const isSquare = finalRatio === '1 / 1';
-        const isVertical = finalRatio === '9 / 16' || finalRatio === '4 / 5';
-        const modalMaxWidth = isSquare ? '520px' : isVertical ? '430px' : '860px';
-
-        return (
-          <div className="cp-lightbox" onClick={() => setActiveCoffeeVideoModal(null)}>
-            <div
-              style={{
-                background: '#FFFFFF',
-                borderRadius: '18px',
-                maxWidth: modalMaxWidth,
-                width: '100%',
-                maxHeight: '92vh',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                position: 'relative',
-                boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
-                margin: 'auto',
-                transition: 'max-width 0.25s ease'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={{
-                padding: '14px 20px',
-                borderBottom: '1px solid rgba(139, 90, 43, 0.14)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '12px',
-                flexShrink: 0
-              }}>
-                <h3 style={{
-                  margin: 0,
-                  fontFamily: 'var(--font-title, serif)',
-                  fontSize: '17px',
-                  fontWeight: 800,
-                  color: '#2C1810',
-                  lineHeight: 1.35,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden'
-                }}>
-                  {activeCoffeeVideoModal.title}
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setActiveCoffeeVideoModal(null)}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    background: '#F3E5D0',
-                    color: '#3B2314',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    flexShrink: 0,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  aria-label="Đóng"
-                >
-                  <i className="ti ti-x"></i>
-                </button>
-              </div>
-
-              {/* Video Player Box - Co giãn vừa vặn, không bị thừa khoảng đen */}
-              <div style={{
-                position: 'relative',
-                width: '100%',
-                maxHeight: '75vh',
-                aspectRatio: embed.type === 'video' ? 'auto' : finalRatio,
-                background: '#000000',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                margin: '0 auto'
-              }}>
-                {embed.type === 'video' ? (
-                  <video
-                    src={embed.src}
-                    controls
-                    autoPlay
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '75vh',
-                      width: 'auto',
-                      height: 'auto',
-                      objectFit: 'contain',
-                      display: 'block'
-                    }}
-                  />
-                ) : (
-                  <iframe
-                    src={embed.src}
-                    title={activeCoffeeVideoModal.title}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      border: 'none',
-                      display: 'block'
-                    }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                    allowFullScreen
-                  />
-                )}
-              </div>
-
-              {activeCoffeeVideoModal.summary && (
-                <div style={{
-                  padding: '12px 18px',
-                  background: '#FAF6F0',
-                  color: '#5C3A21',
-                  fontSize: '13px',
-                  lineHeight: 1.5,
-                  maxHeight: '110px',
-                  overflowY: 'auto',
-                  borderTop: '1px solid rgba(139, 90, 43, 0.08)',
-                  flexShrink: 0
-                }}>
-                  {activeCoffeeVideoModal.summary}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })()}
+      {/* Modal phát Video Thị trường Cà phê tự co giãn chuẩn khung */}
+      <VideoPlayerModal
+        video={activeCoffeeVideoModal}
+        onClose={() => setActiveCoffeeVideoModal(null)}
+      />
 
       <Footer />
       <FloatingAIBot />

@@ -60,6 +60,14 @@ export const CATEGORIES_DATA = [
     subcategories: []
   },
   {
+    id: 'gia-ho-tieu',
+    name: 'Giá hồ tiêu',
+    name_en: 'Pepper Prices',
+    slug: 'gia-ho-tieu',
+    order_index: 6,
+    subcategories: []
+  },
+  {
     id: 'du-lich-trai-nghiem',
     name: 'Du lịch & Trải nghiệm',
     name_en: 'Tourism & Experiences',
@@ -107,6 +115,7 @@ export const CATEGORY_LABELS = {
   'Đầu tư & Dự án': { vi: 'Dự án & Đầu tư', en: 'Investment & Projects', zh: '投资与项目', ja: '投資・プロジェクト', ko: '투자 및 프로젝트' },
   'Nông sản & Cà phê': { vi: 'Nông sản & Cà phê', en: 'Agri & Coffee', zh: '农产品与咖啡', ja: '農産物・コーヒー', ko: '농산물 및 커피' },
   'Giá cà phê': { vi: 'Giá cà phê', en: 'Coffee Prices', zh: '咖啡价格', ja: 'コーヒー価格', ko: '커피 가격' },
+  'Giá hồ tiêu': { vi: 'Giá hồ tiêu', en: 'Pepper Prices', zh: '胡椒价格', ja: 'コショウ価格', ko: '후추 가격' },
   'Cà phê Đắk Lắk': { vi: 'Nông sản & Cà phê', en: 'Agri & Coffee', zh: '农产品与咖啡', ja: '農産物・コーヒー', ko: '농산물 및 커피' },
   'Du lịch & Trải nghiệm': { vi: 'Du lịch & Trải nghiệm', en: 'Tourism & Experiences', zh: '旅游与体验', ja: '観光・体験', ko: '관광 및 체험' },
   'Kinh tế Biển': { vi: 'Kinh tế Biển', en: 'Marine Economy', zh: '海洋经济', ja: '海洋経済', ko: '해양 경제' },

@@ -4,7 +4,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import SEOHead from '../components/SEOHead';
 import { useTranslation } from '../contexts/LanguageContext';
-import { resolveVideoEmbed, getVideoDisplayThumbnail } from '../utils/videoUtils';
+import { getVideoDisplayThumbnail } from '../utils/videoUtils';
+import VideoPlayerModal from '../components/VideoPlayerModal';
 import './CoffeePrice.css';
 
 const DEFAULT_PRICE_BOARDS = [
@@ -24,7 +25,8 @@ const formatVNDate = (item) => {
   if (item?.date_display) return item.date_display;
   const raw = item?.deadline || item?.published_at || item?.created_at;
   if (!raw) return '';
-  const d = new Date(raw);
+  const normalized = typeof raw === 'string' ? raw.replace(' ', 'T') : raw;
+  const d = new Date(normalized);
   if (isNaN(d.getTime())) return '';
   return d.toLocaleDateString('vi-VN', {
     day: '2-digit',
@@ -645,147 +647,11 @@ export default function CoffeePrice() {
         </div>
       )}
 
-      {/* Modal phát Video nhúng trực tiếp co giãn vừa khung hình (ngang 16:9, dọc 9:16, vuông 1:1, 4:5) */}
-      {activeVideoModal && (() => {
-        const embed = resolveVideoEmbed(activeVideoModal.video_url, activeVideoModal.aspect_ratio);
-        const finalRatio = modalDetectedRatio || embed.aspectRatio || '16 / 9';
-        const isSquare = finalRatio === '1 / 1';
-        const isVertical = finalRatio === '9 / 16' || finalRatio === '4 / 5';
-        const modalMaxWidth = isSquare ? '520px' : isVertical ? '430px' : '860px';
-
-        return (
-          <div className="cp-lightbox" onClick={() => setActiveVideoModal(null)}>
-            <div
-              style={{
-                background: '#FFFFFF',
-                borderRadius: '18px',
-                maxWidth: modalMaxWidth,
-                width: '100%',
-                maxHeight: '92vh',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                position: 'relative',
-                boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
-                margin: 'auto',
-                transition: 'max-width 0.25s ease'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={{
-                padding: '14px 20px',
-                borderBottom: '1px solid rgba(139, 90, 43, 0.14)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '12px',
-                flexShrink: 0
-              }}>
-                <h3 style={{
-                  margin: 0,
-                  fontFamily: 'var(--font-title, serif)',
-                  fontSize: '17px',
-                  fontWeight: 800,
-                  color: '#2C1810',
-                  lineHeight: 1.35,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden'
-                }}>
-                  {activeVideoModal.title}
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setActiveVideoModal(null)}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    background: '#F3E5D0',
-                    color: '#3B2314',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    flexShrink: 0,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  aria-label="Đóng"
-                >
-                  <i className="ti ti-x"></i>
-                </button>
-              </div>
-
-              {/* Video Player Box - Co giãn vừa vặn, không bị thừa khoảng đen */}
-              <div style={{
-                position: 'relative',
-                width: '100%',
-                maxHeight: '75vh',
-                aspectRatio: embed.type === 'video' ? 'auto' : finalRatio,
-                background: '#000000',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                margin: '0 auto'
-              }}>
-                {embed.type === 'video' ? (
-                  <video
-                    src={embed.src}
-                    controls
-                    autoPlay
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '75vh',
-                      width: 'auto',
-                      height: 'auto',
-                      objectFit: 'contain',
-                      display: 'block'
-                    }}
-                  />
-                ) : (
-                  <iframe
-                    src={embed.src}
-                    title={activeVideoModal.title}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      border: 'none',
-                      display: 'block'
-                    }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                    allowFullScreen
-                  />
-                )}
-              </div>
-
-              {(activeVideoModal.summary || activeVideoModal.source) && (
-                <div style={{
-                  padding: '12px 18px',
-                  background: '#FBF8F3',
-                  maxHeight: '110px',
-                  overflowY: 'auto',
-                  borderTop: '1px solid rgba(139, 90, 43, 0.08)',
-                  flexShrink: 0
-                }}>
-                  {activeVideoModal.source && (
-                    <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#B45309', marginBottom: activeVideoModal.summary ? '4px' : 0 }}>
-                      Nguồn: {activeVideoModal.source}
-                    </div>
-                  )}
-                  {activeVideoModal.summary && (
-                    <p style={{ margin: 0, fontSize: '13.5px', color: '#4A3B32', lineHeight: 1.55 }}>
-                      {activeVideoModal.summary}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })()}
+      {/* Modal phát Video tự co giãn chuẩn khung */}
+      <VideoPlayerModal
+        video={activeVideoModal}
+        onClose={() => setActiveVideoModal(null)}
+      />
 
       <Footer />
     </div>

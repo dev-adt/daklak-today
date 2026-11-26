@@ -3,6 +3,7 @@ import AdminLayout from '../components/AdminLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { compressImageFileToBase64 } from '../utils/compressImageForUpload';
 import { extractYouTubeId, resolveVideoEmbed, getVideoDisplayThumbnail } from '../utils/videoUtils';
+import VideoPlayerModal from '../components/VideoPlayerModal';
 
 export { extractYouTubeId, resolveVideoEmbed, getVideoDisplayThumbnail };
 
@@ -1380,156 +1381,11 @@ export const AdminCoffee = () => {
         })()}
       </div>
 
-      {/* Modal Xem thử Video co giãn vừa khớp không thừa khoảng đen */}
-      {previewVideo && (() => {
-        const embed = resolveVideoEmbed(previewVideo.video_url, previewVideo.aspect_ratio);
-        const finalRatio = previewDetectedRatio || embed.aspectRatio || '16 / 9';
-        const isSquare = finalRatio === '1 / 1';
-        const isVertical = finalRatio === '9 / 16' || finalRatio === '4 / 5';
-        const modalMaxWidth = isSquare ? '520px' : isVertical ? '430px' : '860px';
-
-        return (
-          <div
-            onClick={() => setPreviewVideo(null)}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(15, 23, 42, 0.82)',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px'
-            }}
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                background: '#FFFFFF',
-                borderRadius: '16px',
-                maxWidth: modalMaxWidth,
-                width: '100%',
-                maxHeight: '92vh',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                boxShadow: '0 24px 60px rgba(0,0,0,0.45)',
-                margin: 'auto',
-                transition: 'max-width 0.25s ease'
-              }}
-            >
-              <div style={{
-                padding: '14px 20px',
-                borderBottom: '1px solid #E2E8F0',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '12px',
-                flexShrink: 0
-              }}>
-                <h3 style={{
-                  margin: 0,
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  color: '#0F172A',
-                  lineHeight: 1.35,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden'
-                }}>
-                  {previewVideo.title}
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setPreviewVideo(null)}
-                  style={{
-                    border: 'none',
-                    background: '#F1F5F9',
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    flexShrink: 0,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  aria-label="Đóng"
-                >
-                  <i className="ti ti-x"></i>
-                </button>
-              </div>
-
-              {/* Video Player Box - Co giãn vừa vặn, không bị thừa khoảng đen */}
-              <div style={{
-                position: 'relative',
-                width: '100%',
-                maxHeight: '75vh',
-                aspectRatio: embed.type === 'video' ? 'auto' : finalRatio,
-                background: '#000000',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                margin: '0 auto'
-              }}>
-                {embed.type === 'video' ? (
-                  <video
-                    src={embed.src}
-                    controls
-                    autoPlay
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '75vh',
-                      width: 'auto',
-                      height: 'auto',
-                      objectFit: 'contain',
-                      display: 'block'
-                    }}
-                  />
-                ) : (
-                  <iframe
-                    src={embed.src}
-                    title={previewVideo.title}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      border: 'none',
-                      display: 'block'
-                    }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                    allowFullScreen
-                  />
-                )}
-              </div>
-
-              {(previewVideo.summary || previewVideo.source) && (
-                <div style={{
-                  padding: '12px 18px',
-                  background: '#F8FAFC',
-                  maxHeight: '110px',
-                  overflowY: 'auto',
-                  borderTop: '1px solid #E2E8F0',
-                  flexShrink: 0
-                }}>
-                  {previewVideo.source && (
-                    <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#B45309', marginBottom: previewVideo.summary ? '4px' : 0 }}>
-                      Nguồn: {previewVideo.source}
-                    </div>
-                  )}
-                  {previewVideo.summary && (
-                    <p style={{ margin: 0, fontSize: '13px', color: '#334155', lineHeight: 1.55 }}>
-                      {previewVideo.summary}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })()}
+      {/* Modal Xem thử Video tự co giãn chuẩn khung */}
+      <VideoPlayerModal
+        video={previewVideo}
+        onClose={() => setPreviewVideo(null)}
+      />
     </AdminLayout>
   );
 };

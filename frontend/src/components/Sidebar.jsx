@@ -161,6 +161,15 @@ export const Sidebar = ({ isOpen = false, onClose }) => {
         </NavLink>
 
         <NavLink 
+          to="/admin-pepper" 
+          onClick={handleNavClick}
+          className={({ isActive }) => `sb-item ${isActive ? 'active' : ''}`}
+          style={{ textDecoration: 'none' }}
+        >
+          <i className="ti ti-seeding"></i> Quản lý giá hồ tiêu
+        </NavLink>
+
+        <NavLink 
           to="/admin-creators" 
           onClick={handleNavClick}
           className={({ isActive }) => `sb-item ${isActive ? 'active' : ''}`}
