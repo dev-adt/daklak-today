@@ -1,182 +1,267 @@
-# Hướng Dẫn Deploy Hệ Thống VTV8.vn Trên Domain Chính: vtv8.vn
+# 🚀 HƯỚNG DẪN TRIỂN KHAI HỆ THỐNG LÊN VPS PRODUCTION (AAPANEL / NGINX / PM2 / SSL)
+# DÀNH CHO DAKLAK.TODAY VÀ CÁC NỀN TẢNG NHÂN BẢN (*.TODAY)
 
-Tài liệu này hướng dẫn từng bước chi tiết cách triển khai nền tảng **VTV8.vn** lên **aaPanel Linux VPS** cho tên miền chính thức: **`vtv8.vn`** (kèm `www.vtv8.vn`).
-
----
-
-## 📋 THÔNG SỐ HỆ THỐNG MẪU
-
-- **Domain chính**: `vtv8.vn` và `www.vtv8.vn`
-- **Thư mục dự án**: `/www/wwwroot/vtv8.vn`
-- **Node.js Backend Port**: `3023`
-- **Database Engine**: MySQL 5.7+ / MariaDB 10.x
-- **Database Name**: `vtv8`
-- **Database User**: `vtv8`
-- **Tiến trình chạy ngầm**: PM2 (`vtv8-today`)
+> **Mục tiêu**: Hướng dẫn từng bước từ A đến Z cách triển khai mã nguồn **Today Platform (Golden Master)** lên máy chủ ảo Linux VPS (Ubuntu 20.04 / 22.04 LTS) sử dụng trình quản trị **aaPanel**, Nginx Reverse Proxy, MySQL 8.0, PM2 Cluster và chứng chỉ SSL miễn phí Let's Encrypt.
+>
+> Áp dụng trực tiếp cho tên miền chính thức **`daklak.today`** (kèm `www.daklak.today`) hoặc bất kỳ tên miền nhân bản nào (ví dụ: `gialai.today`, `lamdong.today`, `phutho.today`, `nghean.today`...).
 
 ---
 
-## 🚀 CÁC BƯỚC TRIỂN KHAI CHI TIẾT
+## 📋 THÔNG SỐ HỆ THỐNG MẪU (CHUẨN HOÁ)
 
-### BƯỚC 1: Trỏ DNS Tên Miền về IP VPS
-Truy cập trang quản lý DNS (Cloudflare, Namecheap, PA Việt Nam, MatBao...):
-1. **Record A**: `@` ➔ `IP_VPS_CỦA_BẠN`
-2. **Record A / CNAME**: `www` ➔ `vtv8.vn` (hoặc `IP_VPS_CỦA_BẠN`)
-
----
-
-### BƯỚC 2: Tạo Database MySQL trên aaPanel
-*(Nếu bạn đã tạo database `vtv8` trước đó ở bản dev thì có thể bỏ qua bước tạo mới và dùng chung database này)*
-
-1. Đăng nhập vào **aaPanel** ➔ Chọn menu **Databases** ➔ Nhấn **Add Database**:
-   - **DBName**: `vtv8`
-   - **Username**: `vtv8`
-   - **Password**: *(Tự đặt mật khẩu an toàn và lưu lại)*
-   - **Character Set**: `utf8mb4`
-2. Bấm **Submit**.
+| Thông số | Giá trị DakLak.today (Mặc định) | Giá trị Dự án Nhân bản (*.today) |
+| :--- | :--- | :--- |
+| **Hệ điều hành VPS** | Ubuntu 20.04 / 22.04 LTS 64-bit | Ubuntu 20.04 / 22.04 LTS 64-bit |
+| **Bảng điều khiển** | aaPanel Linux v6.8+ | aaPanel Linux v6.8+ |
+| **Môi trường chạy** | Node.js v18.x - v22.x LTS, npm v9+ | Node.js v18.x - v22.x LTS, npm v9+ |
+| **Web Server** | Nginx 1.22+ Reverse Proxy | Nginx 1.22+ Reverse Proxy |
+| **Cơ sở dữ liệu** | MySQL 8.0 / MariaDB 10.5+ (`utf8mb4`) | MySQL 8.0 / MariaDB 10.5+ (`utf8mb4`) |
+| **Tên miền (Domain)** | `daklak.today` và `www.daklak.today` | `<ten-mien-moi>.today` và `www.<ten-mien-moi>.today` |
+| **Đường dẫn thư mục**| `/www/wwwroot/daklak.today` | `/www/wwwroot/<ten-mien-moi>.today` |
+| **Backend Port** | `5000` (hoặc `3028`, cấu hình trong `.env`) | `5000` (hoặc port riêng nếu chạy chung VPS) |
+| **Tiến trình ngầm** | PM2 (`daklak-today-prod`) | PM2 (`<slug-ten-mien>-prod`) |
 
 ---
 
-### BƯỚC 3: Tạo Website trên aaPanel
-1. Vào mục **Website** ➔ Bấm **Add site**:
-   - **Domain name**: 
+## 🛠️ QUY TRÌNH 9 BƯỚC TRIỂN KHAI CHI TIẾT
+
+```
+[1. Trỏ DNS Domain] ➔ [2. Tạo DB MySQL] ➔ [3. Tạo Web trên aaPanel]
+       │
+       ▼
+[4. Kéo Code Git]   ➔ [5. Cấu hình .env] ➔ [6. Build Frontend]
+       │
+       ▼
+[7. Khởi chạy PM2]  ➔ [8. Cấp SSL HTTPS] ➔ [9. Nginx Reverse Proxy Anti-Cache]
+```
+
+---
+
+### BƯỚC 1: Trỏ DNS Tên Miền về Địa chỉ IP của VPS
+Truy cập trang quản trị DNS của nhà cung cấp tên miền (Cloudflare, Namecheap, PA Việt Nam, Mắt Bão, INET...):
+
+1. **Bản ghi A (Root)**:
+   - Host: `@` (hoặc tên miền chính)
+   - Value: `IP_VPS_CỦA_BẠN`
+   - TTL: Auto hoặc 300s
+2. **Bản ghi CNAME / A (WWW)**:
+   - Host: `www`
+   - Value: `daklak.today` (hoặc `IP_VPS_CỦA_BẠN`)
+
+*(Nếu sử dụng Cloudflare, ban đầu có thể gạt màu cam sang "DNS Only" (màu xám) để việc xác thực cấp phát chứng chỉ SSL Let's Encrypt diễn ra thuận lợi nhất).*
+
+---
+
+### BƯỚC 2: Tạo Cơ sở Dữ liệu MySQL trên aaPanel
+1. Đăng nhập vào bảng điều khiển **aaPanel** ➔ Chọn menu **Databases** bên trái.
+2. Nhấn nút **Add Database**:
+   - **DBName**: `daklak_today` (hoặc tên viết tắt theo tỉnh: `gialai_today`, `lamdong_today`...)
+   - **DB User**: Tự động sinh cùng tên DB
+   - **Password**: Nhấn nút tạo ngẫu nhiên hoặc đặt mật khẩu mạnh (Lưu lại để điền vào file `.env`)
+   - **Character Set**: Chọn **`utf8mb4`** (Bắt buộc để lưu tiếng Việt đầy đủ và icon emoji)
+   - **Access Permission**: `Local server` (127.0.0.1)
+3. Bấm **Submit**.
+
+---
+
+### BƯỚC 3: Tạo Thư mục Website trên aaPanel
+1. Vào menu **Website** ➔ Nhấn **Add site**:
+   - **Domain name**:
      ```text
-     vtv8.vn
-     www.vtv8.vn
+     daklak.today
+     www.daklak.today
      ```
-   - **Root directory**: `/www/wwwroot/vtv8.vn`
-   - **PHP Version**: Static hoặc PHP bất kỳ (vì chúng ta sẽ dùng Reverse Proxy sang Node.js)
+   - **Description**: Cổng thông tin DakLak.today
+   - **Root directory**: `/www/wwwroot/daklak.today`
+   - **FTP**: Không cần tạo
+   - **Database**: Đã tạo ở Bước 2
+   - **PHP Version**: `pure static` (Vì toàn bộ dự án chạy bằng Node.js và Nginx Reverse Proxy)
 2. Bấm **Submit**.
 
 ---
 
 ### BƯỚC 4: Kéo Mã Nguồn từ GitHub về VPS
-Mở **Terminal** trên aaPanel (hoặc kết nối SSH qua PuTTY/MobaXterm) và chạy các lệnh:
+Mở **Terminal** trên aaPanel (hoặc SSH vào VPS qua PuTTY, MobaXterm, PowerShell):
 
 ```bash
-# 1. Đi đến thư mục wwwroot
+# 1. Truy cập vào thư mục wwwroot
 cd /www/wwwroot
 
-# 2. Xóa các file mặc định vừa tạo
-rm -rf /www/wwwroot/vtv8.vn
+# 2. Xóa các file mặc định index.html rỗng do aaPanel vừa sinh
+rm -rf /www/wwwroot/daklak.today
 
-# 3. Clone nhánh deploy trực tiếp về thư mục vtv8.vn
-git clone -b deploy https://github.com/dev-adt/vtv8-today.git vtv8.vn
+# 3. Clone mã nguồn từ kho lưu trữ Git về đúng thư mục
+git clone https://github.com/dev-adt/daklak-today.git daklak.today
 
-# 4. Truy cập vào thư mục
-cd /www/wwwroot/vtv8.vn
-
-# 5. Cài đặt các thư viện cần thiết
-npm install --production
+# 4. Di chuyển vào thư mục dự án
+cd /www/wwwroot/daklak.today
 ```
 
 ---
 
-### BƯỚC 5: Cấu hình Biến Môi Trường `.env` & Import Database
+### BƯỚC 5: Cấu hình File Môi Trường `.env` & Import Cơ sở Dữ liệu
 
-1. Tạo file `.env`:
+1. **Tạo file cấu hình môi trường `.env`**:
    ```bash
    cp .env.example .env
    nano .env
    ```
-2. Cấu hình nội dung file `.env` cho domain chính:
+2. **Nội dung cấu hình chuẩn cho Production**:
    ```env
    NODE_ENV=production
-   PORT=3023
-   SITE_URL=https://vtv8.vn
-   ALLOWED_ORIGIN=https://vtv8.vn,https://www.vtv8.vn
+   PORT=5000
+   SITE_URL=https://daklak.today
+   ALLOWED_ORIGIN=https://daklak.today,https://www.daklak.today
 
+   # Kết nối Cơ sở dữ liệu MySQL đã tạo ở Bước 2
    DB_HOST=127.0.0.1
    DB_PORT=3306
-   DB_NAME=vtv8
-   DB_USER=vtv8
-   DB_PASSWORD=DienMatKhauDatabaseCuaBanO_Day
+   DB_NAME=daklak_today
+   DB_USER=daklak_today
+   DB_PASSWORD=Mật_Khẩu_DB_Của_Bạn_Tại_Bước_2
 
-   # Cấu hình API Key AI (Tùy chọn)
-   GEMINI_API_KEY=
-   OPENAI_API_KEY=
+   # Bảo mật JWT
+   JWT_SECRET=TaoMotChuoiBiMatNgauNhienDaiItNhat32KyTu!@#$
+
+   # Khóa AI Trí tuệ nhân tạo (Google Gemini)
+   GEMINI_API_KEY=AIzaSy...DienKeyCuaBanVaoDay
+
+   # Cấu hình gửi Mail thông báo & Vé QR (Tùy chọn)
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=465
+   SMTP_SECURE=true
+   SMTP_USER=email-cua-ban@gmail.com
+   SMTP_PASS=mat-khau-ung-dung-16-chu
+   SMTP_FROM="DakLak.today" <email-cua-ban@gmail.com>
    ```
-   *(Nhấn `Ctrl + O` ➔ `Enter` để lưu, `Ctrl + X` để thoát Nano)*
+   *(Nhấn `Ctrl + O` rồi `Enter` để lưu, sau đó nhấn `Ctrl + X` để thoát nano).*
 
-3. Import cấu trúc bảng (nếu dùng database mới):
+3. **Nạp Cấu trúc Bảng CSDL từ file `schema.sql`**:
    ```bash
-   mysql -u vtv8 -p vtv8 < schema.sql
+   mysql -u daklak_today -p daklak_today < schema.sql
    ```
-   *(Nhập mật khẩu database khi được hỏi)*
+   *(Nhập mật khẩu database khi được hỏi prompt `Enter password:`. File `schema.sql` chuẩn bị sẵn toàn bộ 18 bảng, dữ liệu danh mục chuẩn và tài khoản Admin mặc định: `admin` / `admin123`).*
 
 ---
 
-### BƯỚC 6: Khởi chạy Ứng dụng với PM2
-
-Khởi chạy server chạy ngầm liên tục và tự khởi động lại khi VPS reboot:
+### BƯỚC 6: Cài đặt Dependencies & Biên dịch Frontend (Build)
 
 ```bash
-cd /www/wwwroot/vtv8.vn
+# 1. Cài đặt các thư viện Node.js cho Backend
+npm install --production=false
+
+# 2. Cài đặt thư viện và build Frontend React
+cd frontend
+npm install
+npm run build
+cd ..
+```
+
+> 💡 **Cơ chế Dọn dẹp Thông minh**: Hệ thống đã tích hợp sẵn plugin tự động dọn sạch thư mục `public/assets/` trước mỗi lần build, đảm bảo máy chủ không bao giờ bị tích tụ file rác như các bản cũ.
+
+---
+
+### BƯỚC 7: Khởi chạy Ứng dụng bằng Trình Quản lý Tiến trình PM2
+
+Hệ thống cung cấp sẵn file `ecosystem.config.js` đã tối ưu cho môi trường Production:
+
+```bash
+# 1. Cài đặt PM2 toàn cục (nếu VPS chưa có)
+npm install -g pm2
+
+# 2. Khởi chạy cụm tiến trình
 pm2 start ecosystem.config.js
+
+# 3. Lưu cấu hình PM2 để tự khởi động lại khi VPS reboot
 pm2 save
 pm2 startup
 ```
 
-Kiểm tra trạng thái tiến trình:
+Kiểm tra trạng thái máy chủ:
 ```bash
 pm2 status
 ```
-*(Nếu thấy `vtv8-today` ở trạng thái `online` màu xanh lá là thành công)*
+*(Nếu thấy tiến trình hiển thị trạng thái `online` với màu xanh lá cây là máy chủ Node.js đã chạy ổn định).*
 
 ---
 
-### BƯỚC 7: Cài đặt SSL (HTTPS) & Reverse Proxy trên aaPanel
+### BƯỚC 8: Cài đặt Chứng chỉ SSL Miễn phí (HTTPS) trên aaPanel
 
-1. **Cài đặt chứng chỉ SSL miễn phí**:
-   - Trong aaPanel, vào **Website** ➔ Bấm vào tên miền **`vtv8.vn`**.
-   - Chọn mục **SSL** ➔ Chọn tab **Let's Encrypt**.
-   - Tích chọn cả `vtv8.vn` và `www.vtv8.vn`.
-   - Bấm **Apply**. Sau khi cấp chứng chỉ xong, gạt bật công tắc **Force HTTPS**.
-
-2. **Cấu hình Reverse Proxy**:
-   - Cũng trong cửa sổ cấu hình website đó, chọn mục **Reverse Proxy** ➔ Bấm **Add reverse proxy**:
-     - **Proxy Name**: `vtv8-proxy`
-     - **Target URL**: `http://127.0.0.1:3023`
-     - **Sent Domain**: `$host`
-   - Bấm **Save**.
+1. Trong aaPanel, vào menu **Website** ➔ Bấm vào tên miền **`daklak.today`**.
+2. Chọn tab **SSL** ở menu bên trái cửa sổ pop-up ➔ Chọn tab con **Let's Encrypt**:
+   - Tích chọn cả 2 tên miền: `daklak.today` và `www.daklak.today`
+   - Phương thức xác thực: **File verification**
+3. Bấm nút **Apply**.
+4. Chờ 15-30 giây khi thông báo cấp phát thành công, gạt công tắc **Force HTTPS** sang trạng thái BẬT để tự động chuyển hướng toàn bộ truy cập HTTP sang HTTPS an toàn.
 
 ---
 
-### BƯỚC 8: Cấu hình chống dính Cache Nginx (Khuyên dùng)
-Để trình duyệt của người dùng luôn tự động tải bản cập nhật mới nhất, vào mục **Config** của website `vtv8.vn` trên aaPanel và thêm đoạn sau vào trong block `server { ... }`:
+### BƯỚC 9: Cấu hình Nginx Reverse Proxy & Chống Dính Cache
+
+Để Nginx chuyển tiếp lưu lượng từ cổng 80/443 sang ứng dụng Node.js (cổng `5000`), đồng thời áp dụng chính sách **Anti-Cache** độc quyền (file HTML không dính cache, file assets JS/CSS có mã hash được lưu lâu):
+
+1. Trong cửa sổ cấu hình website trên aaPanel, chọn mục **Reverse Proxy** ➔ Nhấn **Add reverse proxy**:
+   - **Proxy Name**: `node-backend`
+   - **Target URL**: `http://127.0.0.1:5000`
+   - **Sent Domain**: `$host`
+2. Bấm **Save**.
+3. Tiếp theo, chọn mục **Config** (Cấu hình Nginx trực tiếp của website) và kiểm tra/bổ sung đoạn chỉ thị cache bên trong khối `server { ... }`:
 
 ```nginx
-# Tắt cache cho file HTML gốc
+# ── Chống dính Cache cho File HTML gốc ───────────────────────
 location ~* \.html$ {
     expires -1;
     add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
-    proxy_pass http://127.0.0.1:3023;
+    add_header Pragma "no-cache";
+    proxy_pass http://127.0.0.1:5000;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
 
-# Cache lâu cho tài sản tĩnh có mã hash
-location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
+# ── Cache tối ưu cho Tài nguyên tĩnh có mã Hash (/assets/) ────
+location ~* ^/assets/ {
     expires 30d;
-    add_header Cache-Control "public, no-transform";
-    proxy_pass http://127.0.0.1:3023;
+    add_header Cache-Control "public, max-age=2592000, immutable";
+    proxy_pass http://127.0.0.1:5000;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
 }
+
+# ── Bật nén Gzip tăng tốc độ tải trang ────────────────────────
+gzip on;
+gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
+gzip_min_length 1000;
 ```
 
 Bấm **Save**.
 
 ---
 
-## 🔄 LỆNH CẬP NHẬT CODE NHANH SAU NÀY
+## 🔄 LỆNH CẬP NHẬT CODE NHANH KHI CÓ BẢN MỚI
 
-Mỗi khi có tính năng hoặc code mới được đẩy lên GitHub, bạn chỉ cần mở Terminal VPS và chạy:
+Mỗi khi bạn đẩy code cập nhật lên GitHub, chỉ cần mở Terminal trên VPS và chạy tổ hợp lệnh 1 bước sau:
 
 ```bash
-cd /www/wwwroot/vtv8.vn
-git fetch origin deploy && git reset --hard origin/deploy
-pm2 restart all
+cd /www/wwwroot/daklak.today && git pull && npm run build --prefix frontend && pm2 restart all
 ```
+
+Toàn bộ mã nguồn mới sẽ được kéo về, frontend được biên dịch lại sạch sẽ và PM2 khởi động lại tức thì với thời gian gián đoạn dưới 2 giây.
+
+---
+
+## 🛠️ XỬ LÝ CÁC SỰ CỐ THƯỜNG GẶP (TROUBLESHOOTING)
+
+| Sự cố | Nguyên nhân | Cách khắc phục |
+| :--- | :--- | :--- |
+| **Lỗi 502 Bad Gateway** | Node.js chưa chạy hoặc bị crash | Chạy `pm2 logs` để xem thông báo lỗi chi tiết. Kiểm tra thông số kết nối DB trong `.env`. |
+| **Lỗi `ER_ACCESS_DENIED_ERROR`** | Sai `DB_USER` hoặc `DB_PASSWORD` | Kiểm tra lại thông tin database trên aaPanel và đối chiếu với file `.env`. |
+| **Client không thấy cập nhật mới** | Trình duyệt hoặc Cloudflare lưu cache | Nhấn `Ctrl + F5` (hoặc `Cmd + Shift + R`). Đăng nhập Cloudflare và chọn **Purge Cache -> Purge Everything**. |
+| **Không tải được ảnh lên (Upload error)** | Thư mục `public/uploads` thiếu quyền ghi | Chạy lệnh: `chmod -R 755 /www/wwwroot/daklak.today/public/uploads` |
+| **Cổng 5000 bị trùng (EADDRINUSE)** | Có tiến trình khác đang chiếm cổng | Đổi `PORT=5001` trong `.env` và cập nhật lại Target URL trong Reverse Proxy Nginx. |
+| **Lỗi SSL không cấp được** | Tên miền chưa trỏ đúng IP VPS hoặc bị Cloudflare chặn | Tắt đám mây cam Cloudflare (chuyển sang DNS Only xám), sau đó nhấn Apply lại SSL. |
+
+---
+
+*Tài liệu được biên soạn và chuẩn hóa bởi Đội ngũ Kỹ thuật ADT Quốc tế — Sẵn sàng phục vụ nhân bản hệ sinh thái Today Platform.*
